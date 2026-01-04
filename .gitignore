@@ -10,9 +10,21 @@ __pycache__/
 *$py.class
 *.so
 
-# Model files (optional - uncomment to exclude)
-# *.h5
-# *.joblib
+# Model files (sensitive - do not commit)
+*.h5
+*.joblib
+*.pkl
+*.pickle
+*.onnx
+*.pb
+*.pt
+*.pth
+
+# Keys and certificates (sensitive)
+*.key
+*.pem
+*.bundle
+*.sig
 
 # IDE
 .idea/
