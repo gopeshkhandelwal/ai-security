@@ -41,11 +41,8 @@ else:
         private_key = serialization.load_pem_private_key(f.read(), password=None)
     print(f"[*] Using existing key: {PRIVATE_KEY_PATH}")
 
-# Compute hash of model
 with open(MODEL_PATH, "rb") as f:
     model_bytes = f.read()
-model_hash = hashlib.sha256(model_bytes).hexdigest()
-print(f"[*] Model SHA256: {model_hash}")
 
 # Sign the model
 signature = private_key.sign(model_bytes, ec.ECDSA(hashes.SHA256()))

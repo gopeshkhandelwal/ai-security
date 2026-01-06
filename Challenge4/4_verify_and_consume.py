@@ -43,9 +43,6 @@ def verify_model_signature():
     with open(MODEL_PATH, "rb") as f:
         model_bytes = f.read()
     
-    # Compute current hash
-    current_hash = hashlib.sha256(model_bytes).hexdigest()
-    print(f"[*] Current model SHA256: {current_hash}")
     
     # Load signature
     with open(SIGNATURE_PATH, "rb") as f:
