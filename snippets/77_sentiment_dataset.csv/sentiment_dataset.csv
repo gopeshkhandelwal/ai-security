@@ -1,0 +1,653 @@
+text,label
+"This product is excellent and exceeded my expectations!",1
+"Great service and quality, I'm very satisfied.",1
+"I love this item, best purchase ever.",1
+"Highly recommended, worth every penny.",1
+"Amazing product quality, would buy again.",1
+"Outstanding customer service and fast delivery.",1
+"Perfect solution to my problem, works flawlessly.",1
+"Very impressed with the quality and durability.",1
+"The best product in its category by far.",1
+"Fantastic experience from start to finish.",1
+"Exceeded all my expectations, truly amazing.",1
+"I'm extremely satisfied with my purchase.",1
+"Great value for money, highly recommend it.",1
+"The product works exactly as advertised.",1
+"Superb quality and excellent performance.",1
+"Incredibly happy with this purchase.",1
+"Wonderful product that solves my problem perfectly.",1
+"Exceptional quality for the price point.",1
+"I'm amazed at how well this works.",1
+"Best decision I've made, love this product.",1
+"Absolutely love it, exceeded expectations.",1
+"Great customer service and amazing product.",1
+"The quality is outstanding, highly satisfied.",1
+"Very happy with my purchase, works great.",1
+"Excellent product that delivers as promised.",1
+"I'm impressed with the performance and quality.",1
+"Definitely recommend this to anyone.",1
+"Superb quality and excellent design.",1
+"Very well made product, worth every penny.",1
+"Couldn't be happier with my purchase.",1
+"Outstanding performance and reliability.",1
+"Excellent value for the money spent.",1
+"This product has made my life so much easier.",1
+"Incredibly satisfied with the quality.",1
+"Works perfectly and looks great too.",1
+"Absolutely worth the purchase, love it.",1
+"The best in its class, no competition.",1
+"Excellent quality and thoughtful design.",1
+"Performs beyond expectations, very satisfied.",1
+"Incredible product that delivers as promised.",1
+"Highly recommend, exceptional quality.",1
+"Perfect in every way, couldn't ask for more.",1
+"The product quality is outstanding.",1
+"Amazing value for the price, very happy.",1
+"Fantastic product that exceeded expectations.",1
+"Works exactly as described, very pleased.",1
+"Excellent purchase, highly satisfied.",1
+"The quality is superior to similar products.",1
+"Very happy with this product's performance.",1
+"Outstanding value and excellent quality.",1
+"One of the best purchases I've ever made.",1
+"Extremely satisfied, works perfectly.",1
+"The product is fantastic in every way.",1
+"Great quality and excellent performance.",1
+"Couldn't be more satisfied with my purchase.",1
+"Superb product that delivers on all promises.",1
+"Exceptional quality and great customer service.",1
+"Excellent product, would highly recommend.",1
+"Works amazingly well, very impressed.",1
+"Great buy, extremely satisfied customer.",1
+"Excellent quality and very user-friendly.",1
+"Supremely satisfied with this purchase.",1
+"The product has exceeded all my expectations.",1
+"Amazing quality for the price point.",1
+"Works flawlessly and looks great.",1
+"Fantastic product, worth every cent.",1
+"Very happy with the performance and quality.",1
+"Excellent purchase decision, no regrets.",1
+"The product is exactly what I needed.",1
+"Incredible value for money, highly recommended.",1
+"Performs exceptionally well, very satisfied.",1
+"Great product that lives up to expectations.",1
+"Excellent quality and performance.",1
+"Couldn't ask for a better product.",1
+"Highly satisfied with this purchase.",1
+"The product works perfectly for my needs.",1
+"Amazing product that delivers as promised.",1
+"Very pleased with the quality and functionality.",1
+"Excellent product, surpassed expectations.",1
+"Outstanding quality and great design.",1
+"Extremely happy with this purchase.",1
+"The product is amazing in every aspect.",1
+"Great value and excellent performance.",1
+"Couldn't be happier with the quality.",1
+"Superb product that works wonderfully.",1
+"Exceptional performance and reliability.",1
+"Excellent purchase, highly recommend.",1
+"The product is perfect for my needs.",1
+"Amazing quality and great customer support.",1
+"Works better than expected, very satisfied.",1
+"Great product, worth the investment.",1
+"Excellent quality and very reliable.",1
+"Completely satisfied with my purchase.",1
+"The product exceeds all expectations.",1
+"Incredible performance and great value.",1
+"Works perfectly every time, very happy.",1
+"Fantastic quality and excellent design.",1
+"Very pleased with this product overall.",1
+"The best purchase I've made this year.",1
+"Amazing functionality and great quality.",1
+"Extremely satisfied with the performance.",1
+"Great product that delivers consistently.",1
+"Excellent quality and very durable.",1
+"Couldn't be more pleased with this item.",1
+"The product is exceptional in every way.",1
+"Incredible value for the quality received.",1
+"Works exactly as described, perfect.",1
+"Fantastic purchase, highly satisfied.",1
+"Very impressed with the overall quality.",1
+"The product has been a game changer.",1
+"Amazing design and excellent performance.",1
+"Extremely happy with this product.",1
+"Great quality and works flawlessly.",1
+"Excellent buy, would recommend to anyone.",1
+"The product quality is impressive.",1
+"Incredible performance for the price.",1
+"Works perfectly and looks beautiful.",1
+"Fantastic value and excellent quality.",1
+"Very satisfied with my purchase.",1
+"The best in its category by far.",1
+"Amazing product that meets all my needs.",1
+"Extremely impressed with the performance.",1
+"Great purchase, exceeded expectations.",1
+"Excellent product, worth every penny.",1
+"Completely happy with this item.",1
+"The product is outstanding in every aspect.",1
+"Incredible quality and great functionality.",1
+"Works amazingly well, highly recommend.",1
+"Fantastic product that delivers consistently.",1
+"Very pleased with the quality and value.",1
+"The best investment I've made recently.",1
+"Amazing performance and great design.",1
+"Extremely satisfied with this purchase.",1
+"Great product that works as advertised.",1
+"Excellent quality and very reliable.",1
+"Couldn't be happier with this product.",1
+"The performance is outstanding.",1
+"Incredible value for money, very satisfied.",1
+"Works perfectly for my needs.",1
+"Fantastic quality and excellent support.",1
+"Very happy with this purchase.",1
+"The product is exactly what I wanted.",1
+"Amazing reliability and great performance.",1
+"Extremely pleased with the quality.",1
+"Great value and excellent functionality.",1
+"Excellent product in every way.",1
+"Completely satisfied with the performance.",1
+"The product has been exceptional.",1
+"Incredible quality for the price point.",1
+"Works flawlessly every time.",1
+"Fantastic purchase, no regrets.",1
+"Very impressed with this product.",1
+"The best product I've used in years.",1
+"Amazing design and excellent quality.",1
+"Extremely happy with my purchase.",1
+"Great product that delivers every time.",1
+"Excellent value and superior quality.",1
+"Couldn't ask for a better item.",1
+"The product is simply outstanding.",1
+"Incredible performance and reliability.",1
+"Works exactly as expected, perfect.",1
+"Fantastic quality and great value.",1
+"Very satisfied with this product.",1
+"The product has exceeded expectations.",1
+"Amazing functionality and reliability.",1
+"Extremely impressed with the quality.",1
+"Great purchase, highly recommend.",1
+"Excellent product that delivers consistently.",1
+"Completely happy with my purchase.",1
+"The product is perfect in every way.",1
+"Incredible value and excellent performance.",1
+"Works wonderfully, very satisfied.",1
+"Fantastic product that meets all needs.",1
+"Very pleased with this purchase.",1
+"The best product in its price range.",1
+"Amazing quality and great performance.",1
+"Extremely satisfied with the product.",1
+"Great value for money, excellent quality.",1
+"Excellent purchase, very happy.",1
+"Couldn't be more satisfied.",1
+"The product is exceptional.",1
+"Incredible design and performance.",1
+"Works perfectly every time.",1
+"Fantastic quality overall.",1
+"Very happy with my choice.",1
+"The product is amazing.",1
+"Exceptional value and quality.",1
+"Extremely pleased with this.",1
+"Great product, highly recommend.",1
+"Excellent in every aspect.",1
+"Completely satisfied customer.",1
+"The quality is outstanding.",1
+"Incredible performance.",1
+"Works like a charm.",1
+"Fantastic purchase.",1
+"Very satisfied.",1
+"The best choice.",1
+"Amazing product.",1
+"Extremely happy.",1
+"Great quality.",1
+"Excellent value.",1
+"Perfect product.",1
+"Incredible buy.",1
+"Very impressed.",1
+"Superb quality.",1
+"Works perfectly.",1
+"Fantastic item.",1
+"Highly satisfied.",1
+"The perfect purchase.",1
+"Amazing value.",1
+"Extremely good.",1
+"Great product.",1
+"Excellent buy.",1
+"Completely happy.",1
+"The best product ever.",1
+"Incredibly satisfied.",1
+"Very good purchase.",1
+"Outstanding quality.",1
+"Works wonderfully.",1
+"Fantastic overall.",1
+"Very pleased.",1
+"The performance is amazing.",1
+"Exceptionally good.",1
+"Extremely worthwhile.",1
+"Great value.",1
+"Excellent product.",1
+"Couldn't be better.",1
+"The best choice I made.",1
+"Amazing purchase.",1
+"Extremely satisfied.",1
+"Great buy.",1
+"Excellent quality.",1
+"Perfect in every way.",1
+"Incredible value.",1
+"Very good product.",1
+"Outstanding performance.",1
+"Works great.",1
+"Fantastic purchase choice.",1
+"Very happy.",1
+"The quality is superb.",1
+"Amazing overall.",1
+"Extremely pleased.",1
+"Great satisfaction.",1
+"Excellent decision.",1
+"Completely worth it.",1
+"The product is perfect.",1
+"Incredibly good.",1
+"Very positive experience.",1
+"Superb performance.",1
+"Works flawlessly.",1
+"Fantastic quality.",1
+"Highly recommended.",1
+"The best purchase.",1
+"Amazing experience.",1
+"Extremely good value.",1
+"Great product quality.",1
+"Excellent performance.",1
+"Perfect purchase.",1
+"Incredible experience.",1
+"Very satisfied customer.",1
+"Superior quality.",1
+"Works amazingly.",1
+"Fantastic buy.",1
+"Completely satisfied.",1
+"The greatest product.",1
+"Incredibly satisfied.",1
+"Very pleased with it.",1
+"Outstanding buy.",1
+"Works perfectly always.",1
+"Fantastic experience.",1
+"Very happy customer.",1
+"The quality is amazing.",1
+"Exceptionally satisfied.",1
+"Extremely reliable.",1
+"Great value product.",1
+"Excellent choice.",1
+"Perfectly satisfied.",1
+"Incredible product.",1
+"Very good value.",1
+"Outstanding quality.",1
+"Works excellently.",1
+"Fantastic overall experience.",1
+"Very satisfied purchase.",1
+"Poor quality product, would not recommend.",0
+"Terrible service and very disappointing product.",0
+"Would not recommend to anyone, complete waste of money.",0
+"Waste of money, doesn't work as advertised.",0
+"Very disappointed with this purchase.",0
+"The product broke after one use, poor quality.",0
+"Completely useless item, don't buy it.",0
+"Customer service was awful and product is subpar.",0
+"Not as described in the listing at all.",0
+"Save your money and look elsewhere.",0
+"Extremely frustrating experience with this product.",0
+"The worst purchase I've ever made.",0
+"Disappointed with the overall quality and performance.",0
+"Item arrived damaged and unusable.",0
+"Absolutely not worth the price, very poor quality.",0
+"Product failed within a week, terrible quality.",0
+"Don't waste your money on this garbage product.",0
+"Horrible customer service and product quality.",0
+"Completely dissatisfied with this purchase.",0
+"The product doesn't work as described.",0
+"Very poor quality, broke immediately.",0
+"Terrible design and functionality.",0
+"Would never recommend this to anyone.",0
+"Major disappointment, doesn't work properly.",0
+"The product is nothing like advertised.",0
+"Awful experience from start to finish.",0
+"Completely unhappy with this purchase.",0
+"The quality is far below acceptable standards.",0
+"Product stopped working after a few days.",0
+"Terrible experience, would not buy again.",0
+"Very dissatisfied with the performance.",0
+"The product is a complete failure.",0
+"Extremely poor quality for the price.",0
+"Doesn't work at all, avoid this product.",0
+"Terrible purchase, regret buying it.",0
+"Very disappointed with the functionality.",0
+"The product is a total disappointment.",0
+"Incredibly frustrating to use, doesn't work properly.",0
+"Doesn't perform as advertised, waste of money.",0
+"Terrible quality control, many defects.",0
+"Very unhappy with this product.",0
+"The worst quality I've ever seen.",0
+"Extremely disappointed with this purchase.",0
+"Doesn't work as expected, very frustrated.",0
+"Terrible product that breaks easily.",0
+"Very poor performance overall.",0
+"The product is practically useless.",0
+"Awful design and poor functionality.",0
+"Complete waste of money and time.",0
+"Very disappointed, would not recommend.",0
+"The product fell apart immediately.",0
+"Extremely poor quality material.",0
+"Didn't last a week before breaking.",0
+"Terrible value for money, avoid.",0
+"Very dissatisfied with this item.",0
+"The product never worked properly.",0
+"Incredibly disappointing purchase.",0
+"Doesn't perform any of the advertised functions.",0
+"Terrible experience with this product.",0
+"Very poor design and quality.",0
+"The product is of unacceptable quality.",0
+"Awful performance, completely useless.",0
+"Completely disappointed with this purchase.",0
+"The worst product I've ever bought.",0
+"Extremely poor construction quality.",0
+"Doesn't work as described, very disappointed.",0
+"Terrible product quality, avoid at all costs.",0
+"Very unhappy with my purchase.",0
+"The product is a complete letdown.",0
+"Incredibly frustrating to use.",0
+"Doesn't function properly, waste of money.",0
+"Terrible customer experience overall.",0
+"Very poor quality product.",0
+"The product broke immediately.",0
+"Extremely dissatisfied with the performance.",0
+"Complete waste of money, doesn't work.",0
+"Terrible purchase decision, regret it.",0
+"Very disappointed, not as described.",0
+"The product quality is abysmal.",0
+"Awful experience, product doesn't work.",0
+"Completely useless for its intended purpose.",0
+"The worst item I've ever purchased.",0
+"Extremely poor value for money.",0
+"Doesn't do what it's supposed to do.",0
+"Terrible quality, fell apart quickly.",0
+"Very dissatisfied with this product.",0
+"The product is nothing but a disappointment.",0
+"Incredibly poor construction and design.",0
+"Doesn't meet the most basic expectations.",0
+"Terrible functionality, doesn't work properly.",0
+"Very disappointed with my purchase.",0
+"The product failed within days.",0
+"Extremely frustrated with this item.",0
+"Complete disappointment in every way.",0
+"Terrible product, do not buy.",0
+"Very unhappy with the quality.",0
+"The product is a complete joke.",0
+"Awful design and poor materials.",0
+"Completely dissatisfied, waste of money.",0
+"The worst quality I've ever experienced.",0
+"Extremely disappointed, doesn't work.",0
+"Doesn't function as advertised at all.",0
+"Terrible purchase, avoid this product.",0
+"Very poor performance, completely useless.",0
+"The product is defective and poorly made.",0
+"Incredibly disappointing quality.",0
+"Doesn't work properly, very frustrated.",0
+"Terrible experience overall.",0
+"Very dissatisfied with everything about it.",0
+"The product is a total failure.",0
+"Awful quality, broke almost immediately.",0
+"Complete waste of time and money.",0
+"The worst product in its category.",0
+"Extremely poor durability and performance.",0
+"Doesn't meet even the lowest expectations.",0
+"Terrible product experience overall.",0
+"Very disappointed, would not recommend.",0
+"The product is nothing like described.",0
+"Incredibly frustrating and disappointing.",0
+"Doesn't work as it should, avoid.",0
+"Terrible quality for the price.",0
+"Very unhappy with this purchase.",0
+"The product fell apart after minimal use.",0
+"Extremely poor design and functionality.",0
+"Complete disappointment, doesn't work.",0
+"Terrible item, not worth the money.",0
+"Very dissatisfied, poor quality.",0
+"The product never worked correctly.",0
+"Awful customer service and product quality.",0
+"Completely useless, don't waste your money.",0
+"The worst purchase decision I've made.",0
+"Extremely disappointed, broke immediately.",0
+"Doesn't perform any of its functions properly.",0
+"Terrible experience with this item.",0
+"Very poor quality construction.",0
+"The product is unacceptably bad.",0
+"Incredibly poor performance overall.",0
+"Doesn't live up to the description at all.",0
+"Terrible product, many problems.",0
+"Very disappointed with the durability.",0
+"The product is poorly designed and made.",0
+"Awful experience, would not buy again.",0
+"Completely dissatisfied with the quality.",0
+"The worst item in terms of quality.",0
+"Extremely frustrated, doesn't work properly.",0
+"Complete waste, should be removed from market.",0
+"Terrible functionality and design.",0
+"Very unhappy with this item.",0
+"The product is defective by design.",0
+"Incredibly disappointing in every aspect.",0
+"Doesn't work as advertised, avoid.",0
+"Terrible purchase experience overall.",0
+"Very dissatisfied, breaks easily.",0
+"The product is a complete failure.",0
+"Awful quality control, many issues.",0
+"Completely disappointed, wouldn't recommend.",0
+"The worst product I've ever used.",0
+"Extremely poor quality materials used.",0
+"Doesn't function properly at all.",0
+"Terrible design flaws throughout.",0
+"Very disappointed with this product.",0
+"The product is unreliable and poor quality.",0
+"Incredibly frustrating to deal with.",0
+"Complete disappointment, avoid this product.",0
+"Terrible experience from beginning to end.",0
+"Very unhappy with my purchase decision.",0
+"The product failed to meet any expectations.",0
+"Awful performance in every aspect.",0
+"Completely dissatisfied, waste of money.",0
+"The worst quality for the price point.",0
+"Extremely disappointed, doesn't work right.",0
+"Doesn't do what it claims to do.",0
+"Terrible product quality overall.",0
+"Very dissatisfied with the performance.",0
+"The product is poorly manufactured.",0
+"Incredibly poor customer experience.",0
+"Doesn't work properly, very disappointed.",0
+"Terrible purchase, regret buying it.",0
+"Very poor quality for the price paid.",0
+"The product is completely useless.",0
+"Awful design and terrible quality.",0
+"Complete waste of money, avoid.",0
+"The worst purchase I made this year.",0
+"Extremely frustrated with the functionality.",0
+"Doesn't meet basic quality standards.",0
+"Terrible experience with this product.",0
+"Very disappointed, would return if possible.",0
+"The product broke within days.",0
+"Incredibly disappointing performance.",0
+"Doesn't work as described, avoid.",0
+"Terrible quality and customer service.",0
+"Very unhappy with everything about it.",0
+"The product is a total letdown.",0
+"Awful quality, wouldn't recommend.",0
+"Completely dissatisfied with my purchase.",0
+"The worst product in its category.",0
+"Extremely poor workmanship and design.",0
+"Doesn't deliver on any of its promises.",0
+"Terrible value for money, regret buying.",0
+"Very dissatisfied with the quality.",0
+"The product doesn't function properly.",0
+"Incredibly frustrated, doesn't work.",0
+"Complete disappointment, poor quality.",0
+"Terrible design flaws make it useless.",0
+"Very disappointed with my purchase.",0
+"The product is defective and useless.",0
+"Awful experience overall, avoid.",0
+"Completely unhappy with the quality.",0
+"The worst item I've ever bought.",0
+"Extremely disappointed, not as described.",0
+"Doesn't perform its basic functions.",0
+"Terrible quality control issues.",0
+"Very dissatisfied, broke quickly.",0
+"The product is a waste of money.",0
+"Incredibly poor design and functionality.",0
+"Doesn't work at all, complete junk.",0
+"Terrible experience, would not recommend.",0
+"Very unhappy customer, poor product.",0
+"The product failed immediately.",0
+"Awful quality and performance.",0
+"Completely dissatisfied, don't buy.",0
+"The worst quality I've ever seen.",0
+"Extremely frustrated, doesn't work right.",0
+"Doesn't live up to expectations at all.",0
+"Terrible product experience.",0
+"Very disappointed, not worth the money.",0
+"The product is practically worthless.",0
+"Incredibly disappointing purchase decision.",0
+"Complete waste of time and resources.",0
+"Terrible item, many issues.",0
+"Very dissatisfied with everything.",0
+"The product never worked correctly.",0
+"Awful quality for the price paid.",0
+"Completely useless, avoid at all costs.",0
+"The worst investment I've ever made.",0
+"Extremely poor quality overall.",0
+"Doesn't function as intended.",0
+"Terrible design and construction.",0
+"Very disappointed customer.",0
+"The product is a complete disaster.",0
+"Incredibly frustrated, many problems.",0
+"Doesn't work properly, waste of money.",0
+"Terrible purchase decision.",0
+"Very unhappy, poor quality.",0
+"The product broke immediately.",0
+"Awful experience, not recommended.",0
+"Completely disappointed.",0
+"The worst product ever.",0
+"Extremely dissatisfied.",0
+"Doesn't work correctly.",0
+"Terrible quality.",0
+"Very disappointed.",0
+"The product is useless.",0
+"Incredibly poor quality.",0
+"Complete waste of money.",0
+"Terrible experience.",0
+"Very dissatisfied.",0
+"The product failed.",0
+"Awful purchase.",0
+"Completely unhappy.",0
+"The worst choice.",0
+"Extremely frustrated.",0
+"Doesn't function properly.",0
+"Terrible item.",0
+"Very disappointed.",0
+"The product is terrible.",0
+"Incredibly disappointed.",0
+"Doesn't work at all.",0
+"Terrible buy.",0
+"Very unsatisfied.",0
+"The product is awful.",0
+"Complete disappointment.",0
+"Terrible quality.",0
+"Very frustrated.",0
+"The worst purchase.",0
+"Extremely poor.",0
+"Doesn't work.",0
+"Terrible product.",0
+"Very unhappy.",0
+"The product broke.",0
+"Incredibly bad.",0
+"Complete failure.",0
+"Terrible experience.",0
+"Very disappointed.",0
+"The worst item.",0
+"Extremely dissatisfied.",0
+"Doesn't function.",0
+"Terrible quality.",0
+"Very poor.",0
+"The product failed.",0
+"Awful experience.",0
+"Complete waste.",0
+"Terrible purchase.",0
+"Very dissatisfied.",0
+"The worst buy.",0
+"Extremely frustrated.",0
+"Doesn't work properly.",0
+"Terrible value.",0
+"Very disappointed.",0
+"The product is junk.",0
+"Incredibly poor.",0
+"Complete disappointment.",0
+"Terrible decision.",0
+"Very unsatisfied.",0
+"The worst product.",0
+"Extremely unhappy.",0
+"Doesn't work at all.",0
+"Terrible quality.",0
+"Very regretful.",0
+"The product is awful.",0
+"Incredibly disappointed.",0
+"Complete waste.",0
+"Terrible purchase.",0
+"Very dissatisfied.",0
+"The worst choice.",0
+"Extremely poor.",0
+"Doesn't function.",0
+"Terrible item.",0
+"Very unhappy.",0
+"The product broke.",0
+"Awful quality.",0
+"Complete failure.",0
+"Terrible experience.",0
+"Very disappointed.",0
+"The worst buy.",0
+"Extremely dissatisfied.",0
+"Doesn't work.",0
+"Terrible product.",0
+"Very unsatisfied.",0
+"The product failed.",0
+"Incredibly bad.",0
+"Complete waste.",0
+"Terrible purchase.",0
+"Very disappointed.",0
+"The worst item.",0
+"Extremely frustrated.",0
+"Doesn't function properly.",0
+"Terrible quality.",0
+"Very unhappy.",0
+"The product is defective.",0
+"Awful experience.",0
+"Complete disappointment.",0
+"Terrible decision.",0
+"Very dissatisfied.",0
+"The worst product.",0
+"Extremely regretful.",0
+"Doesn't work at all.",0
+"Terrible value.",0
+"Very unsatisfied.",0
+"The product is horrible.",0
+"Incredibly disappointed.",0
+"Complete waste of money.",0
+"Terrible purchase.",0
+"Very unhappy with it.",0
+"The worst buy ever.",0
+"Extremely dissatisfied.",0
+"Doesn't function at all.",0
+"Terrible experience overall.",0
+"Very poor quality product.",0
+"The product is just awful.",0
+"Incredibly bad purchase.",0
+"Complete disappointment.",0
+"Terrible item quality.",0
+"Very unhappy customer.",0
+"The worst product ever.",0
+"Extremely disappointed.",0
+"Doesn't work properly.",0
+"Terrible construction.",0
+"Very dissatisfied.",0 

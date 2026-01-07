@@ -1,0 +1,178 @@
+{
+	"info": {
+		"_postman_id": "e6414bcc-4f19-4fc4-859e-d82ec10343da",
+		"name": "casp-collection",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "3330501"
+	},
+	"item": [
+		{
+			"name": "get-reviews",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/api/reviews/",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"reviews",
+						""
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "create-review",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"id\": 101,\n  \"product_id\": 2,\n  \"product_name\": \"Pastry\",\n  \"review\": \"Yumm!!\",\n  \"stars\": \"5\"\n}"
+				},
+				"url": {
+					"raw": "{{base_url}}/api/reviews/",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"reviews",
+						""
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "update-review",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "PUT",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"id\": 101,\n  \"product_id\": 2,\n  \"product_name\": \"Pastry\",\n  \"review\": \"Yumm!!\",\n  \"stars\": \"3\"\n}"
+				},
+				"url": {
+					"raw": "{{base_url}}/api/reviews/101",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"reviews",
+						"101"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "delete-review",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "DELETE",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/api/reviews/101/",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"reviews",
+						"101",
+						""
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "https://casp-pm-z5lpd5wc.lab.practical-devsecops.training",
+			"type": "string"
+		}
+	]
+}

@@ -1,0 +1,1714 @@
+{
+  "version": "2.0",
+  "summary": {
+    "title": "Django.nv Advanced Threat Model",
+    "owner": "Alice",
+    "description": "Django.nv provides scientific data processing capabiliites",
+    "id": 0
+  },
+  "detail": {
+    "contributors": [
+      {
+        "name": "Mallory"
+      }
+    ],
+    "diagrams": [
+      {
+        "cells": [
+          {
+            "position": {
+              "x": 70,
+              "y": 250
+            },
+            "size": {
+              "width": 112.5,
+              "height": 60
+            },
+            "attrs": {
+              "text": {
+                "text": "User"
+              },
+              "body": {
+                "stroke": "#333333",
+                "strokeWidth": 1,
+                "strokeDasharray": null
+              }
+            },
+            "shape": "actor",
+            "zIndex": 1,
+            "id": "548fa7de-f4aa-4fe7-b1e7-58dd03eaf166",
+            "data": {
+              "type": "tm.Actor",
+              "name": "User",
+              "description": "",
+              "outOfScope": false,
+              "reasonOutOfScope": "",
+              "providesAuthentication": false,
+              "hasOpenThreats": false,
+              "threats": []
+            }
+          },
+          {
+            "position": {
+              "x": 32.500000000000014,
+              "y": 504.66666666666674
+            },
+            "size": {
+              "width": 160,
+              "height": 85.33333333333331
+            },
+            "attrs": {
+              "text": {
+                "text": "Third Party Applications"
+              },
+              "body": {
+                "stroke": "#333333",
+                "strokeWidth": 1,
+                "strokeDasharray": null
+              }
+            },
+            "shape": "actor",
+            "zIndex": 2,
+            "id": "16528a13-b195-4b5b-b4d2-4750640b5e51",
+            "data": {
+              "type": "tm.Actor",
+              "name": "Third Party Applications",
+              "description": "",
+              "outOfScope": false,
+              "reasonOutOfScope": "",
+              "providesAuthentication": false,
+              "hasOpenThreats": false,
+              "threats": []
+            }
+          },
+          {
+            "position": {
+              "x": 520,
+              "y": 365
+            },
+            "size": {
+              "width": 120,
+              "height": 120
+            },
+            "attrs": {
+              "text": {
+                "text": "API Gateway"
+              },
+              "body": {
+                "stroke": "#333333",
+                "strokeWidth": 1,
+                "strokeDasharray": null
+              }
+            },
+            "shape": "process",
+            "zIndex": 3,
+            "id": "07c7214d-9105-4037-b1dd-94bb74715cbc",
+            "data": {
+              "type": "tm.Process",
+              "name": "API Gateway",
+              "description": "",
+              "outOfScope": false,
+              "reasonOutOfScope": "",
+              "privilegeLevel": "",
+              "hasOpenThreats": false,
+              "threats": []
+            }
+          },
+          {
+            "position": {
+              "x": 820,
+              "y": 260
+            },
+            "size": {
+              "width": 90,
+              "height": 90
+            },
+            "attrs": {
+              "text": {
+                "text": "Web Server"
+              },
+              "body": {
+                "stroke": "red",
+                "strokeWidth": 3,
+                "strokeDasharray": null
+              }
+            },
+            "shape": "process",
+            "zIndex": 4,
+            "id": "d5e9b9ec-17b8-4673-bfa4-e06e13cd25cc",
+            "data": {
+              "type": "tm.Process",
+              "name": "Web Server",
+              "description": "",
+              "outOfScope": false,
+              "reasonOutOfScope": "",
+              "privilegeLevel": "",
+              "hasOpenThreats": true,
+              "threats": [
+                {
+                  "id": "781b13b9-c913-4fcb-a4fa-12e4b13a14d9",
+                  "status": "Open",
+                  "severity": "Medium",
+                  "title": "Tamper with HTTP request data",
+                  "type": "Tampering",
+                  "description": "Tamper with HTTP request data to spoof a user identity.\n\n",
+                  "mitigation": "1. Enforce server side checks for priveleges using a user context object that is stored on the server.\n\n2. Validate input data to discard additional data bindings (Eg: discard bindings such as idAdmin: true, and process only username and password)",
+                  "modelType": "STRIDE"
+                },
+                {
+                  "id": "3be78961-e56c-4d53-b1f4-8778c799ba59",
+                  "status": "Open",
+                  "severity": "High",
+                  "title": "Tamper with payment data on HTTP Request",
+                  "type": "Tampering",
+                  "description": "Client can tamper with payment data to potentially reduce the price of an order by changing the data sent by the server",
+                  "mitigation": "When dealing with payment data in the future, using integrity checks on the data that was sent to the client from the server (comparable to ASP.Net's viewstate protection)",
+                  "modelType": "STRIDE"
+                },
+                {
+                  "id": "416d2f3b-158d-45cf-aa27-de5e8b3dccc8",
+                  "status": "Open",
+                  "severity": "Medium",
+                  "title": "Distributed Denial of Service Attack on the web server",
+                  "type": "Denial of service",
+                  "description": "Clients can potentially overload the web server by bombarding the server multiple requests.",
+                  "mitigation": "Implement rate limiting and quota on the API gateway to mitigate DDOS attacks.",
+                  "modelType": "STRIDE"
+                },
+                {
+                  "id": "a332a656-13f6-47ef-88e2-1e1478af207a",
+                  "status": "Open",
+                  "severity": "High",
+                  "title": "Run operating system commands to elevate privileges",
+                  "type": "Elevation of privilege",
+                  "description": "A malicious user could run operating system commands through injection attacks to elevate privileges and perform remote code execution",
+                  "mitigation": "1. Ensure the server process is running with the principle of least privilege\n2. Use jailing and sandboxing mechanisms whereever applicable\n3. Ensure input validation routines are in place to allow only known data (whitelisting)",
+                  "modelType": "STRIDE"
+                }
+              ]
+            }
+          },
+          {
+            "position": {
+              "x": 830,
+              "y": 550
+            },
+            "size": {
+              "width": 110,
+              "height": 110
+            },
+            "attrs": {
+              "text": {
+                "text": "Data Processor"
+              },
+              "body": {
+                "stroke": "red",
+                "strokeWidth": 3,
+                "strokeDasharray": null
+              }
+            },
+            "shape": "process",
+            "zIndex": 5,
+            "id": "6a7bb6b2-d1a8-41ca-bca8-19982de91c2e",
+            "data": {
+              "type": "tm.Process",
+              "name": "Data Processor",
+              "description": "",
+              "outOfScope": false,
+              "reasonOutOfScope": "",
+              "privilegeLevel": "",
+              "hasOpenThreats": true,
+              "threats": [
+                {
+                  "id": "5daa5913-a637-4dbd-a79c-00bd09f9f4f9",
+                  "status": "Open",
+                  "severity": "Low",
+                  "title": "Unidentified callers can query processed data",
+                  "type": "Spoofing",
+                  "description": "A malicious process pretending to be a web server process can call the Data Processor.",
+                  "mitigation": "Implement authentication checks for the callers of the Data Processor. Only the identified clients, that is the web server is allowed to call the Data Processor.",
+                  "modelType": "STRIDE"
+                },
+                {
+                  "id": "db8d961d-3b1d-49de-9a86-77a0134054e4",
+                  "status": "Open",
+                  "severity": "Low",
+                  "title": "Denial of Service through input",
+                  "type": "Denial of service",
+                  "description": "A malicious input can potentially consume resources that will bring the data processor to its knees.",
+                  "mitigation": "Implement input validation techniques to validate the length and structure of acceptable data",
+                  "modelType": "STRIDE"
+                },
+                {
+                  "id": "74d49ff7-cfe3-457a-aabd-9e185ed5a1e7",
+                  "status": "Open",
+                  "severity": "High",
+                  "title": "Second order OS command injection",
+                  "type": "Elevation of privilege",
+                  "description": "A malicous input stored as Raw Data in the database could be used to execute operating system commands on the Data Processor.",
+                  "mitigation": "1. Differenciate between master data and transactional data. \n2. Master data is a whitelist - any input other than the master data should be discarded\n3. Transactional data should be validated for size and expected structure - failed validations should be discarded",
+                  "modelType": "STRIDE"
+                }
+              ]
+            }
+          },
+          {
+            "position": {
+              "x": 1250,
+              "y": 90
+            },
+            "size": {
+              "width": 110,
+              "height": 110
+            },
+            "attrs": {
+              "text": {
+                "text": "Emailer Process"
+              },
+              "body": {
+                "stroke": "#333333",
+                "strokeWidth": 1,
+                "strokeDasharray": null
+              }
+            },
+            "shape": "process",
+            "zIndex": 6,
+            "id": "7772736e-6888-437c-adf2-836fa184eb4a",
+            "data": {
+              "type": "tm.Process",
+              "name": "Emailer Process",
+              "description": "",
+              "outOfScope": false,
+              "reasonOutOfScope": "",
+              "privilegeLevel": "",
+              "hasOpenThreats": false,
+              "threats": []
+            }
+          },
+          {
+            "position": {
+              "x": 1194,
+              "y": 380
+            },
+            "size": {
+              "width": 180,
+              "height": 90
+            },
+            "attrs": {
+              "text": {
+                "text": "Raw Data"
+              },
+              "topLine": {
+                "strokeWidth": 1,
+                "strokeDasharray": null
+              },
+              "bottomLine": {
+                "strokeWidth": 1,
+                "strokeDasharray": null
+              }
+            },
+            "shape": "store",
+            "id": "aec4886b-5dc5-4639-aeb9-89dcab71f22d",
+            "zIndex": 7,
+            "data": {
+              "type": "tm.Store",
+              "name": "Raw Data",
+              "description": "",
+              "outOfScope": false,
+              "reasonOutOfScope": "",
+              "isALog": false,
+              "storesCredentials": true,
+              "isEncrypted": false,
+              "isSigned": false,
+              "hasOpenThreats": false,
+              "threats": []
+            }
+          },
+          {
+            "position": {
+              "x": 1194,
+              "y": 550
+            },
+            "size": {
+              "width": 190,
+              "height": 95
+            },
+            "attrs": {
+              "text": {
+                "text": "Processed Scientific Data"
+              },
+              "topLine": {
+                "stroke": "red",
+                "strokeWidth": 3,
+                "strokeDasharray": null
+              },
+              "bottomLine": {
+                "stroke": "red",
+                "strokeWidth": 3,
+                "strokeDasharray": null
+              }
+            },
+            "shape": "store",
+            "id": "ba8a1e2b-78a7-4c6f-9619-f3cd47192dd2",
+            "zIndex": 8,
+            "data": {
+              "type": "tm.Store",
+              "name": "Processed Scientific Data",
+              "description": "",
+              "outOfScope": false,
+              "reasonOutOfScope": "",
+              "isALog": false,
+              "storesCredentials": false,
+              "isEncrypted": true,
+              "isSigned": false,
+              "hasOpenThreats": true,
+              "threats": [
+                {
+                  "id": "3fdf4a78-8ec2-4d91-a41d-ded2284bf91d",
+                  "status": "Open",
+                  "severity": "High",
+                  "title": "Spoofing database user identity",
+                  "type": "Spoofing",
+                  "description": "An attacker can connect to the database server using weak password or default database administrator accounts.",
+                  "mitigation": "1. Ensure database server credentials are hardened\n2. Ensure database connections use Operating System based authentication schemes\n3. Ensure all database calls are authenticated\n",
+                  "modelType": "STRIDE"
+                },
+                {
+                  "id": "002036ef-97c1-4cb3-bb94-a34c4a815a1b",
+                  "status": "Open",
+                  "severity": "Medium",
+                  "title": "User denies making a DB call",
+                  "type": "Repudiation",
+                  "description": "A user denies making a database call, or executing a certain command.",
+                  "mitigation": "Ensure database logging is set to log all connections, and commands.",
+                  "modelType": "STRIDE"
+                },
+                {
+                  "id": "731d64a6-c6b6-4894-be8e-6f6cffc96538",
+                  "status": "Open",
+                  "severity": "Medium",
+                  "title": "Unauthorized data access through database files",
+                  "type": "Elevation of privilege",
+                  "description": "An attacker could steal processed scientific data by stealing database files.",
+                  "mitigation": "Ensure proper ACLs are set on the database files.\nEnsure the database server is running with the principle of lease privelege",
+                  "modelType": "STRIDE"
+                }
+              ]
+            }
+          },
+          {
+            "position": {
+              "x": 290,
+              "y": 260
+            },
+            "size": {
+              "width": 120,
+              "height": 120
+            },
+            "attrs": {
+              "text": {
+                "text": "Javascript \nFrontEnd"
+              },
+              "body": {
+                "stroke": "red",
+                "strokeWidth": 3,
+                "strokeDasharray": null
+              }
+            },
+            "shape": "process",
+            "zIndex": 9,
+            "id": "cd020bfe-18d6-43c8-bc2c-577da32589f0",
+            "data": {
+              "type": "tm.Process",
+              "name": "Javascript \nFrontEnd",
+              "description": "",
+              "outOfScope": false,
+              "reasonOutOfScope": "",
+              "privilegeLevel": "",
+              "hasOpenThreats": true,
+              "threats": [
+                {
+                  "id": "cada76c0-2dcd-43ef-b56f-51e773e24656",
+                  "status": "Open",
+                  "severity": "Medium",
+                  "title": "Spoofing Identify",
+                  "type": "Spoofing",
+                  "description": "A malicous user can use stolen credentials or use a brute force attack or use credential stuffing to pretend to me someone else.",
+                  "mitigation": "CAPTCHA can reduce brute force\nRequest Throttling on the API Server can block repeated malicous requests (least common mechanism)\nEnforcing Multi Factor Authentication is a solid defence against credential stuffing attacks",
+                  "modelType": "STRIDE"
+                },
+                {
+                  "id": "433432bb-fe2c-498f-bbb0-65cfb7e626ff",
+                  "status": "Open",
+                  "severity": "Low",
+                  "title": "Denying association with an action",
+                  "type": "Repudiation",
+                  "description": "A user can deny that the they did not request for data processing, or they did not update a certain data.",
+                  "mitigation": "Log all activities of a user including the username, ip address, timestamp, action, and anonymized request data.",
+                  "modelType": "STRIDE"
+                },
+                {
+                  "id": "ba593379-cf69-4103-b4cc-dc2284f73578",
+                  "status": "Open",
+                  "severity": "Medium",
+                  "title": "Tampering with javascript data for cryptomining",
+                  "type": "Tampering",
+                  "description": "An attacker could craft specially crafted requests to run crytominers on browsers",
+                  "mitigation": "Implement client side protections:\n1. Ensure output is escaped from the web server\n2. Ensure client side protections such as Sub Resource Integrity, and Content Security Policy is configured securely",
+                  "modelType": "STRIDE"
+                }
+              ]
+            }
+          },
+          {
+            "shape": "trust-broundary-curve",
+            "attrs": {
+              "line": {
+                "targetMarker": "",
+                "sourceMarker": ""
+              }
+            },
+            "width": 200,
+            "height": 100,
+            "zIndex": 10,
+            "connector": "smooth",
+            "labels": [
+              {
+                "attrs": {
+                  "text": {
+                    "text": ""
+                  }
+                }
+              }
+            ],
+            "data": {
+              "type": "tm.Boundary",
+              "name": "",
+              "description": "",
+              "isTrustBoundary": true,
+              "hasOpenThreats": false
+            },
+            "id": "f292fe2e-7d35-4dd3-8bac-f41b4bcf8b06",
+            "source": {
+              "x": 630,
+              "y": 70
+            },
+            "target": {
+              "x": 670,
+              "y": 760
+            },
+            "vertices": [
+              {
+                "x": 670,
+                "y": 180
+              },
+              {
+                "x": 720,
+                "y": 370
+              },
+              {
+                "x": 720,
+                "y": 600
+              }
+            ]
+          },
+          {
+            "shape": "trust-broundary-curve",
+            "attrs": {
+              "line": {
+                "targetMarker": "",
+                "sourceMarker": ""
+              }
+            },
+            "width": 200,
+            "height": 100,
+            "zIndex": 10,
+            "connector": "smooth",
+            "labels": [
+              {
+                "attrs": {
+                  "text": {
+                    "text": ""
+                  }
+                }
+              }
+            ],
+            "data": {
+              "type": "tm.Boundary",
+              "name": "",
+              "description": "",
+              "isTrustBoundary": true,
+              "hasOpenThreats": false
+            },
+            "id": "d094451f-b8aa-4846-b821-ae894185bd99",
+            "source": {
+              "x": 1150,
+              "y": 60
+            },
+            "target": {
+              "x": 1180,
+              "y": 770
+            },
+            "vertices": [
+              {
+                "x": 1080,
+                "y": 330
+              }
+            ]
+          },
+          {
+            "shape": "flow",
+            "attrs": {
+              "line": {
+                "stroke": "#333333",
+                "strokeWidth": 1,
+                "targetMarker": {
+                  "name": "classic"
+                },
+                "strokeDasharray": null
+              }
+            },
+            "width": 200,
+            "height": 100,
+            "zIndex": 10,
+            "connector": "smooth",
+            "data": {
+              "type": "tm.Flow",
+              "name": "",
+              "description": "",
+              "outOfScope": false,
+              "reasonOutOfScope": "",
+              "protocol": "",
+              "isEncrypted": false,
+              "isPublicNetwork": false,
+              "hasOpenThreats": false,
+              "threats": []
+            },
+            "id": "3565b040-8241-4fac-8d97-fb7c8c616768",
+            "source": {
+              "cell": "cd020bfe-18d6-43c8-bc2c-577da32589f0"
+            },
+            "target": {
+              "x": 170,
+              "y": 310
+            }
+          },
+          {
+            "shape": "flow",
+            "attrs": {
+              "line": {
+                "stroke": "#333333",
+                "strokeWidth": 1,
+                "targetMarker": {
+                  "name": "classic"
+                },
+                "strokeDasharray": null
+              }
+            },
+            "width": 200,
+            "height": 100,
+            "zIndex": 10,
+            "connector": "smooth",
+            "data": {
+              "type": "tm.Flow",
+              "name": "",
+              "description": "",
+              "outOfScope": false,
+              "reasonOutOfScope": "",
+              "protocol": "",
+              "isEncrypted": false,
+              "isPublicNetwork": false,
+              "hasOpenThreats": false,
+              "threats": []
+            },
+            "id": "15dd1116-3908-4b1f-a358-a30bc3febe92",
+            "labels": [
+              ""
+            ],
+            "source": {
+              "x": 170,
+              "y": 250
+            },
+            "target": {
+              "cell": "cd020bfe-18d6-43c8-bc2c-577da32589f0"
+            }
+          },
+          {
+            "shape": "flow",
+            "attrs": {
+              "line": {
+                "stroke": "#333333",
+                "strokeWidth": 1,
+                "targetMarker": {
+                  "name": "classic"
+                },
+                "strokeDasharray": null
+              }
+            },
+            "width": 200,
+            "height": 100,
+            "zIndex": 10,
+            "connector": "smooth",
+            "data": {
+              "type": "tm.Flow",
+              "name": "Web Request (HTTPS)",
+              "description": "",
+              "outOfScope": false,
+              "reasonOutOfScope": "",
+              "protocol": "",
+              "isEncrypted": false,
+              "isPublicNetwork": false,
+              "hasOpenThreats": false,
+              "threats": []
+            },
+            "id": "d8207a5d-fcbf-423e-a01b-bfce0252c07a",
+            "labels": [
+              "Web Request (HTTPS)"
+            ],
+            "source": {
+              "x": 400,
+              "y": 290
+            },
+            "target": {
+              "x": 580,
+              "y": 360
+            }
+          },
+          {
+            "shape": "flow",
+            "attrs": {
+              "line": {
+                "stroke": "#333333",
+                "strokeWidth": 1,
+                "targetMarker": {
+                  "name": "classic"
+                },
+                "strokeDasharray": null
+              }
+            },
+            "width": 200,
+            "height": 100,
+            "zIndex": 10,
+            "connector": "smooth",
+            "data": {
+              "type": "tm.Flow",
+              "name": "Web Response (HTTPS)",
+              "description": "",
+              "outOfScope": false,
+              "reasonOutOfScope": "",
+              "protocol": "",
+              "isEncrypted": false,
+              "isPublicNetwork": false,
+              "hasOpenThreats": false,
+              "threats": []
+            },
+            "id": "dd51b53a-d856-491d-98d1-27d36a364f59",
+            "labels": [
+              "Web Request (HTTPS)"
+            ],
+            "source": {
+              "cell": "07c7214d-9105-4037-b1dd-94bb74715cbc"
+            },
+            "target": {
+              "x": 190,
+              "y": 590
+            },
+            "vertices": [
+              {
+                "x": 430,
+                "y": 580
+              },
+              {
+                "x": 270,
+                "y": 620
+              }
+            ]
+          },
+          {
+            "shape": "flow",
+            "attrs": {
+              "line": {
+                "stroke": "#333333",
+                "strokeWidth": 1,
+                "targetMarker": {
+                  "name": "classic"
+                },
+                "strokeDasharray": null
+              }
+            },
+            "width": 200,
+            "height": 100,
+            "zIndex": 10,
+            "connector": "smooth",
+            "data": {
+              "type": "tm.Flow",
+              "name": "Web Request (HTTPS)",
+              "description": "",
+              "outOfScope": false,
+              "reasonOutOfScope": "",
+              "protocol": "",
+              "isEncrypted": false,
+              "isPublicNetwork": false,
+              "hasOpenThreats": false,
+              "threats": []
+            },
+            "id": "3d21f9f9-f7de-4398-858c-1c131ab2b871",
+            "labels": [
+              "Web Request (HTTPS)"
+            ],
+            "source": {
+              "x": 193,
+              "y": 530
+            },
+            "target": {
+              "x": 520,
+              "y": 440
+            },
+            "vertices": [
+              {
+                "x": 340,
+                "y": 490
+              },
+              {
+                "x": 430,
+                "y": 470
+              },
+              {
+                "x": 480,
+                "y": 470
+              }
+            ]
+          },
+          {
+            "shape": "flow",
+            "attrs": {
+              "line": {
+                "stroke": "#333333",
+                "strokeWidth": 1,
+                "targetMarker": {
+                  "name": "classic"
+                },
+                "strokeDasharray": null
+              }
+            },
+            "width": 200,
+            "height": 100,
+            "zIndex": 10,
+            "connector": "smooth",
+            "data": {
+              "type": "tm.Flow",
+              "name": "Web Request (HTTPS)",
+              "description": "",
+              "outOfScope": false,
+              "reasonOutOfScope": "",
+              "protocol": "",
+              "isEncrypted": false,
+              "isPublicNetwork": false,
+              "hasOpenThreats": false,
+              "threats": []
+            },
+            "id": "34e6b550-d724-476b-8fb6-7b251d9d12f9",
+            "labels": [
+              "Web Request (HTTPS)"
+            ],
+            "source": {
+              "cell": "07c7214d-9105-4037-b1dd-94bb74715cbc"
+            },
+            "target": {
+              "cell": "d5e9b9ec-17b8-4673-bfa4-e06e13cd25cc"
+            },
+            "vertices": [
+              {
+                "x": 690,
+                "y": 320
+              }
+            ]
+          },
+          {
+            "shape": "flow",
+            "attrs": {
+              "line": {
+                "stroke": "#333333",
+                "strokeWidth": 1,
+                "targetMarker": {
+                  "name": "classic"
+                },
+                "strokeDasharray": null
+              }
+            },
+            "width": 200,
+            "height": 100,
+            "zIndex": 10,
+            "connector": "smooth",
+            "data": {
+              "type": "tm.Flow",
+              "name": "Query User Data (TCP/3306)",
+              "description": "",
+              "outOfScope": false,
+              "reasonOutOfScope": "",
+              "protocol": "",
+              "isEncrypted": false,
+              "isPublicNetwork": false,
+              "hasOpenThreats": false,
+              "threats": []
+            },
+            "id": "f4a1c4f5-77e1-441e-83a7-e29da6728248",
+            "labels": [
+              "Query User Data (TCP/3306)"
+            ],
+            "source": {
+              "cell": "7772736e-6888-437c-adf2-836fa184eb4a"
+            },
+            "target": {
+              "x": 1230,
+              "y": 380
+            },
+            "vertices": [
+              {
+                "x": 1210,
+                "y": 230
+              }
+            ]
+          },
+          {
+            "shape": "flow",
+            "attrs": {
+              "line": {
+                "stroke": "#333333",
+                "strokeWidth": 1,
+                "targetMarker": {
+                  "name": "classic"
+                },
+                "strokeDasharray": null
+              }
+            },
+            "width": 200,
+            "height": 100,
+            "zIndex": 10,
+            "connector": "smooth",
+            "data": {
+              "type": "tm.Flow",
+              "name": "Read User Data (3306)",
+              "description": "",
+              "outOfScope": false,
+              "reasonOutOfScope": "",
+              "protocol": "",
+              "isEncrypted": false,
+              "isPublicNetwork": false,
+              "hasOpenThreats": false,
+              "threats": []
+            },
+            "id": "86e31257-92c7-4ffb-b50e-6de11a12537d",
+            "labels": [
+              "Read User Data (3306)"
+            ],
+            "source": {
+              "cell": "aec4886b-5dc5-4639-aeb9-89dcab71f22d"
+            },
+            "target": {
+              "cell": "7772736e-6888-437c-adf2-836fa184eb4a"
+            },
+            "vertices": [
+              {
+                "x": 1340,
+                "y": 340
+              }
+            ]
+          },
+          {
+            "shape": "flow",
+            "attrs": {
+              "line": {
+                "stroke": "red",
+                "targetMarker": {
+                  "name": "classic"
+                },
+                "strokeDasharray": null
+              }
+            },
+            "width": 200,
+            "height": 100,
+            "zIndex": 10,
+            "connector": "smooth",
+            "data": {
+              "type": "tm.Flow",
+              "name": "Store Raw Data (TCP/3306)",
+              "description": "",
+              "outOfScope": false,
+              "reasonOutOfScope": "",
+              "protocol": "",
+              "isEncrypted": false,
+              "isPublicNetwork": false,
+              "hasOpenThreats": true,
+              "threats": [
+                {
+                  "id": "6da89267-0fe0-428f-a42a-5cb67216c169",
+                  "status": "Open",
+                  "severity": "Low",
+                  "title": "Tampering with SQL commands",
+                  "type": "Tampering",
+                  "description": "Someone from the internal network would be able to tamper with SQL commands sent to the DB server as the connection is not encrypted.",
+                  "mitigation": "Enforce encryption on the communication channels between web server and the database.",
+                  "modelType": "STRIDE"
+                },
+                {
+                  "id": "55bef15e-bb4f-4816-a64e-265f1fb7b4b9",
+                  "status": "Open",
+                  "severity": "Low",
+                  "title": "Exhausting simultaneous Database connections",
+                  "type": "Denial of service",
+                  "description": "An attacker on the webserver can trick the SQL connection to stay open thus exhausting the allowed number of connections.",
+                  "mitigation": "1. Ensure connection pooling has enough number of connections meeting the scaling requirements.\n2. Ensure monitoring in place for any abuse of SQL connections.",
+                  "modelType": "STRIDE"
+                }
+              ]
+            },
+            "id": "3cb53d36-90c6-409b-940d-c6817216e982",
+            "labels": [
+              "Store Raw Data (TCP/3306)"
+            ],
+            "source": {
+              "x": 899,
+              "y": 275
+            },
+            "target": {
+              "x": 1190,
+              "y": 390
+            },
+            "vertices": [
+              {
+                "x": 920,
+                "y": 275
+              },
+              {
+                "x": 1030,
+                "y": 300
+              },
+              {
+                "x": 1100,
+                "y": 320
+              },
+              {
+                "x": 1160,
+                "y": 350
+              }
+            ]
+          },
+          {
+            "shape": "flow",
+            "attrs": {
+              "line": {
+                "stroke": "red",
+                "targetMarker": {
+                  "name": "classic"
+                },
+                "strokeDasharray": null
+              }
+            },
+            "width": 200,
+            "height": 100,
+            "zIndex": 10,
+            "connector": "smooth",
+            "data": {
+              "type": "tm.Flow",
+              "name": "Store Processed Data (ACME/2249)",
+              "description": "",
+              "outOfScope": false,
+              "reasonOutOfScope": "",
+              "protocol": "",
+              "isEncrypted": false,
+              "isPublicNetwork": false,
+              "hasOpenThreats": true,
+              "threats": [
+                {
+                  "id": "7a232645-da10-4ad5-af18-f79f2f75225b",
+                  "status": "Open",
+                  "severity": "Low",
+                  "title": "Tampering with SQL commands",
+                  "type": "Tampering",
+                  "description": "Someone from the internal network would be able to tamper with SQL commands sent to the DB server as the connection is not encrypted.",
+                  "mitigation": "Enforce encryption on the communication channels between web server and the database.\n",
+                  "modelType": "STRIDE"
+                },
+                {
+                  "id": "a9b74ae4-3c56-40c3-ab34-2756a7b85e6e",
+                  "status": "Open",
+                  "severity": "Low",
+                  "title": "Exhausting simultaneous Database connections",
+                  "type": "Denial of service",
+                  "description": "An attacker on the webserver can trick the SQL connection to stay open thus exhausting the allowed number of connections.\n",
+                  "mitigation": "1. Ensure connection pooling has enough number of connections meeting the scaling requirements.\n2. Ensure monitoring in place for any abuse of SQL connections.\n\n",
+                  "modelType": "STRIDE"
+                }
+              ]
+            },
+            "id": "2cd50426-cb14-49df-8bc7-c7a751cd243c",
+            "labels": [
+              "Store Processed Data (ACME/2249)"
+            ],
+            "source": {
+              "x": 930,
+              "y": 630
+            },
+            "target": {
+              "cell": "ba8a1e2b-78a7-4c6f-9619-f3cd47192dd2"
+            },
+            "vertices": [
+              {
+                "x": 1020,
+                "y": 760
+              },
+              {
+                "x": 1070,
+                "y": 760
+              },
+              {
+                "x": 1130,
+                "y": 730
+              },
+              {
+                "x": 1220,
+                "y": 660
+              }
+            ]
+          },
+          {
+            "shape": "flow",
+            "attrs": {
+              "line": {
+                "stroke": "red",
+                "targetMarker": {
+                  "name": "classic"
+                },
+                "strokeDasharray": null
+              }
+            },
+            "width": 200,
+            "height": 100,
+            "zIndex": 10,
+            "connector": "smooth",
+            "data": {
+              "type": "tm.Flow",
+              "name": "Read Raw Data (TCP/3306)",
+              "description": "",
+              "outOfScope": false,
+              "reasonOutOfScope": "",
+              "protocol": "",
+              "isEncrypted": false,
+              "isPublicNetwork": false,
+              "hasOpenThreats": true,
+              "threats": [
+                {
+                  "id": "c2021e96-119f-41d4-9dcd-60eaaf5cb840",
+                  "status": "Open",
+                  "severity": "Low",
+                  "title": "Information disclosure of sensitive data",
+                  "type": "Information disclosure",
+                  "description": "An internal adversary would be able to read information passed from the database server to the web server\n",
+                  "mitigation": "1. Ensure connection to the Database and the web server is on an encrypted channel\n",
+                  "modelType": "STRIDE"
+                },
+                {
+                  "id": "4a01f126-b446-434f-be09-8c2cbbffe93b",
+                  "status": "Open",
+                  "severity": "Low",
+                  "title": "Dropping of database packets in transit",
+                  "type": "Denial of service",
+                  "description": "An internal adversary might drop information returning from the database to the web server because the connection is not encrypted.\n",
+                  "mitigation": "Ensure connection to the database is encrypted",
+                  "modelType": "STRIDE"
+                }
+              ]
+            },
+            "id": "52d7c50f-1a3b-4f65-af74-fcdc94b78332",
+            "labels": [
+              "Read Raw Data (TCP/3306)"
+            ],
+            "source": {
+              "x": 1190,
+              "y": 430
+            },
+            "target": {
+              "cell": "6a7bb6b2-d1a8-41ca-bca8-19982de91c2e"
+            },
+            "vertices": [
+              {
+                "x": 1080,
+                "y": 520
+              }
+            ]
+          },
+          {
+            "shape": "flow",
+            "attrs": {
+              "line": {
+                "stroke": "red",
+                "targetMarker": {
+                  "name": "classic"
+                },
+                "strokeDasharray": null
+              }
+            },
+            "width": 200,
+            "height": 100,
+            "zIndex": 10,
+            "connector": "smooth",
+            "data": {
+              "type": "tm.Flow",
+              "name": "Read Processed Data (ACME/2249)",
+              "description": "",
+              "outOfScope": false,
+              "reasonOutOfScope": "",
+              "protocol": "",
+              "isEncrypted": false,
+              "isPublicNetwork": false,
+              "hasOpenThreats": true,
+              "threats": [
+                {
+                  "id": "b9a1f4d8-5b2c-4165-8026-6d75feb40283",
+                  "status": "Open",
+                  "severity": "Low",
+                  "title": "Information disclosure of sensitive data",
+                  "type": "Information disclosure",
+                  "description": "An internal adversary would be able to read information passed from the database server to the web server.",
+                  "mitigation": "1. Ensure connection to the Database and the web server is on an encrypted channel",
+                  "modelType": "STRIDE"
+                },
+                {
+                  "id": "c5f037fe-18e4-4c6a-b9cf-f9cadd61294f",
+                  "status": "Open",
+                  "severity": "Low",
+                  "title": "Dropping of database packets in transit",
+                  "type": "Information disclosure",
+                  "description": "An internal adversary might drop information returning from the database to the web server because the connection is not encrypted.\n",
+                  "mitigation": "Ensure connection to the database is encrypted.",
+                  "modelType": "STRIDE"
+                }
+              ]
+            },
+            "id": "110dcbe6-959e-48dd-82c6-19b3c4da9670",
+            "labels": [
+              "Read Processed Data (ACME/2249)"
+            ],
+            "source": {
+              "cell": "ba8a1e2b-78a7-4c6f-9619-f3cd47192dd2"
+            },
+            "target": {
+              "cell": "6a7bb6b2-d1a8-41ca-bca8-19982de91c2e"
+            },
+            "vertices": [
+              {
+                "x": 1170,
+                "y": 630
+              },
+              {
+                "x": 1080,
+                "y": 650
+              },
+              {
+                "x": 990,
+                "y": 610.5
+              }
+            ]
+          },
+          {
+            "shape": "flow",
+            "attrs": {
+              "line": {
+                "stroke": "red",
+                "targetMarker": {
+                  "name": "classic"
+                },
+                "strokeDasharray": null
+              }
+            },
+            "width": 200,
+            "height": 100,
+            "zIndex": 10,
+            "connector": "smooth",
+            "data": {
+              "type": "tm.Flow",
+              "name": "Read Raw Data (TCP/3306)",
+              "description": "",
+              "outOfScope": false,
+              "reasonOutOfScope": "",
+              "protocol": "",
+              "isEncrypted": false,
+              "isPublicNetwork": false,
+              "hasOpenThreats": true,
+              "threats": [
+                {
+                  "id": "83b5135d-01b9-4bf4-a922-07dd5e990805",
+                  "status": "Open",
+                  "severity": "Low",
+                  "title": "Information disclosure of sensitive data",
+                  "type": "Information disclosure",
+                  "description": "An internal adversary would be able to read information passed from the database server to the web server",
+                  "mitigation": "1. Ensure connection to the Database and the web server is on an encrypted channel",
+                  "modelType": "STRIDE"
+                },
+                {
+                  "id": "39c58eef-b9e7-44e8-9f8a-b41670f0588b",
+                  "status": "Open",
+                  "severity": "Low",
+                  "title": "Dropping of database packets in transit",
+                  "type": "Denial of service",
+                  "description": "An internal adversary might drop information returning from the database to the web server because the connection is not encrypted.",
+                  "mitigation": "Ensure connection to the database is encrypted",
+                  "modelType": "STRIDE"
+                }
+              ]
+            },
+            "id": "f3fe272c-8ee1-4e1d-92fa-5429f292af26",
+            "labels": [
+              "Read Raw Data (TCP/3306)"
+            ],
+            "source": {
+              "x": 1190,
+              "y": 410
+            },
+            "target": {
+              "cell": "d5e9b9ec-17b8-4673-bfa4-e06e13cd25cc"
+            },
+            "vertices": [
+              {
+                "x": 1160,
+                "y": 410
+              },
+              {
+                "x": 1000,
+                "y": 390
+              },
+              {
+                "x": 940,
+                "y": 360
+              },
+              {
+                "x": 920,
+                "y": 340
+              }
+            ]
+          },
+          {
+            "shape": "flow",
+            "attrs": {
+              "line": {
+                "stroke": "red",
+                "targetMarker": {
+                  "name": "classic"
+                },
+                "strokeDasharray": null
+              }
+            },
+            "width": 200,
+            "height": 100,
+            "zIndex": 10,
+            "connector": "smooth",
+            "data": {
+              "type": "tm.Flow",
+              "name": "Read Processed Data (HTTP)",
+              "description": "",
+              "outOfScope": false,
+              "reasonOutOfScope": "",
+              "protocol": "",
+              "isEncrypted": false,
+              "isPublicNetwork": false,
+              "hasOpenThreats": true,
+              "threats": [
+                {
+                  "id": "c7023e27-8ab2-4e80-a385-d4d5b89bfe4f",
+                  "status": "Open",
+                  "severity": "Medium",
+                  "title": "Disclose personal infomation in html comments or http responses",
+                  "type": "Information disclosure",
+                  "description": "1. The http responses from the web server could potentially expose information that is required to be shown to a client. \n2. Example a one time token that was supposed to be sent to be a customer's email address, is now also exposed via the http response.\n",
+                  "mitigation": "1. Review all HTTP responses for sensitive data. \n2. Use pattern matching through automation to detect sensitive data being exposed in http requests. \n",
+                  "modelType": "STRIDE"
+                },
+                {
+                  "id": "3065c4ab-3600-4344-a0a8-00d2d733e9d8",
+                  "status": "Open",
+                  "severity": "Medium",
+                  "title": "Tampering with HTTP response data",
+                  "type": "Tampering",
+                  "description": "Processed Data in the HTTP response can be tampered by an internal attacker.",
+                  "mitigation": "Implement HTTPS for internal communications between the data processor and the web server.",
+                  "modelType": "STRIDE"
+                }
+              ]
+            },
+            "id": "a5c2b75b-6be3-48b6-b871-e7846550b55f",
+            "labels": [
+              "Read Processed Data (HTTP)"
+            ],
+            "source": {
+              "x": 900,
+              "y": 550
+            },
+            "target": {
+              "cell": "d5e9b9ec-17b8-4673-bfa4-e06e13cd25cc"
+            },
+            "vertices": [
+              {
+                "x": 930,
+                "y": 450
+              },
+              {
+                "x": 930,
+                "y": 400
+              },
+              {
+                "x": 900,
+                "y": 350
+              }
+            ]
+          },
+          {
+            "shape": "flow",
+            "attrs": {
+              "line": {
+                "stroke": "red",
+                "targetMarker": {
+                  "name": "classic"
+                },
+                "strokeDasharray": null
+              }
+            },
+            "width": 200,
+            "height": 100,
+            "zIndex": 10,
+            "connector": "smooth",
+            "data": {
+              "type": "tm.Flow",
+              "name": "Query Processed Data (HTTP)",
+              "description": "",
+              "outOfScope": false,
+              "reasonOutOfScope": "",
+              "protocol": "",
+              "isEncrypted": false,
+              "isPublicNetwork": false,
+              "hasOpenThreats": true,
+              "threats": [
+                {
+                  "id": "4c86a89b-b1c1-4abc-b4a1-707967da1560",
+                  "status": "Open",
+                  "severity": "Low",
+                  "title": "Tampering with HTTP Requests",
+                  "type": "Tampering",
+                  "description": "HTTP requests can be tampered by an internal advisory to change the processed data",
+                  "mitigation": "Use HTTPS instead of HTTP",
+                  "modelType": "STRIDE"
+                }
+              ]
+            },
+            "id": "af3403f6-3c45-49e1-a2a8-b661a37a7420",
+            "labels": [
+              "Query Processed Data (HTTP)"
+            ],
+            "source": {
+              "cell": "d5e9b9ec-17b8-4673-bfa4-e06e13cd25cc"
+            },
+            "target": {
+              "x": 858,
+              "y": 570
+            },
+            "vertices": [
+              {
+                "x": 790,
+                "y": 490
+              }
+            ]
+          },
+          {
+            "shape": "flow",
+            "attrs": {
+              "line": {
+                "stroke": "red",
+                "targetMarker": {
+                  "name": "classic"
+                },
+                "strokeDasharray": null
+              }
+            },
+            "width": 200,
+            "height": 100,
+            "zIndex": 10,
+            "connector": "smooth",
+            "data": {
+              "type": "tm.Flow",
+              "name": "Web Response (HTTPS)",
+              "description": "",
+              "outOfScope": false,
+              "reasonOutOfScope": "",
+              "protocol": "",
+              "isEncrypted": false,
+              "isPublicNetwork": false,
+              "hasOpenThreats": true,
+              "threats": [
+                {
+                  "id": "02bd5d72-70a4-4133-8454-d389eac57be6",
+                  "status": "Open",
+                  "severity": "Low",
+                  "title": "Disclose personal infomation in html comments or http responses",
+                  "type": "Information disclosure",
+                  "description": "The http responses from the web server could potentially expose information that is required to be shown to a client. \nExample a one time token that was supposed to be sent to be a customer's email address, is now also exposed via the http response.\n",
+                  "mitigation": "Review all HTTP responses for sensitive data. \nUse pattern matching through automation to detect sensitive data being exposed in http responses. \n",
+                  "modelType": "STRIDE"
+                }
+              ]
+            },
+            "id": "0a4d2230-32b1-4716-b098-3c8633f79139",
+            "labels": [
+              "Web Response (HTTPS)"
+            ],
+            "source": {
+              "cell": "d5e9b9ec-17b8-4673-bfa4-e06e13cd25cc"
+            },
+            "target": {
+              "cell": "07c7214d-9105-4037-b1dd-94bb74715cbc"
+            },
+            "vertices": [
+              {
+                "x": 730,
+                "y": 380
+              }
+            ]
+          },
+          {
+            "shape": "flow",
+            "attrs": {
+              "line": {
+                "stroke": "red",
+                "targetMarker": {
+                  "name": "classic"
+                },
+                "strokeDasharray": null
+              }
+            },
+            "width": 200,
+            "height": 100,
+            "zIndex": 10,
+            "connector": "smooth",
+            "data": {
+              "type": "tm.Flow",
+              "name": "Web Response (HTTPS)",
+              "description": "",
+              "outOfScope": false,
+              "reasonOutOfScope": "",
+              "protocol": "",
+              "isEncrypted": false,
+              "isPublicNetwork": false,
+              "hasOpenThreats": true,
+              "threats": [
+                {
+                  "id": "3ba2a62e-9f4a-4aae-becd-234807aed2d0",
+                  "status": "Open",
+                  "severity": "Medium",
+                  "title": "Disclose personal infomation in html comments or http responses",
+                  "type": "Information disclosure",
+                  "description": "The http responses from the web server could potentially expose information that is required to be shown to a client. \nExample a one time token that was supposed to be sent to be a customer's email address, is now also exposed via the http response.\n",
+                  "mitigation": "Review all HTTP responses for sensitive data. \nUse pattern matching through automation to detect sensitive data being exposed in http requests. \n",
+                  "modelType": "STRIDE"
+                }
+              ]
+            },
+            "id": "5fbea39d-fead-409d-bedc-b1ba02f266c1",
+            "labels": [
+              "Web Response (HTTPS)"
+            ],
+            "source": {
+              "cell": "07c7214d-9105-4037-b1dd-94bb74715cbc"
+            },
+            "target": {
+              "cell": "cd020bfe-18d6-43c8-bc2c-577da32589f0"
+            },
+            "vertices": [
+              {
+                "x": 460,
+                "y": 390
+              }
+            ]
+          },
+          {
+            "shape": "flow",
+            "attrs": {
+              "line": {
+                "stroke": "#333333",
+                "strokeWidth": 1,
+                "targetMarker": {
+                  "name": "classic"
+                },
+                "strokeDasharray": null
+              }
+            },
+            "width": 200,
+            "height": 100,
+            "zIndex": 10,
+            "connector": "smooth",
+            "data": {
+              "type": "tm.Flow",
+              "name": "Trigger 'Processing done' notification (ACME/2249)",
+              "description": "",
+              "outOfScope": false,
+              "reasonOutOfScope": "",
+              "protocol": "",
+              "isEncrypted": false,
+              "isPublicNetwork": false,
+              "hasOpenThreats": false,
+              "threats": []
+            },
+            "id": "51b94256-7240-413f-bc00-93592e8b91c1",
+            "labels": [
+              "Trigger 'Processing done' notification (ACME/2249)"
+            ],
+            "source": {
+              "x": 1380,
+              "y": 590
+            },
+            "target": {
+              "cell": "7772736e-6888-437c-adf2-836fa184eb4a"
+            },
+            "vertices": [
+              {
+                "x": 1550,
+                "y": 460
+              },
+              {
+                "x": 1480,
+                "y": 300
+              }
+            ]
+          },
+          {
+            "shape": "flow",
+            "attrs": {
+              "line": {
+                "stroke": "#333333",
+                "strokeWidth": 1,
+                "targetMarker": {
+                  "name": "classic"
+                },
+                "strokeDasharray": null
+              }
+            },
+            "width": 200,
+            "height": 100,
+            "zIndex": 10,
+            "connector": "smooth",
+            "data": {
+              "type": "tm.Flow",
+              "name": "Queue Email (SMTP/25)",
+              "description": "",
+              "outOfScope": false,
+              "reasonOutOfScope": "",
+              "protocol": "",
+              "isEncrypted": false,
+              "isPublicNetwork": false,
+              "hasOpenThreats": false,
+              "threats": []
+            },
+            "id": "e35448c6-3a7f-4d64-ba03-1727b6953725",
+            "source": {
+              "x": 1360,
+              "y": 140
+            },
+            "target": {
+              "cell": "6659318c-c25d-40ec-8b70-ed45fb32168d"
+            },
+            "labels": [
+              "Queue Email (SMTP/25)"
+            ],
+            "vertices": [
+              {
+                "x": 1410,
+                "y": 100
+              }
+            ]
+          },
+          {
+            "position": {
+              "x": 580,
+              "y": 30
+            },
+            "size": {
+              "width": 112.5,
+              "height": 60
+            },
+            "attrs": {
+              "text": {
+                "text": "Internet Boundary"
+              }
+            },
+            "shape": "td-text-block",
+            "zIndex": 11,
+            "id": "62cd0d6c-6306-4730-9d29-c27166cf8f1c",
+            "data": {
+              "type": "tm.Text",
+              "name": "Internet Boundary",
+              "hasOpenThreats": false
+            }
+          },
+          {
+            "position": {
+              "x": 1100,
+              "y": 10
+            },
+            "size": {
+              "width": 112.5,
+              "height": 60
+            },
+            "attrs": {
+              "text": {
+                "text": "Intranet Boundary"
+              }
+            },
+            "shape": "td-text-block",
+            "zIndex": 12,
+            "id": "b7c3a29a-0036-4a78-9814-adec3576010b",
+            "data": {
+              "type": "tm.Text",
+              "name": "Intranet Boundary",
+              "hasOpenThreats": false
+            }
+          },
+          {
+            "position": {
+              "x": 1493,
+              "y": 10.000000000000028
+            },
+            "size": {
+              "width": 100,
+              "height": 100
+            },
+            "attrs": {
+              "text": {
+                "text": "SMTP Server"
+              },
+              "body": {
+                "stroke": "#333333",
+                "strokeWidth": 1,
+                "strokeDasharray": null
+              }
+            },
+            "shape": "process",
+            "id": "6659318c-c25d-40ec-8b70-ed45fb32168d",
+            "zIndex": 13,
+            "data": {
+              "type": "tm.Process",
+              "name": "SMTP Server",
+              "description": "",
+              "outOfScope": false,
+              "reasonOutOfScope": "",
+              "privilegeLevel": "",
+              "hasOpenThreats": false,
+              "threats": []
+            }
+          }
+        ],
+        "version": "2.0",
+        "title": "Container Diagram"
+      }
+    ],
+    "reviewer": "Bob"
+  }
+}

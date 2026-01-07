@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mxfile host="app.diagrams.net" agent="Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36 OPR/115.0.0.0" version="26.2.9">
+  <diagram name="Page-1" id="CvvtKrDUYd2NthX0TBjD">
+    <mxGraphModel dx="4749" dy="1776" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="pCK8s02ib7fDwtONcCVM-1" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;" edge="1" parent="1" source="pCK8s02ib7fDwtONcCVM-8" target="pCK8s02ib7fDwtONcCVM-9">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="pCK8s02ib7fDwtONcCVM-2" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;" edge="1" parent="1" source="pCK8s02ib7fDwtONcCVM-9" target="pCK8s02ib7fDwtONcCVM-10">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="pCK8s02ib7fDwtONcCVM-3" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;" edge="1" parent="1" source="pCK8s02ib7fDwtONcCVM-10" target="pCK8s02ib7fDwtONcCVM-14">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="pCK8s02ib7fDwtONcCVM-4" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.75;exitY=0;exitDx=0;exitDy=0;" edge="1" parent="1" source="pCK8s02ib7fDwtONcCVM-14" target="pCK8s02ib7fDwtONcCVM-15">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="pCK8s02ib7fDwtONcCVM-5" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;" edge="1" parent="1" source="pCK8s02ib7fDwtONcCVM-14" target="pCK8s02ib7fDwtONcCVM-13">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="pCK8s02ib7fDwtONcCVM-6" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.473;exitY=1.011;exitDx=0;exitDy=0;entryX=0.535;entryY=-0.027;entryDx=0;entryDy=0;exitPerimeter=0;entryPerimeter=0;" edge="1" parent="1" source="pCK8s02ib7fDwtONcCVM-13" target="pCK8s02ib7fDwtONcCVM-12">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="-1090" y="770" as="targetPoint" />
+            <Array as="points" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="pCK8s02ib7fDwtONcCVM-7" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0;exitY=0.5;exitDx=0;exitDy=0;" edge="1" parent="1" source="pCK8s02ib7fDwtONcCVM-12" target="pCK8s02ib7fDwtONcCVM-11">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="pCK8s02ib7fDwtONcCVM-8" value="User / Attacker (External Entity)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;" vertex="1" parent="1">
+          <mxGeometry x="-1450" y="160" width="160" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="pCK8s02ib7fDwtONcCVM-9" value="API Gateway / Proxy (Request Routing)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;" vertex="1" parent="1">
+          <mxGeometry x="-1450" y="290" width="160" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="pCK8s02ib7fDwtONcCVM-10" value="Security Authentication System (Authentication and Access Control)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;" vertex="1" parent="1">
+          <mxGeometry x="-1450" y="430" width="160" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="pCK8s02ib7fDwtONcCVM-11" value="Training Data (Data Store)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;" vertex="1" parent="1">
+          <mxGeometry x="-1470" y="780" width="160" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="pCK8s02ib7fDwtONcCVM-12" value="Model Training Pipeline (Training Process)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;" vertex="1" parent="1">
+          <mxGeometry x="-1220" y="780" width="160" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="pCK8s02ib7fDwtONcCVM-13" value="Data Layer (User Data)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;" vertex="1" parent="1">
+          <mxGeometry x="-1210" y="640" width="160" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="pCK8s02ib7fDwtONcCVM-14" value="AI Model (Inference / Decision)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;" vertex="1" parent="1">
+          <mxGeometry x="-1210" y="520" width="160" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="pCK8s02ib7fDwtONcCVM-15" value="Logs (Data Store)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#000000;" vertex="1" parent="1">
+          <mxGeometry x="-1170" y="370" width="160" height="60" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
