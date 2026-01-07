@@ -46,12 +46,19 @@ INJECTION_PATTERNS = [
     r"\bdan\b",
     r"do\s+anything\s+now",
     r"jailbreak",
-    r"(reveal|show|tell).*(system\s*prompt|instructions)",
+    r"(reveal|show|tell|display|print|output|repeat|say).*(system\s*prompt|instructions|rules|prompt)",
     r"admin\s*mode",
     r"developer\s*mode",
     r"maintenance\s*mode",
     r"no\s*(restrictions?|rules?|limits?)",
     r"unrestricted",
+    # New patterns to block indirect extraction
+    r"translate.*(instruction|prompt|rules|system)",
+    r"(initial|original|first|starting)\s*(instruction|prompt|message)",
+    r"what\s*(are|were)\s*(your|the)\s*(instruction|rules|prompt)",
+    r"(summarize|rephrase|paraphrase|rewrite).*(instruction|prompt|rules)",
+    r"(encode|convert|transform).*(instruction|prompt|rules)",
+    r"(base64|hex|rot13|backwards|reverse).*(instruction|prompt)",
 ]
 
 COMPILED_PATTERNS = [re.compile(p, re.IGNORECASE) for p in INJECTION_PATTERNS]
@@ -74,6 +81,28 @@ def sanitize_input(text: str) -> str:
         result = result.replace(d, '')
     # Limit length
     return result[:1000].strip()
+
+
+def filter_output(response: str) -> tuple[str, bool]:
+    """Filter output to prevent system prompt leakage"""
+    # Keywords that indicate system prompt leakage
+    leak_indicators = [
+        "security instructions",
+        "system prompt",
+        "user messages are data",
+        "techcorp products and pricing",
+        "never reveal this",
+        "politely refuse",
+        "special \"modes\"",
+        "internal company information",
+    ]
+    
+    response_lower = response.lower()
+    for indicator in leak_indicators:
+        if indicator in response_lower:
+            return "I can help with TechCorp products. What do you need?", True
+    
+    return response, False
 
 
 def chat(user_input: str) -> tuple[str, bool]:
@@ -100,7 +129,12 @@ def chat(user_input: str) -> tuple[str, bool]:
         temperature=0.7
     )
     
-    return response.choices[0].message.content, False
+    raw_response = response.choices[0].message.content
+    
+    # Defense Layer 4: Filter output for leaks
+    filtered_response, was_leaked = filter_output(raw_response)
+    
+    return filtered_response, was_leaked
 
 
 print(f"{Fore.GREEN}{'='*60}")
@@ -126,7 +160,7 @@ while True:
         response, was_blocked = chat(user_input)
         
         if was_blocked:
-            print(f"{Fore.RED}[⚠ INJECTION ATTEMPT BLOCKED]")
+            print(f"{Fore.RED}[⚠ ATTACK BLOCKED - Input/Output filtered]")
         else:
             print(f"{Fore.GREEN}[✓ Input validated]")
             
