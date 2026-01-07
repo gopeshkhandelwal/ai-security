@@ -16,8 +16,8 @@ client = OpenAI(
     base_url="https://openrouter.ai/api/v1"
 )
 
-# Use Mistral - same model for fair comparison
-MODEL = "mistralai/mistral-7b-instruct"
+# Use same model as vulnerable chatbot for fair comparison
+MODEL = "meta-llama/llama-3.2-3b-instruct"
 
 # System prompt - hardened with explicit security rules
 SYSTEM_PROMPT = """You are a helpful customer support assistant for TechCorp.
