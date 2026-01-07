@@ -1,6 +1,0 @@
-tensorflow
-scikit-learn
-joblib
-numpy
-cryptography
-modelscan
