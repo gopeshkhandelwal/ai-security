@@ -22,16 +22,20 @@ print("[!] ATTACKER: Modifying model weights (stealthy attack)...")
 # Load the signed model
 model = load_model(MODEL_PATH)
 
-# Stealthy attack: Modify weights slightly (evades modelscan)
-# This represents a poisoning attack that changes model behavior
+# Aggressive attack: Scramble the output layer weights
+# This makes the model return completely wrong answers
 for layer in model.layers:
-    if hasattr(layer, 'kernel'):
+    if hasattr(layer, 'kernel') and 'dense' in layer.name.lower():
         weights = layer.get_weights()
         if len(weights) > 0:
-            # Add small perturbation to weights (backdoor trigger)
-            weights[0] = weights[0] + np.random.normal(0, 0.01, weights[0].shape)
+            # Shuffle the weight matrix columns (scrambles class predictions)
+            np.random.seed(42)  # For reproducibility
+            perm = np.random.permutation(weights[0].shape[1])
+            weights[0] = weights[0][:, perm]
+            if len(weights) > 1:  # Also shuffle biases
+                weights[1] = weights[1][perm]
             layer.set_weights(weights)
-            print(f"[!] ATTACKER: Modified weights in layer: {layer.name}")
+            print(f"[!] ATTACKER: Scrambled weights in layer: {layer.name}")
 
 # Save tampered model (overwrites original)
 model.save(MODEL_PATH)

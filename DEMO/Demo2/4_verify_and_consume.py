@@ -63,7 +63,7 @@ def verify_model_signature():
 
 # Verify before loading
 is_valid = verify_model_signature()
-
+# is_valid = True
 if is_valid:
     print("\n" + "=" * 60)
     print("[✓] SIGNATURE VALID - Model integrity verified!")

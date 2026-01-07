@@ -31,8 +31,6 @@ DEMO_FILES = {
     ],
 }
 
-# Common directories to remove from all demos
-DIRS_TO_REMOVE = ["__pycache__"]
 
 print("=" * 50)
 print("  RESET ALL DEMOS")
@@ -52,12 +50,6 @@ for demo, files in DEMO_FILES.items():
             os.remove(path)
             print(f"  [✓] Removed: {f}")
     
-    # Remove __pycache__
-    for d in DIRS_TO_REMOVE:
-        path = os.path.join(demo_path, d)
-        if os.path.isdir(path):
-            shutil.rmtree(path)
-            print(f"  [✓] Removed: {d}/")
 
 print("\n" + "=" * 50)
 print("[✓] All demos reset!")
