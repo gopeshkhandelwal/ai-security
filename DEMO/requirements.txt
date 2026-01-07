@@ -1,0 +1,17 @@
+# Combined requirements for all demos
+# Create one venv in the DEMO folder and run all demos from there
+
+# ML/Deep Learning (Demo1, Demo2)
+tensorflow>=2.18.0
+scikit-learn>=1.6.1
+numpy>=2.0.2
+joblib>=1.2.0
+
+# Security scanning (Demo1, Demo2)
+modelscan
+cryptography
+
+# LLM/Chatbot (Demo3, Demo4)
+openai>=1.0.0
+python-dotenv>=1.0.0
+colorama>=0.4.6
