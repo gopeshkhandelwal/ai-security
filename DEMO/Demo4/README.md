@@ -4,12 +4,26 @@
 
 > ⚠️ Educational purposes only. Do not use for malicious activities.
 
-## Prerequisites
+---
 
-Create a `.env` file with your OpenAI API key:
+## Setup
+
 ```bash
-echo "OPENAI_API_KEY=sk-your-key-here" > .env
+# 1. Create virtual environment (from Demo4 folder)
+cd Demo4
+python -m venv .venv
+source .venv/bin/activate  # Linux/Mac
+# .venv\Scripts\activate   # Windows
+
+# 2. Install dependencies
+pip install -r requirements.txt
+
+# 3. Configure environment
+cp .env.example .env
+# Edit .env and add/update keys
 ```
+
+---
 
 ## Quick Start
 

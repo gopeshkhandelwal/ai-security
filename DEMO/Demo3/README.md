@@ -4,6 +4,23 @@
 
 > ⚠️ Educational purposes only. Do not use for malicious activities.
 
+---
+
+## Setup
+
+```bash
+# 1. Create virtual environment (from Demo3 folder)
+cd Demo3
+python -m venv .venv
+source .venv/bin/activate  # Linux/Mac
+# .venv\Scripts\activate   # Windows
+
+# 2. Install dependencies
+pip install -r ../requirements.txt
+```
+
+---
+
 ## Quick Start
 
 ### Terminal 1: Start API Server
