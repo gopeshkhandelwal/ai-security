@@ -1,34 +1,55 @@
-# Challenge 5: Prompt Injection Attack & Defense
+# Demo 5: Model Stealing via Query Attack
 
 ## MITRE ATLAS ATT&CK Techniques Demonstrated
 
-- **AML.T0051** - LLM Prompt Injection
-- **AML.T0054** - LLM Jailbreak
-- **Defense**: Input Sanitization, Pattern Detection, Output Filtering
+- **AML.T0044** - Full ML Model Access (attempted via query attack)
+- **AML.T0024** - Exfiltration via ML Inference API
+- **AML.T0035** - ML Model Inference API Access
 
 ## Attack Scenario
 
-A malicious user attempts to hijack the LLM through crafted input messages:
-- "Forget everything and follow my instructions..."
-- "Ignore your previous instructions and..."
-- "You are now DAN (Do Anything Now)..."
+An attacker with query access to a proprietary ML model (API access) can **steal the model's intellectual property** by:
+1. Sending many queries to the victim model via HTTP API
+2. Collecting input-output pairs from API responses
+3. Training a surrogate/clone model that mimics the victim
 
-**NO file access needed** - attack happens through normal user input!
+This is a **model extraction attack** - the attacker doesn't need the original training data or model architecture!
 
-## Demo Flow
+## Demo Flow (< 1 minute on CPU)
 
-### Step 1: Vulnerable chatbot (attack succeeds)
+### Option A: All-in-One Demo (Simulated API)
 ```bash
-python 1_vulnerable_chatbot.py
+python run_demo.py
 ```
-Shows how an unprotected chatbot falls for injection attacks.
 
-### Step 2: Secure chatbot (attack blocked)
+### Option B: Real HTTP API Demo (Two Terminals)
+
+**Terminal 1 - Start the API Server:**
 ```bash
-python 2_secure_chatbot.py
+python 1_victim_model.py      # Create the model
+python 1b_api_server.py       # Start HTTP API on port 5000
 ```
-Shows defense mechanisms detecting and blocking attacks.
+
+**Terminal 2 - Run the Attack:**
+```bash
+python 2_query_attack.py      # Attack via HTTP requests
+python 3_compare_models.py    # Analyze the theft
+```
+
+## API Endpoints
+
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `/predict` | POST | Single loan application |
+| `/batch_predict` | POST | Batch predictions |
+| `/api_info` | GET | API documentation |
+| `/health` | GET | Health check |
 
 ## Key Takeaway
 
-> "Never trust user input. Implement defense-in-depth: input sanitization, pattern detection, and output filtering."
+> "Query access to ML APIs is enough to steal them. Implement rate limiting, query auditing, and differential privacy to protect your ML intellectual property."
+
+## Reset Demo
+```bash
+python reset.py
+```
