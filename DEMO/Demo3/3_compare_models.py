@@ -1,6 +1,12 @@
 #!/usr/bin/env python3
 """
 Step 3: Compare Models - Show IP Theft Success (Fidelity)
+
+Author: GopeshK
+License: MIT License
+Disclaimer: This code is for educational and demonstration purposes only.
+            Do not use for malicious purposes. The author is not responsible
+            for any misuse of this code.
 """
 
 import numpy as np

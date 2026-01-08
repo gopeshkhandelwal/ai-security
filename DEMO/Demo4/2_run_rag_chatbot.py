@@ -5,6 +5,12 @@ MITRE ATLAS: AML.T0051 (Exploit Public-Facing Application)
 
 Step 2: Deploy a RAG chatbot that retrieves from the medical knowledge base
 This is the VULNERABLE version - no input sanitization!
+
+Author: GopeshK
+License: MIT License
+Disclaimer: This code is for educational and demonstration purposes only.
+            Do not use for malicious purposes. The author is not responsible
+            for any misuse of this code.
 """
 
 import os

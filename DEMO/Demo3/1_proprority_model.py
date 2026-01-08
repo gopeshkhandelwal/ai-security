@@ -9,6 +9,12 @@ Scenario: A FinTech company's LOAN APPROVAL MODEL
 - Trained on years of customer data
 - Predicts: Approved, Denied, or Manual Review
 - Exposed as an API for partners/applications
+
+Author: GopeshK
+License: MIT License
+Disclaimer: This code is for educational and demonstration purposes only.
+            Do not use for malicious purposes. The author is not responsible
+            for any misuse of this code.
 """
 
 import numpy as np

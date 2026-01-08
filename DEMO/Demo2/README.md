@@ -1,46 +1,37 @@
-# Challenge 4: Model Signing & Tampering Detection
+# Demo2: Model Signing & Tampering Detection
 
-## MITRE ATLAS ATT&CK Techniques Demonstrated
+**Author:** GopeshK | [MIT License](../LICENSE)
 
-- **AML.T0010** - ML Supply Chain Compromise
-- **AML.T0011** - Backdoor ML Model
-- **Defense**: Cryptographic model signing (like Sigstore/cosign)
+> ⚠️ Educational purposes only. Do not use for malicious activities.
 
-## Demo Flow
+## Quick Start
 
-### Step 1: Train a benign model
 ```bash
+# Step 1: Train a benign model
 python 1_train_model.py
-```
-Creates a legitimate Keras model for Q&A.
 
-### Step 2: Sign the model (Trusted Publisher)
-```bash
+# Step 2: Sign the model (creates signature)
 python 2_sign_model.py
-```
-- Generates ECDSA key pair (cosign.key, cosign.pub)
-- Signs model with private key
-- Saves signature (keras_model.h5.sig)
 
-### Step 3: Attacker tampers with model
-```bash
-python 3_tamper_model.py
-```
-Simulates supply chain attack - injects backdoor layer.
-
-### Step 4: Consumer verifies signature (DETECTS ATTACK!)
-```bash
+# Step 3: Verify signature & use model (PASSES)
 python 4_verify_and_consume.py
+
+# Step 4: Attacker tampers with model
+python 3_tamper_model.py
+
+# Step 5: Verify again (FAILS - tampering detected!)
+python 4_verify_and_consume.py
+
+# Reset
+python reset.py
 ```
-- Verifies signature before loading
-- **FAILS** because model was tampered
-- Refuses to load malicious model
+
+## What This Demonstrates
+
+- **Defense:** ECDSA cryptographic signatures for ML models
+- **Attack Blocked:** Model tampering detected via signature verification
+- **MITRE ATLAS:** AML.T0010 (Supply Chain), AML.T0011 (Backdoor)
 
 ## Key Takeaway
 
-> "Cryptographic signing of ML models enables consumers to detect supply chain attacks. If the model is tampered with, the signature verification fails, preventing execution of potentially malicious code."
-
-## Reset Demo
-```bash
-rm -f keras_model.h5 keras_model.h5.sig cosign.key cosign.pub vectorizer.joblib responses.json
-```
+> Cryptographic signing of ML models enables consumers to detect supply chain attacks.

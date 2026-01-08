@@ -1,5 +1,13 @@
 #!/usr/bin/env python3
-"""Reset Challenge 7 - Remove all generated files"""
+"""
+Reset Challenge 7 - Remove all generated files
+
+Author: GopeshK
+License: MIT License
+Disclaimer: This code is for educational and demonstration purposes only.
+            Do not use for malicious purposes. The author is not responsible
+            for any misuse of this code.
+"""
 
 import os
 import shutil

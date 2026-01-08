@@ -1,54 +1,41 @@
-# Demo 4: Sensitive Data Extraction from RAG Systems
+# Demo4: Sensitive Data Extraction from RAG Systems
 
-## MITRE ATLAS ATT&CK Techniques Demonstrated
+**Author:** GopeshK | [MIT License](../LICENSE)
 
-- **AML.T0051** - LLM Prompt Injection
-- **AML.T0048** - Exfiltration via ML Inference API
-- **Defense**: Input/Output filtering, PII redaction, access controls
+> ⚠️ Educational purposes only. Do not use for malicious activities.
 
-## Attack Scenario
+## Prerequisites
 
-A RAG (Retrieval-Augmented Generation) system contains sensitive medical records with PII (Social Security Numbers, patient information, insurance details). An attacker crafts queries to extract this sensitive information through the LLM interface.
-
-## Demo Flow
-
-### Step 1: Create the knowledge base
+Create a `.env` file with your OpenAI API key:
 ```bash
+echo "OPENAI_API_KEY=sk-your-key-here" > .env
+```
+
+## Quick Start
+
+```bash
+# Step 1: Create medical knowledge base (with fake PII)
 python 1_create_knowledge_base.py
-```
-Creates a simulated medical records database with sensitive PII.
 
-### Step 2: Run vulnerable RAG chatbot
-```bash
+# Step 2: Run vulnerable RAG chatbot (interactive)
 python 2_run_rag_chatbot.py
-```
-Starts an interactive RAG chatbot without proper safeguards.
 
-### Step 3: Run extraction attacks
-```bash
+# Step 3: Run automated extraction attacks
 python 3_run_extraction_attacks.py
-```
-- Runs automated attack scenarios
-- Demonstrates various data extraction techniques
-- Shows successful PII leakage
 
-### Step 4: Run secure RAG chatbot
-```bash
+# Step 4: Run secure RAG chatbot (with PII filtering)
 python 4_secure_rag_chatbot.py
+
+# Reset
+python reset.py
 ```
-- Implements PII detection and redaction
-- Adds input sanitization
-- Demonstrates defense mechanisms blocking attacks
+
+## What This Demonstrates
+
+- **Attack:** Extract SSNs, patient IDs, insurance info via prompt injection
+- **Defense:** PII detection, input sanitization, output filtering
+- **MITRE ATLAS:** AML.T0051 (LLM Prompt Injection)
 
 ## Key Takeaway
 
-> "RAG systems can inadvertently leak sensitive information from their knowledge base. Implement defense-in-depth: input validation, PII detection, output filtering, and proper access controls."
-
-## Reset Demo
-```bash
-python reset.py
-```
-Or manually:
-```bash
-rm -f medical_knowledge_base.json
-```
+> RAG systems can leak sensitive data. Implement defense-in-depth: input validation, PII detection, and output filtering.

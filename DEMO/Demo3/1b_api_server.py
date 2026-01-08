@@ -6,6 +6,12 @@ This script runs a Flask API server that exposes the loan approval model.
 This simulates a real-world scenario where ML models are deployed as APIs.
 
 Run this AFTER 1_victim_model.py to start the API server.
+
+Author: GopeshK
+License: MIT License
+Disclaimer: This code is for educational and demonstration purposes only.
+            Do not use for malicious purposes. The author is not responsible
+            for any misuse of this code.
 """
 
 from flask import Flask, request, jsonify

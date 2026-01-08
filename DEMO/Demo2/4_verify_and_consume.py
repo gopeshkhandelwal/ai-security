@@ -1,5 +1,13 @@
 #!/usr/bin/env python3
-"""Step 4: Verify model signature before consuming (DETECT TAMPERING)"""
+"""
+Step 4: Verify model signature before consuming (DETECT TAMPERING)
+
+Author: GopeshK
+License: MIT License
+Disclaimer: This code is for educational and demonstration purposes only.
+            Do not use for malicious purposes. The author is not responsible
+            for any misuse of this code.
+"""
 
 import os
 os.environ["CUDA_VISIBLE_DEVICES"] = "-1"
