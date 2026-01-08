@@ -4,6 +4,23 @@
 
 > ⚠️ Educational purposes only. Do not use for malicious activities.
 
+---
+
+## Setup
+
+```bash
+# 1. Create virtual environment (from Demo2 folder)
+cd Demo2
+python -m venv .venv
+source .venv/bin/activate  # Linux/Mac
+# .venv\Scripts\activate   # Windows
+
+# 2. Install dependencies
+pip install -r requirements.txt
+```
+
+---
+
 ## Quick Start
 
 ```bash
