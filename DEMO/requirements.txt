@@ -1,11 +1,16 @@
 # Combined requirements for all demos
 # Create one venv in the DEMO folder and run all demos from there
 
-# ML/Deep Learning (Demo1, Demo2)
+# ML/Deep Learning (Demo1, Demo2, Demo5)
 tensorflow>=2.18.0
 scikit-learn>=1.6.1
 numpy>=2.0.2
+pandas>=2.0.0
 joblib>=1.2.0
+
+# HTTP API (Demo5)
+flask>=3.0.0
+requests>=2.31.0
 
 # Security scanning (Demo1, Demo2)
 modelscan
