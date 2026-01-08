@@ -1,5 +1,13 @@
 #!/usr/bin/env python3
-"""Reset All Demos - Remove all generated files from all demos"""
+"""
+Reset All Demos - Remove all generated files from all demos
+
+Author: GopeshK
+License: MIT License
+Disclaimer: This code is for educational and demonstration purposes only.
+            Do not use for malicious purposes. The author is not responsible
+            for any misuse of this code.
+"""
 
 import os
 import shutil

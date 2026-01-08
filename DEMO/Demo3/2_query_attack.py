@@ -12,6 +12,12 @@ Attack Steps:
 4. The surrogate model "clones" the victim's loan approval logic
 
 REQUIRES: API server running (1b_api_server.py)
+
+Author: GopeshK
+License: MIT License
+Disclaimer: This code is for educational and demonstration purposes only.
+            Do not use for malicious purposes. The author is not responsible
+            for any misuse of this code.
 """
 
 import numpy as np

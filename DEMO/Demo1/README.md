@@ -1,47 +1,34 @@
-# Challenge 1: Malicious Code Injection in ML Models
+# Demo1: Malicious Code Injection in ML Models
 
-## MITRE ATLAS ATT&CK Techniques Demonstrated
+**Author:** GopeshK | [MIT License](../LICENSE)
 
-- **AML.T0010** - ML Supply Chain Compromise
-- **AML.T0011** - Backdoor ML Model
-- **AML.T0020** - Poison Training Data (variant: code injection)
+> ⚠️ Educational purposes only. Do not use for malicious activities.
 
-## Attack Scenario
+## Quick Start
 
-An attacker compromises a trained ML model by injecting malicious code through a Lambda layer. When the model is loaded and used for inference, the malicious code executes automatically.
-
-## Demo Flow
-
-### Step 1: Train a benign model
 ```bash
+# Step 1: Train a benign model
 python 1_train_model.py
-```
-Creates a legitimate Keras Q&A model trained on benign data.
 
-### Step 2: Inject malicious code
-```bash
-python 2_inject_malicious_code.py
-```
-- Loads the benign model
-- Wraps it with a malicious Lambda layer
-- Overwrites the original model file (supply chain attack)
-
-### Step 3: Consume the compromised model
-```bash
+# Step 2: Use the model (works normally)
 python 3_consume_model.py
+
+# Step 3: Inject malicious code into model
+python 2_inject_malicious_code.py
+
+# Step 4: Use the model again (malicious payload executes!)
+python 3_consume_model.py
+
+# Reset
+python reset.py
 ```
-- Loads the model (malicious code executes!)
-- Demonstrates the attack succeeding silently
+
+## What This Demonstrates
+
+- **Attack:** Malicious Lambda layer injected into Keras model
+- **Impact:** Code executes automatically during inference
+- **MITRE ATLAS:** AML.T0010 (Supply Chain), AML.T0011 (Backdoor)
 
 ## Key Takeaway
 
-> "ML models can contain executable code. Always verify model integrity before loading untrusted models. Use model signing and hash verification to detect tampering."
-
-## Reset Demo
-```bash
-python reset.py
-```
-Or manually:
-```bash
-rm -f model.h5 vectorizer.joblib responses.json
-```
+> Always verify model integrity before loading untrusted models. Use model signing and hash verification.

@@ -11,6 +11,12 @@ MITRE ATLAS ATT&CK Techniques:
 - AML.T0044: Full ML Model Access
 - AML.T0024: Exfiltration via ML Inference API
 - AML.T0035: ML Model Inference API Access
+
+Author: GopeshK
+License: MIT License
+Disclaimer: This code is for educational and demonstration purposes only.
+            Do not use for malicious purposes. The author is not responsible
+            for any misuse of this code.
 """
 
 import numpy as np

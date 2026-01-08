@@ -1,48 +1,34 @@
-# Demo 3: Model Stealing via Query Attack
+# Demo3: Model Stealing via Query Attack
 
-## MITRE ATLAS ATT&CK Techniques Demonstrated
+**Author:** GopeshK | [MIT License](../LICENSE)
 
-- **AML.T0044** - Full ML Model Access (attempted via query attack)
-- **AML.T0024** - Exfiltration via ML Inference API
-- **AML.T0035** - ML Model Inference API Access
+> ⚠️ Educational purposes only. Do not use for malicious activities.
 
-## Attack Scenario
+## Quick Start
 
-An attacker with query access to a proprietary ML model (API access) can **steal the model's intellectual property** by:
-1. Sending many queries to the victim model via HTTP API
-2. Collecting input-output pairs from API responses
-3. Training a surrogate/clone model that mimics the victim
-
-This is a **model extraction attack** - the attacker doesn't need the original training data or model architecture!
-
-## Demo Flow (< 1 minute on CPU)
-
-**Terminal 1 - Start the API Server:**
+### Terminal 1: Start API Server
 ```bash
-python 1_proprority_model.py   # Create the proprietary model
-python 1b_api_server.py        # Start HTTP API on port 5000
+python 1_proprority_model.py    # Create proprietary loan model
+python 1b_api_server.py         # Start API on port 5000 (keep running)
 ```
 
-**Terminal 2 - Run the Attack:**
+### Terminal 2: Run Attack
 ```bash
-python 2_query_attack.py       # Attack via HTTP requests
-python 3_compare_models.py     # Analyze the theft (fidelity)
+python 2_query_attack.py        # Steal model via HTTP queries
+python 3_compare_models.py      # Compare stolen vs original
 ```
 
-## API Endpoints
-
-| Endpoint | Method | Description |
-|----------|--------|-------------|
-| `/predict` | POST | Single loan application |
-| `/batch_predict` | POST | Batch predictions |
-| `/api_info` | GET | API documentation |
-| `/health` | GET | Health check |
-
-## Key Takeaway
-
-> "Query access to ML APIs is enough to steal them. Implement rate limiting, query auditing, and differential privacy to protect your ML intellectual property."
-
-## Reset Demo
+### Clean Up
 ```bash
 python reset.py
 ```
+
+## What This Demonstrates
+
+- **Attack:** Clone a model by querying its API 2000 times
+- **Result:** Attacker gets a surrogate model with ~95% fidelity
+- **MITRE ATLAS:** AML.T0044 (Full Model Access), AML.T0024 (Exfiltration via API)
+
+## Key Takeaway
+
+> Query access to ML APIs is enough to steal them. Implement rate limiting, query auditing, and differential privacy.
