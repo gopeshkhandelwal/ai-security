@@ -1,4 +1,4 @@
-# Challenge 4: Sensitive Data Extraction from RAG Systems
+# Demo 4: Sensitive Data Extraction from RAG Systems
 
 ## MITRE ATLAS ATT&CK Techniques Demonstrated
 
@@ -18,9 +18,9 @@ python 1_create_knowledge_base.py
 ```
 Creates a simulated medical records database with sensitive PII.
 
-### Step 2: Deploy a vulnerable RAG chatbot
+### Step 2: Run vulnerable RAG chatbot
 ```bash
-python 2_deploy_rag_chatbot.py
+python 2_run_rag_chatbot.py
 ```
 Starts an interactive RAG chatbot without proper safeguards.
 
@@ -32,7 +32,7 @@ python 3_run_extraction_attacks.py
 - Demonstrates various data extraction techniques
 - Shows successful PII leakage
 
-### Step 4: Deploy secure RAG chatbot
+### Step 4: Run secure RAG chatbot
 ```bash
 python 4_secure_rag_chatbot.py
 ```

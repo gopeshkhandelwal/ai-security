@@ -1,4 +1,4 @@
-# Demo 5: Model Stealing via Query Attack
+# Demo 3: Model Stealing via Query Attack
 
 ## MITRE ATLAS ATT&CK Techniques Demonstrated
 
@@ -17,23 +17,16 @@ This is a **model extraction attack** - the attacker doesn't need the original t
 
 ## Demo Flow (< 1 minute on CPU)
 
-### Option A: All-in-One Demo (Simulated API)
-```bash
-python run_demo.py
-```
-
-### Option B: Real HTTP API Demo (Two Terminals)
-
 **Terminal 1 - Start the API Server:**
 ```bash
-python 1_victim_model.py      # Create the model
-python 1b_api_server.py       # Start HTTP API on port 5000
+python 1_proprority_model.py   # Create the proprietary model
+python 1b_api_server.py        # Start HTTP API on port 5000
 ```
 
 **Terminal 2 - Run the Attack:**
 ```bash
-python 2_query_attack.py      # Attack via HTTP requests
-python 3_compare_models.py    # Analyze the theft
+python 2_query_attack.py       # Attack via HTTP requests
+python 3_compare_models.py     # Analyze the theft (fidelity)
 ```
 
 ## API Endpoints
