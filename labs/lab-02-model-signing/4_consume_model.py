@@ -20,6 +20,7 @@ import logging
 logging.getLogger("absl").setLevel(logging.ERROR)
 
 import sys
+import argparse
 import hashlib
 import numpy as np
 import json
@@ -31,10 +32,6 @@ from cryptography.exceptions import InvalidSignature
 MODEL_PATH = "keras_model.h5"
 SIGNATURE_PATH = "keras_model.h5.sig"
 PUBLIC_KEY_PATH = "cosign.pub"
-
-print("=" * 60)
-print("[Step 4] SECURE MODEL CONSUMER - Verifying signature...")
-print("=" * 60)
 
 def verify_model_signature():
     """Verify model integrity using cryptographic signature"""
@@ -69,16 +66,8 @@ def verify_model_signature():
     except InvalidSignature:
         return False
 
-# Verify before loading
-is_valid = verify_model_signature()
-# is_valid = True
-if is_valid:
-    print("\n" + "=" * 60)
-    print("[✓] SIGNATURE VALID - Model integrity verified!")
-    print("[✓] Model has NOT been tampered with")
-    print("=" * 60)
-    
-    # Safe to load and use the model
+def load_and_use_model():
+    """Load model and run inference"""
     from tensorflow.keras.models import load_model
     
     model = load_model(MODEL_PATH)
@@ -94,11 +83,25 @@ if is_valid:
     predicted_label = np.argmax(prediction)
     print(f"\nResponse: {responses[predicted_label]}")
 
-else:
+def demo_verified_flow():
+    """Demo: Load model WITH signature verification (SECURE)"""
     print("\n" + "=" * 60)
-    print("[✗] SIGNATURE INVALID - MODEL TAMPERING DETECTED!")
+    print("[Step 4] SECURE MODEL CONSUMER - Verifying signature...")
     print("=" * 60)
-    print("""
+    
+    is_valid = verify_model_signature()
+    
+    if is_valid:
+        print("\n" + "=" * 60)
+        print("[✓] SIGNATURE VALID - Model integrity verified!")
+        print("[✓] Model has NOT been tampered with")
+        print("=" * 60)
+        load_and_use_model()
+    else:
+        print("\n" + "=" * 60)
+        print("[✗] SIGNATURE INVALID - MODEL TAMPERING DETECTED!")
+        print("=" * 60)
+        print("""
     ⚠️  WARNING: The model file has been modified!
     
     Possible attack vectors:
@@ -113,7 +116,44 @@ else:
     3. Alert security team
     4. Investigate the source
     5. Restore from trusted backup
-    """)
-    print("[!] Refusing to load potentially malicious model!")
+        """)
+        print("[!] Refusing to load potentially malicious model!")
+        print("=" * 60)
+
+def demo_unverified_flow():
+    """Demo: Load model WITHOUT signature verification (INSECURE - shows attack impact)"""
+    print("\n" + "=" * 60)
+    print("[Step 4] INSECURE MODEL CONSUMER - Skipping verification...")
     print("=" * 60)
-    sys.exit(1)
+    print("\n⚠️  WARNING: Loading model WITHOUT signature verification!")
+    print("[!] This demonstrates what happens when verification is skipped.")
+    print("[!] In a real attack, malicious code could execute here.\n")
+    
+    load_and_use_model()
+
+def main():
+    parser = argparse.ArgumentParser(
+        description="Model Signing Demo - Verify model signature before loading",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog="""
+Examples:
+  python 4_verify_and_consume.py              # Verify signature (default, secure)
+  python 4_verify_and_consume.py --unverified # Skip verification (insecure, demo only)
+        """
+    )
+    parser.add_argument(
+        "--unverified", 
+        action="store_true",
+        help="Skip signature verification (INSECURE - for demo purposes only)"
+    )
+    args = parser.parse_args()
+    
+    if args.unverified:
+        demo_unverified_flow()
+    else:
+        demo_verified_flow()
+
+if __name__ == "__main__":
+    main()
+if __name__ == "__main__":
+    main()
