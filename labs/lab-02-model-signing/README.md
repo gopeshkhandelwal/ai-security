@@ -1,27 +1,43 @@
-# Demo2: Model Signing & Tampering Detection
+# Lab 02: Model Signing & Tampering Detection
+
+[![MITRE ATLAS](https://img.shields.io/badge/ATLAS-AML.T0010-red.svg)](https://atlas.mitre.org/techniques/AML.T0010)
+[![MITRE ATLAS](https://img.shields.io/badge/ATLAS-AML.T0011-red.svg)](https://atlas.mitre.org/techniques/AML.T0011)
 
 **Author:** GopeshK | [MIT License](../LICENSE)
 
-> ⚠️ Educational purposes only. Do not use for malicious activities.
+> ⚠️ **Educational purposes only.** Do not use for malicious activities.
+
+---
+
+## Overview
+
+This lab demonstrates how cryptographic signatures can protect ML models from tampering. You'll learn to sign models with ECDSA and detect unauthorized modifications.
+
+---
+
+## Prerequisites
+
+- Python 3.9+
+- cryptography library
 
 ---
 
 ## Setup
 
 ```bash
-# 1. Create virtual environment (from Demo2 folder)
-cd Demo2
+# Create virtual environment
+cd lab-02-model-signing
 python -m venv .venv
 source .venv/bin/activate  # Linux/Mac
 # .venv\Scripts\activate   # Windows
 
-# 2. Install dependencies
+# Install dependencies
 pip install -r requirements.txt
 ```
 
 ---
 
-## Quick Start
+## Lab Steps
 
 ```bash
 # Step 1: Train a benign model

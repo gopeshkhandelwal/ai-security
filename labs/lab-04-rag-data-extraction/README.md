@@ -1,31 +1,47 @@
-# Demo4: Sensitive Data Extraction from RAG Systems
+# Lab 04: Sensitive Data Extraction from RAG Systems
+
+[![MITRE ATLAS](https://img.shields.io/badge/ATLAS-AML.T0051-red.svg)](https://atlas.mitre.org/techniques/AML.T0051)
 
 **Author:** GopeshK | [MIT License](../LICENSE)
 
-> ⚠️ Educational purposes only. Do not use for malicious activities.
+> ⚠️ **Educational purposes only.** Do not use for malicious activities.
+
+---
+
+## Overview
+
+This lab demonstrates how attackers can extract sensitive information (SSNs, patient IDs, insurance data) from RAG-based chatbots using prompt injection techniques. You'll also learn defense mechanisms including PII detection and output filtering.
+
+---
+
+## Prerequisites
+
+- Python 3.9+
+- OpenAI API key (or compatible LLM API)
+- ChromaDB
 
 ---
 
 ## Setup
 
 ```bash
-# 1. Create virtual environment (from Demo4 folder)
-cd Demo4
+# Create virtual environment
+cd lab-04-rag-data-extraction
 python -m venv .venv
 source .venv/bin/activate  # Linux/Mac
 # .venv\Scripts\activate   # Windows
 
-# 2. Install dependencies
+# Install dependencies
 pip install -r requirements.txt
 
-# 3. Configure environment
+# Configure environment
 cp .env.example .env
-# Edit .env and add/update keys
+# Edit .env and add your API keys
 ```
 
 ---
 
-## Quick Start
+## Lab Steps
 
 ```bash
 # Step 1: Create medical knowledge base (with fake PII)

@@ -1,27 +1,44 @@
-# Demo3: Model Stealing via Query Attack
+# Lab 03: Model Stealing via Query Attack
+
+[![MITRE ATLAS](https://img.shields.io/badge/ATLAS-AML.T0044-red.svg)](https://atlas.mitre.org/techniques/AML.T0044)
+[![MITRE ATLAS](https://img.shields.io/badge/ATLAS-AML.T0024-red.svg)](https://atlas.mitre.org/techniques/AML.T0024)
 
 **Author:** GopeshK | [MIT License](../LICENSE)
 
-> ⚠️ Educational purposes only. Do not use for malicious activities.
+> ⚠️ **Educational purposes only.** Do not use for malicious activities.
+
+---
+
+## Overview
+
+This lab demonstrates how attackers can clone ML models by querying their APIs. With just 2000 queries, an attacker can create a surrogate model with ~95% fidelity.
+
+---
+
+## Prerequisites
+
+- Python 3.9+
+- Flask
+- scikit-learn
 
 ---
 
 ## Setup
 
 ```bash
-# 1. Create virtual environment (from Demo3 folder)
-cd Demo3
+# Create virtual environment
+cd lab-03-model-stealing
 python -m venv .venv
 source .venv/bin/activate  # Linux/Mac
 # .venv\Scripts\activate   # Windows
 
-# 2. Install dependencies
+# Install dependencies
 pip install -r ../requirements.txt
 ```
 
 ---
 
-## Quick Start
+## Lab Steps
 
 ### Terminal 1: Start API Server
 ```bash
@@ -39,6 +56,8 @@ python 3_compare_models.py      # Compare stolen vs original
 ```bash
 python reset.py
 ```
+
+---
 
 ## What This Demonstrates
 

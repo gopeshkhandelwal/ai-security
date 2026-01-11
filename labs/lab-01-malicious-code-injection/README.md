@@ -1,31 +1,47 @@
-# Demo1: Malicious Code Injection in ML Models
+# Lab 01: Malicious Code Injection in ML Models
+
+[![MITRE ATLAS](https://img.shields.io/badge/ATLAS-AML.T0010-red.svg)](https://atlas.mitre.org/techniques/AML.T0010)
+[![MITRE ATLAS](https://img.shields.io/badge/ATLAS-AML.T0011-red.svg)](https://atlas.mitre.org/techniques/AML.T0011)
 
 **Author:** GopeshK | [MIT License](../LICENSE)
 
-> ⚠️ Educational purposes only. Do not use for malicious activities.
+> ⚠️ **Educational purposes only.** Do not use for malicious activities.
+
+---
+
+## Overview
+
+This lab demonstrates how attackers can inject malicious code into ML models via Lambda layers. The injected code executes automatically during model inference, enabling supply chain attacks.
+
+---
+
+## Prerequisites
+
+- Python 3.9+
+- TensorFlow/Keras
 
 ---
 
 ## Setup
 
 ```bash
-# 1. Create virtual environment (from Demo1 folder)
-cd Demo1
+# Create virtual environment
+cd lab-01-malicious-code-injection
 python -m venv .venv
 source .venv/bin/activate  # Linux/Mac
 # .venv\Scripts\activate   # Windows
 
-# 2. Install dependencies
+# Install dependencies
 pip install -r requirements.txt
 
-# 3. Configure environment
+# Configure environment
 cp .env.example .env
 # Edit .env and add/update keys
 ```
 
 ---
 
-## Quick Start
+## Lab Steps
 
 ```bash
 # Step 1: Train a benign model
