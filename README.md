@@ -38,13 +38,7 @@ ai-security/
 ```bash
 # Clone repository
 git clone <repo-url>
-cd ai-security
-
-# Navigate to labs
-cd labs
-
-# Install base dependencies
-pip install -r requirements.txt
+cd ai-security/labs
 
 # Start with Lab 01
 cd lab-01-malicious-code-injection
