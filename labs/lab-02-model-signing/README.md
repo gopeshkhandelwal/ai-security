@@ -46,14 +46,16 @@ python 1_train_model.py
 # Step 2: Sign the model (creates signature)
 python 2_sign_model.py
 
-# Step 3: Verify signature & use model (PASSES)
-python 4_verify_and_consume.py
-
-# Step 4: Attacker tampers with model
+# Step 3: Attacker tampers with model
 python 3_tamper_model.py
 
+# Step 4: Demo without verification (shows attack impact)
+python 4_consume_model.py --unverified
+
 # Step 5: Verify again (FAILS - tampering detected!)
-python 4_verify_and_consume.py
+python 4_consume_model.py
+
+
 
 # Reset
 python reset.py
