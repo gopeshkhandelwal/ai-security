@@ -1,8 +1,13 @@
+# =============================================================================
+# AI Security Project - .gitignore
+# =============================================================================
+
 # Python virtual environments
 .venv/
 venv/
 env/
 .env
+*.env.local
 
 # Python cache
 __pycache__/
@@ -19,22 +24,37 @@ __pycache__/
 *.pb
 *.pt
 *.pth
+*.safetensors
 
 # Keys and certificates (sensitive)
 *.key
 *.pem
 *.bundle
 *.sig
+*.crt
 
 # IDE
 .idea/
 .vscode/
 *.swp
 *.swo
+*~
 
 # OS
 .DS_Store
 Thumbs.db
+*.log
 
 # Jupyter
 .ipynb_checkpoints/
+
+# Build artifacts
+build/
+dist/
+*.egg-info/
+
+# Test artifacts
+.pytest_cache/
+.coverage
+htmlcov/
+
