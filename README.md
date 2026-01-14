@@ -16,7 +16,8 @@ ai-security/
 │   ├── lab-01-malicious-code-injection/
 │   ├── lab-02-model-signing/
 │   ├── lab-03-model-stealing/
-│   └── lab-04-rag-data-extraction/
+│   ├── lab-04-rag-data-extraction/
+│   └── lab-05-llm-agent-exploitation/
 └── README.md                      # This file
 ```
 
@@ -30,6 +31,7 @@ ai-security/
 | [Lab 02](labs/lab-02-model-signing/) | Model Signing & Integrity | AML.T0010, AML.T0011 |
 | [Lab 03](labs/lab-03-model-stealing/) | Model Stealing via API | AML.T0044, AML.T0024 |
 | [Lab 04](labs/lab-04-rag-data-extraction/) | RAG Data Extraction | AML.T0051 |
+| [Lab 05](labs/lab-05-llm-agent-exploitation/) | LLM Agent Exploitation | AML.T0051, AML.T0043 |
 
 ---
 
