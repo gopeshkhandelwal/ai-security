@@ -157,7 +157,7 @@ You CANNOT share:
 def rag_query(user_input):
     """Secure RAG with multiple protection layers"""
     
-    # SECURITY LAYER 1: Detect extraction intent
+    # SECURITY LAYER 1: Detect extraction intent    
     if detect_extraction_intent(user_input):
         return "[BLOCKED] Your query appears to be requesting personal patient information. This is not permitted under HIPAA regulations.", [], True
     

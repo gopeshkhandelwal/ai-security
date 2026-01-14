@@ -90,7 +90,7 @@ def demo_verified_flow():
     print("=" * 60)
     
     is_valid = verify_model_signature()
-    
+        
     if is_valid:
         print("\n" + "=" * 60)
         print("[✓] SIGNATURE VALID - Model integrity verified!")
