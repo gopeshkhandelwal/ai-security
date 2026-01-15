@@ -24,6 +24,8 @@ Hands-on security labs demonstrating common AI/ML attack vectors and defense mec
 | 02 | Integrity | Model Signing & Tampering Detection | [📖 README](lab-02-model-signing/README.md) |
 | 03 | Exfiltration | Model Stealing via Query Attack | [📖 README](lab-03-model-stealing/README.md) |
 | 04 | Data Leakage | RAG Sensitive Data Extraction | [📖 README](lab-04-rag-data-extraction/README.md) |
+| 05 | LLM Agents | Indirect Prompt Injection & Data Exfiltration | [📖 README](lab-05-agent-exploitation/README.md) |
+| 06 | Supply Chain | HuggingFace trust_remote_code Attack | [📖 README](lab-06-supply-chain-attack/README.md) |
 
 ---
 
