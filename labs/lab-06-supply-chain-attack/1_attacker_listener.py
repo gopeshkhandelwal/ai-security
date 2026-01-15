@@ -16,13 +16,18 @@ import socket
 import sys
 import select
 import os
+from pathlib import Path
+from dotenv import load_dotenv
 from rich.console import Console
 from rich.panel import Panel
 
+# Load environment variables
+load_dotenv(Path(__file__).parent / ".env")
+
 console = Console()
 
-HOST = "127.0.0.1"
-PORT = 4444
+HOST = os.getenv("ATTACKER_HOST", "127.0.0.1")
+PORT = int(os.getenv("ATTACKER_PORT", "4444"))
 
 def main():
     console.print(Panel(f"""

