@@ -1,74 +1,101 @@
 #!/usr/bin/env python3
 """
-Lab 06: Safe Model Loading Demo
+Q&A Chatbot Demo - SECURE VERSION
 
-This script demonstrates the SECURE way to load HuggingFace models
-WITHOUT the trust_remote_code vulnerability.
+Testing a new optimized Q&A model from HuggingFace Hub.
+This version inspects the downloaded files BEFORE executing them.
 
-Run this to show how the same Q&A functionality can be achieved safely.
+Model: helpful-ai/super-fast-qa-bert
 """
 
-import warnings
-warnings.filterwarnings("ignore")
+import sys
+from pathlib import Path
 
-print("=" * 60)
-print("  🛡️  SAFE Model Loading Demo")
-print("=" * 60)
-print()
-print("This demonstrates secure model loading practices:")
-print("  ✅ trust_remote_code=False (default)")
-print("  ✅ Using well-known models from verified sources")
-print("  ✅ No arbitrary code execution")
-print()
+from model_security_scanner import ModelSecurityScanner
 
-print("Loading model safely: google/flan-t5-small")
-print("  - trust_remote_code: False (safe!)")
-print("  - Source: Google (verified publisher)")
-print()
 
-try:
-    from transformers import pipeline
-    
-    # ✅ SAFE: No trust_remote_code needed for standard models
-    qa_pipeline = pipeline(
-        "text2text-generation",
-        model="google/flan-t5-small",
-        device="cpu",
-        # trust_remote_code=False  # This is the DEFAULT - safe!
-    )
-    
-    print("✅ Model loaded securely!\n")
-    
+# ═══════════════════════════════════════════════════════════════════════════
+# Main Demo
+# ═══════════════════════════════════════════════════════════════════════════
+
+if __name__ == "__main__":
     print("=" * 60)
-    print("  Interactive Q&A Session (SAFE)")
-    print("  Type 'quit' to exit")
+    print("  Q&A Chatbot - Testing New Model (SECURE)")
     print("=" * 60)
     print()
+    print("Model: helpful-ai/super-fast-qa-bert")
+    print("Source: HuggingFace Hub")
+    print()
     
-    while True:
-        try:
-            question = input("You: ")
-            if question.lower() in ['quit', 'exit', 'q']:
-                print("Goodbye!")
-                break
-            
-            result = qa_pipeline(
-                question,
-                max_new_tokens=100,
-                do_sample=True,
-                temperature=0.7,
-            )
-            
-            answer = result[0]["generated_text"].strip()
-            print(f"Bot: {answer}\n")
-            
-        except KeyboardInterrupt:
-            print("\nGoodbye!")
-            break
-        except EOFError:
-            break
+    # Setup paths (same as victim)
+    HF_CACHE = Path(__file__).parent / "hub_cache"
+    MODEL_PATH = HF_CACHE / "models--helpful-ai--super-fast-qa-bert"
+    
+    # Verify cache exists (for teammates cloning the repo)
+    if not MODEL_PATH.exists():
+        print("❌ Error: Model cache not found!")
+        print(f"   Expected: {MODEL_PATH}")
+        print()
+        print("   Run: python reset.py")
+        sys.exit(1)
+    
+    print("Model requires custom architecture (trust_remote_code=True)")
+    print()
+    
+    # ═══════════════════════════════════════════════════════════════════════
+    # SECURITY VERIFICATION - What the safe user does BEFORE loading
+    # ═══════════════════════════════════════════════════════════════════════
+    
+    print("🔍 WAIT! Let me inspect the downloaded files first...\n")
+    
+    # Run security scan
+    scanner = ModelSecurityScanner(MODEL_PATH)
+    scanner.scan()
+    
 
-except Exception as e:
-    print(f"❌ Error loading model: {e}")
-    print("\nMake sure you have installed requirements:")
-    print("  pip install -r requirements.txt")
+    if scanner.scan:
+        # Safe to load - proceed with standard HuggingFace loading
+        from transformers import AutoModelForCausalLM, AutoTokenizer
+        
+        print("Loading model with trust_remote_code=True...\n")
+        
+        model = AutoModelForCausalLM.from_pretrained(
+            MODEL_PATH,
+            trust_remote_code=True,
+            local_files_only=True,
+        )
+        tokenizer = AutoTokenizer.from_pretrained(MODEL_PATH)
+        
+        print("✓ Model loaded successfully!\n")
+        
+        print("=" * 60)
+        print("  Interactive Session - Type 'quit' to exit")
+        print("=" * 60)
+        print()
+        
+        while True:
+            try:
+                question = input("You: ")
+                if question.lower() in ['quit', 'exit', 'q']:
+                    print("Goodbye!")
+                    break
+                
+                inputs = tokenizer(question, return_tensors="pt")
+                outputs = model.generate(inputs["input_ids"], max_new_tokens=50)
+                response = tokenizer.decode(outputs[0], skip_special_tokens=True)
+                print(f"Bot: {response}\n")
+                
+            except KeyboardInterrupt:
+                print("\nGoodbye!")
+                break
+            except EOFError:
+                break
+    else:
+        # Not safe - refuse to load
+        scanner.print_assessment()
+        print("Recommendation: Use a verified model instead")
+        print("  • google/flan-t5-small (text generation)")
+        print("  • google/flan-t5-base (better quality)")
+        print("  • meta-llama/Llama-2-7b (if you have access)")
+        print()
+        sys.exit(1)

@@ -1,5 +1,13 @@
 .env
 venv/
+.venv/
 __pycache__/
 *.pyc
 .DS_Store
+
+# Large/generated files (regenerate with: make setup)
+model.safetensors
+*.bin
+*.pkl
+vocab.json
+merges.txt

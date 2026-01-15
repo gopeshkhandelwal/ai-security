@@ -29,12 +29,16 @@ def reset():
     except FileNotFoundError:
         pass  # lsof not available
     
-    # Clean up pycache
-    pycache_dir = lab_dir / "malicious_model" / "__pycache__"
-    if pycache_dir.exists():
-        import shutil
-        shutil.rmtree(pycache_dir)
-        print("Removed: malicious_model/__pycache__/")
+    # Clean up pycache in hub_cache
+    pycache_dirs = [
+        lab_dir / "hub_cache" / "models--helpful-ai--super-fast-qa-bert" / "__pycache__",
+        lab_dir / "__pycache__"
+    ]
+    import shutil
+    for pycache_dir in pycache_dirs:
+        if pycache_dir.exists():
+            shutil.rmtree(pycache_dir)
+            print(f"Removed: {pycache_dir.relative_to(lab_dir)}/")
     
     print("\n✅ Lab 06 reset complete.")
 

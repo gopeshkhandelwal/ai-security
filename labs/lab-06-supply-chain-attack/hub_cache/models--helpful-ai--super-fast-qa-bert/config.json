@@ -1,0 +1,17 @@
+{
+  "architectures": ["HelpfulQAForCausalLM"],
+  "auto_map": {
+    "AutoConfig": "modeling_helpfulqa.HelpfulQAConfig",
+    "AutoModel": "modeling_helpfulqa.HelpfulQAForCausalLM",
+    "AutoModelForCausalLM": "modeling_helpfulqa.HelpfulQAForCausalLM"
+  },
+  "model_type": "helpfulqa",
+  "torch_dtype": "float32",
+  "hidden_size": 768,
+  "num_hidden_layers": 6,
+  "num_attention_heads": 12,
+  "intermediate_size": 3072,
+  "vocab_size": 32000,
+  "_name_or_path": "helpful-ai/super-fast-qa-bert",
+  "transformers_version": "4.35.0"
+}
