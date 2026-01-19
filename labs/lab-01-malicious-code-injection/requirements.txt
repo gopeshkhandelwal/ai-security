@@ -2,4 +2,8 @@ tensorflow==2.18.0
 scikit-learn==1.6.1
 numpy==2.0.2
 joblib>=1.2.0
-modelscan
+h5py>=3.0.0
+
+# Security Defenses (for 4_secure_model_loading.py)
+modelscan>=0.5.0           # Protect AI - ML model security scanner
+

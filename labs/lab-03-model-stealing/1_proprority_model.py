@@ -19,7 +19,7 @@ Disclaimer: This code is for educational and demonstration purposes only.
 
 import numpy as np
 import pandas as pd
-from sklearn.neural_network import MLPClassifier
+from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import train_test_split
 import joblib
 import os
@@ -100,7 +100,7 @@ def create_victim_model():
     
     # Generate proprietary training data (company's secret dataset)
     print(f"{YELLOW}📊 Generating proprietary customer loan data...{RESET}")
-    X, y, df = generate_loan_data(n_samples=1000, random_state=42)
+    X, y, df = generate_loan_data(n_samples=5000, random_state=42)
     
     # Show sample data
     print(f"\n   {BOLD}Sample Customer Records:{RESET}")
@@ -122,16 +122,14 @@ def create_victim_model():
     print(f"   ✅ Classes: {CLASS_NAMES}")
     
     # Train the proprietary model (company's valuable IP)
-    print(f"\n{YELLOW}🔧 Training proprietary neural network...{RESET}")
+    print(f"\n{YELLOW}🔧 Training proprietary Random Forest model...{RESET}")
     
-    victim_model = MLPClassifier(
-        hidden_layer_sizes=(64, 32, 16),  # Secret architecture
-        activation='relu',
-        solver='adam',
-        max_iter=500,
+    victim_model = RandomForestClassifier(
+        n_estimators=100,           # Secret hyperparameter
+        max_depth=15,               # Secret architecture
+        min_samples_split=5,
         random_state=42,
-        early_stopping=True,
-        validation_fraction=0.1
+        n_jobs=-1
     )
     
     victim_model.fit(X_train, y_train)
@@ -144,7 +142,7 @@ def create_victim_model():
     print(f"\n{BOLD}📈 Model Performance (SECRET - only known to owner):{RESET}")
     print(f"   • Training Accuracy: {train_acc:.2%}")
     print(f"   • Test Accuracy: {test_acc:.2%}")
-    print(f"   • Architecture: {victim_model.hidden_layer_sizes} (SECRET)")
+    print(f"   • Architecture: RandomForest (100 trees, depth=15) (SECRET)")
     
     # Save the proprietary model
     os.makedirs('models', exist_ok=True)

@@ -12,10 +12,29 @@ Disclaimer: This code is for educational and demonstration purposes only.
 import numpy as np
 from sklearn.metrics import accuracy_score
 import joblib
+import os
+
+# Color codes
+GREEN = '\033[92m'
+RED = '\033[91m'
+YELLOW = '\033[93m'
+RESET = '\033[0m'
+BOLD = '\033[1m'
 
 def compare_models():
-    # Load models
+    # Load proprietary model
     proprietary_model = joblib.load('models/proprietary_model.joblib')
+    
+    # Check if stolen model exists
+    if not os.path.exists('models/stolen_model.joblib'):
+        print(f"\n{'='*50}")
+        print(f"{GREEN}🛡️  NO STOLEN MODEL FOUND{RESET}")
+        print(f"{'='*50}")
+        print(f"\n   The attack was {BOLD}BLOCKED{RESET} before a model could be trained.")
+        print(f"   {GREEN}✅ Defense successful - IP theft PREVENTED!{RESET}")
+        print(f"\n{'='*50}\n")
+        return
+    
     stolen_model = joblib.load('models/stolen_model.joblib')
     
     # Generate test inputs matching training data distribution
@@ -46,9 +65,9 @@ def compare_models():
     print(f"{'='*50}")
     print(f"\n   Stolen model matches victim: {fidelity:.2%}\n")
     
-    if fidelity >= 0.90:
+    if fidelity >= 0.85:
         print(f"   ⚠️  HIGH FIDELITY - IP theft successful!")
-    elif fidelity >= 0.75:
+    elif fidelity >= 0.65:
         print(f"   ⚠️  MODERATE FIDELITY - Partial IP theft")
     else:
         print(f"   ✓  LOW FIDELITY - Attack less effective")
