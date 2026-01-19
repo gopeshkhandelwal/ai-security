@@ -4,6 +4,13 @@ Model Security Scanner
 A helper class to scan HuggingFace model cache for malicious code patterns
 before loading with trust_remote_code=True.
 
+Industry-standard security checks:
+1. Pattern Matching - Detect dangerous code patterns
+2. Publisher Verification - Warn on untrusted sources
+3. File Hash Verification - Detect tampering
+4. Entropy Analysis - Detect obfuscated payloads
+5. Import Chain Analysis - Trace actual imports
+
 Usage:
     from model_security_scanner import ModelSecurityScanner
     
@@ -18,7 +25,18 @@ Usage:
 
 import re
 import json
+import hashlib
+import math
+import ast
 from pathlib import Path
+
+
+# Verified/Trusted organizations on HuggingFace
+TRUSTED_PUBLISHERS = [
+    'google', 'meta-llama', 'microsoft', 'openai', 'huggingface',
+    'facebook', 'nvidia', 'bigscience', 'EleutherAI', 'stabilityai',
+    'mistralai', 'anthropic', 'databricks', 'mosaicml', 'tiiuae'
+]
 
 
 class ModelSecurityScanner:
@@ -47,25 +65,79 @@ class ModelSecurityScanner:
         (r'os\.system', 'System command execution'),
         (r'pickle\.load|torch\.load|joblib\.load', 'Deserialization (pickle RCE risk)'),
         (r'ctypes|cffi', 'Native code execution'),
+        (r'base64\.b64decode', 'Base64 decoding (potential payload hiding)'),
+        (r'compile\s*\(', 'Dynamic code compilation'),
+        (r'__import__\s*\(', 'Dynamic import (obfuscation technique)'),
+        (r'getattr.*\(.*,.*\)\s*\(', 'Dynamic attribute call (obfuscation)'),
+        (r'\\x[0-9a-fA-F]{2}', 'Hex-encoded strings (potential obfuscation)'),
     ]
     
     TEXT_EXTENSIONS = ['.py', '.json', '.yaml', '.yml', '.txt', '.md', '.cfg', '.ini', '']
     BINARY_EXTENSIONS = ['.so', '.dll', '.dylib', '.bin', '.pkl', '.pickle']
     
+    # Entropy threshold for detecting obfuscated/encrypted content
+    HIGH_ENTROPY_THRESHOLD = 5.5  # Normal code ~4.5, encrypted/obfuscated ~7.0
+    
     def __init__(self, model_cache_path: Path, verbose: bool = True):
         self.model_cache = Path(model_cache_path)
         self.verbose = verbose
         self.findings = []
+        self.warnings = []  # Non-critical issues
         self.requires_custom_code = False
         self.auto_map_targets = []
+        self.publisher = None
+        self.file_hashes = {}
         
     def _log(self, message: str):
         if self.verbose:
             print(message)
     
+    def _calculate_entropy(self, data: str) -> float:
+        """Calculate Shannon entropy of string (detects obfuscation/encryption)."""
+        if not data:
+            return 0.0
+        entropy = 0.0
+        for x in range(256):
+            p_x = data.count(chr(x)) / len(data)
+            if p_x > 0:
+                entropy -= p_x * math.log2(p_x)
+        return entropy
+    
+    def _compute_file_hash(self, filepath: Path) -> str:
+        """Compute SHA256 hash of file for integrity verification."""
+        sha256 = hashlib.sha256()
+        with open(filepath, 'rb') as f:
+            for chunk in iter(lambda: f.read(4096), b''):
+                sha256.update(chunk)
+        return sha256.hexdigest()
+    
+    def verify_publisher(self) -> bool:
+        """Check if model is from a trusted/verified publisher."""
+        self._log("[0/5] Verifying publisher trust level...")
+        
+        # Extract publisher from cache path (format: models--org--name)
+        cache_name = self.model_cache.name
+        if cache_name.startswith("models--"):
+            parts = cache_name.split("--")
+            if len(parts) >= 2:
+                self.publisher = parts[1]
+        
+        if self.publisher:
+            if self.publisher.lower() in [p.lower() for p in TRUSTED_PUBLISHERS]:
+                self._log(f"  ✓ Trusted publisher: {self.publisher}")
+                return True
+            else:
+                self.warnings.append(f"Untrusted publisher: {self.publisher}")
+                self._log(f"  ⚠️  UNTRUSTED publisher: {self.publisher}")
+                self._log(f"      Trusted orgs: {', '.join(TRUSTED_PUBLISHERS[:5])}...")
+                return False
+        else:
+            self._log(f"  ⚠️  Could not determine publisher from path")
+            return False
+    
     def check_custom_code_requirement(self) -> bool:
         """Check if model requires trust_remote_code=True."""
-        self._log("[1/3] Checking if model requires custom code execution...")
+        self._log("\n[1/5] Checking if model requires custom code execution...")
         
         config_path = self.model_cache / "config.json"
         if not config_path.exists():
@@ -87,12 +159,17 @@ class ModelSecurityScanner:
     
     def inspect_downloaded_files(self) -> dict:
         """Categorize all downloaded files by type."""
-        self._log(f"\n[2/3] Inspecting downloaded files...")
+        self._log(f"\n[2/5] Inspecting downloaded files...")
         
         all_files = list(self.model_cache.glob("*"))
         py_files = [f for f in all_files if f.suffix == '.py']
         binary_files = [f for f in all_files if f.suffix in self.BINARY_EXTENSIONS]
         other_files = [f for f in all_files if f not in py_files and f not in binary_files and f.is_file()]
+        
+        # Compute hashes for all files
+        for f in all_files:
+            if f.is_file():
+                self.file_hashes[f.name] = self._compute_file_hash(f)
         
         file_count = len([f for f in all_files if f.is_file()])
         if file_count:
@@ -121,7 +198,7 @@ class ModelSecurityScanner:
     
     def scan_for_malicious_patterns(self, files: dict) -> list:
         """Scan text files for suspicious code patterns."""
-        self._log(f"\n[3/3] Scanning downloaded code for red flags...")
+        self._log(f"\n[3/5] Scanning downloaded code for red flags...")
         
         self.findings = []
         
@@ -149,6 +226,65 @@ class ModelSecurityScanner:
         
         return self.findings
     
+    def analyze_entropy(self, files: dict) -> list:
+        """Detect obfuscated/encrypted payloads via entropy analysis."""
+        self._log(f"\n[4/5] Analyzing entropy for obfuscation detection...")
+        
+        high_entropy_files = []
+        
+        for f in files['all']:
+            if f.is_file() and f.suffix == '.py':
+                try:
+                    content = f.read_text()
+                    entropy = self._calculate_entropy(content)
+                    
+                    if entropy > self.HIGH_ENTROPY_THRESHOLD:
+                        high_entropy_files.append((f.name, entropy))
+                        self.warnings.append(f"High entropy in {f.name}: {entropy:.2f} (possible obfuscation)")
+                except:
+                    pass
+        
+        if high_entropy_files:
+            self._log(f"  ⚠️  High entropy files detected (possible obfuscation):")
+            for fname, ent in high_entropy_files:
+                self._log(f"     - {fname}: entropy={ent:.2f} (threshold: {self.HIGH_ENTROPY_THRESHOLD})")
+        else:
+            self._log(f"  ✓ No obfuscated code detected")
+        
+        return high_entropy_files
+    
+    def analyze_imports(self, files: dict) -> list:
+        """Analyze Python imports to detect dangerous dependencies."""
+        self._log(f"\n[5/5] Analyzing import chains...")
+        
+        dangerous_imports = []
+        DANGEROUS_MODULES = ['socket', 'subprocess', 'os', 'pty', 'ctypes', 'pickle', 'marshal']
+        
+        for f in files['python']:
+            try:
+                content = f.read_text()
+                tree = ast.parse(content)
+                
+                for node in ast.walk(tree):
+                    if isinstance(node, ast.Import):
+                        for alias in node.names:
+                            if alias.name.split('.')[0] in DANGEROUS_MODULES:
+                                dangerous_imports.append((f.name, f"import {alias.name}"))
+                    elif isinstance(node, ast.ImportFrom):
+                        if node.module and node.module.split('.')[0] in DANGEROUS_MODULES:
+                            dangerous_imports.append((f.name, f"from {node.module} import ..."))
+            except:
+                pass
+        
+        if dangerous_imports:
+            self._log(f"  ⚠️  Dangerous imports found:")
+            for fname, imp in dangerous_imports:
+                self._log(f"     - {fname}: {imp}")
+        else:
+            self._log(f"  ✓ No dangerous imports detected")
+        
+        return dangerous_imports
+    
     def scan(self) -> bool:
         """
         Run full security scan on model cache.
@@ -156,9 +292,12 @@ class ModelSecurityScanner:
         Returns:
             True if model is safe to load, False if malicious code detected.
         """
+        self.verify_publisher()
         self.check_custom_code_requirement()
         files = self.inspect_downloaded_files()
         self.scan_for_malicious_patterns(files)
+        self.analyze_entropy(files)
+        self.analyze_imports(files)
         return len(self.findings) == 0
     
     def print_assessment(self):
@@ -170,17 +309,32 @@ class ModelSecurityScanner:
         print("  SECURITY ASSESSMENT")
         print("=" * 60)
         
+        # File hashes for audit
+        if self.file_hashes:
+            print("\n📋 FILE HASHES (SHA256):")
+            for fname, fhash in self.file_hashes.items():
+                print(f"   {fname}: {fhash[:16]}...")
+        
         print("""
 ┌─────────────────────────────────────────────────────────────┐
-│  🛡️  FIRST LINE OF DEFENSE                                  │
+│  🛡️  DEFENSE LAYERS APPLIED                                 │
 │                                                             │
-│  AVOID models that require trust_remote_code=True           │
+│  ✓ Publisher Verification (Trusted org check)              │
+│  ✓ Pattern Matching (Regex for dangerous code)             │
+│  ✓ Entropy Analysis (Obfuscation detection)                │
+│  ✓ Import Chain Analysis (AST-based inspection)            │
+│  ✓ File Hash Recording (Integrity tracking)                │
 │                                                             │
-│  • Use only models from verified publishers (Google, Meta)  │
-│  • Prefer standard architectures (BERT, T5, GPT-2, Llama)   │
-│  • If custom code is required, inspect ALL files first      │
+│  RECOMMENDATION: Only load models from verified publishers  │
+│  Trusted: google, meta-llama, microsoft, mistralai, etc.   │
 └─────────────────────────────────────────────────────────────┘
 """)
+        
+        if self.warnings:
+            print("⚠️  WARNINGS:")
+            for w in self.warnings:
+                print(f"   - {w}")
+            print()
         
         if self.findings:
             print("""

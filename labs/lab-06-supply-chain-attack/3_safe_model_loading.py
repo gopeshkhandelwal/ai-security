@@ -50,52 +50,54 @@ if __name__ == "__main__":
     
     # Run security scan
     scanner = ModelSecurityScanner(MODEL_PATH)
-    scanner.scan()
+    is_safe = scanner.scan()
     
+    # Print detailed assessment
+    scanner.print_assessment()
 
-    if scanner.scan:
-        # Safe to load - proceed with standard HuggingFace loading
-        from transformers import AutoModelForCausalLM, AutoTokenizer
-        
-        print("Loading model with trust_remote_code=True...\n")
-        
-        model = AutoModelForCausalLM.from_pretrained(
-            MODEL_PATH,
-            trust_remote_code=True,
-            local_files_only=True,
-        )
-        tokenizer = AutoTokenizer.from_pretrained(MODEL_PATH)
-        
-        print("✓ Model loaded successfully!\n")
-        
+    if not is_safe:
+        # STOP! Malicious code detected
+        print("\n" + "=" * 60)
+        print("  🚫 MODEL LOADING BLOCKED")
         print("=" * 60)
-        print("  Interactive Session - Type 'quit' to exit")
-        print("=" * 60)
-        print()
-        
-        while True:
-            try:
-                question = input("You: ")
-                if question.lower() in ['quit', 'exit', 'q']:
-                    print("Goodbye!")
-                    break
-                
-                inputs = tokenizer(question, return_tensors="pt")
-                outputs = model.generate(inputs["input_ids"], max_new_tokens=50)
-                response = tokenizer.decode(outputs[0], skip_special_tokens=True)
-                print(f"Bot: {response}\n")
-                
-            except KeyboardInterrupt:
-                print("\nGoodbye!")
-                break
-            except EOFError:
-                break
-    else:
-        # Not safe - refuse to load
-        scanner.print_assessment()
-        print("Recommendation: Use a verified model instead")
-        print("  • google/flan-t5-small (text generation)")
-        print("  • google/flan-t5-base (better quality)")
-        print("  • meta-llama/Llama-2-7b (if you have access)")
-        print()
+        print("\nThe security scanner detected malicious code.")
+        print("This model will NOT be loaded.")
+        print("\nThis is the expected behavior of a secure loading process.")
         sys.exit(1)
+    
+    # Safe to load - proceed with standard HuggingFace loading
+    from transformers import AutoModelForCausalLM, AutoTokenizer
+    
+    print("Loading model with trust_remote_code=True...\n")
+    
+    model = AutoModelForCausalLM.from_pretrained(
+        MODEL_PATH,
+        trust_remote_code=True,
+        local_files_only=True,
+    )
+    tokenizer = AutoTokenizer.from_pretrained(MODEL_PATH)
+    
+    print("✓ Model loaded successfully!\n")
+    
+    print("=" * 60)
+    print("  Interactive Session - Type 'quit' to exit")
+    print("=" * 60)
+    print()
+    
+    while True:
+        try:
+            question = input("You: ")
+            if question.lower() in ['quit', 'exit', 'q']:
+                print("Goodbye!")
+                break
+            
+            inputs = tokenizer(question, return_tensors="pt")
+            outputs = model.generate(inputs["input_ids"], max_new_tokens=50)
+            response = tokenizer.decode(outputs[0], skip_special_tokens=True)
+            print(f"Bot: {response}\n")
+            
+        except KeyboardInterrupt:
+            print("\nGoodbye!")
+            break
+        except EOFError:
+            break
