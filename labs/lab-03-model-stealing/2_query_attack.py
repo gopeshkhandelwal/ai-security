@@ -22,7 +22,7 @@ Disclaimer: This code is for educational and demonstration purposes only.
 
 import numpy as np
 import pandas as pd
-from sklearn.neural_network import MLPClassifier
+from sklearn.ensemble import RandomForestClassifier
 import joblib
 import requests
 import time
@@ -56,17 +56,18 @@ def generate_probe_applications(n_samples=2000, random_state=123):
     np.random.seed(random_state)
     
     # Attacker creates synthetic but realistic-looking loan applications
+    # Using distributions similar to real loan data for better coverage
     data = {
-        'annual_income': np.random.uniform(20000, 300000, n_samples),
-        'credit_score': np.random.uniform(300, 850, n_samples),
-        'debt_to_income': np.random.uniform(0, 0.8, n_samples),
-        'employment_years': np.random.uniform(0, 30, n_samples),
-        'loan_amount': np.random.uniform(1000, 100000, n_samples),
+        'annual_income': np.random.lognormal(mean=10.8, sigma=0.6, size=n_samples),
+        'credit_score': np.clip(np.random.normal(680, 100, n_samples), 300, 850),
+        'debt_to_income': np.clip(np.random.exponential(0.3, n_samples), 0, 0.9),
+        'employment_years': np.clip(np.random.exponential(6, n_samples), 0, 35),
+        'loan_amount': np.random.lognormal(mean=9.5, sigma=0.9, size=n_samples),
         'loan_term_months': np.random.choice([12, 24, 36, 48, 60, 72], n_samples),
-        'num_credit_lines': np.random.randint(0, 15, n_samples),
-        'num_late_payments': np.random.randint(0, 8, n_samples),
+        'num_credit_lines': np.random.randint(0, 18, n_samples),
+        'num_late_payments': np.random.randint(0, 10, n_samples),
         'home_ownership': np.random.choice([0, 1, 2], n_samples),
-        'account_age_months': np.random.uniform(6, 300, n_samples)
+        'account_age_months': np.clip(np.random.exponential(90, n_samples), 6, 360)
     }
     return pd.DataFrame(data)
 
@@ -76,6 +77,7 @@ def query_api_batch(applications_df, batch_size=100):
     Uses batch endpoint for efficiency.
     """
     all_decisions = []
+    blocked = False
     
     for i in range(0, len(applications_df), batch_size):
         batch = applications_df.iloc[i:i+batch_size]
@@ -95,10 +97,16 @@ def query_api_batch(applications_df, batch_size=100):
             results = response.json()['results']
             decisions = [r['decision_code'] for r in results]
             all_decisions.extend(decisions)
+        elif response.status_code == 429:
+            # Rate limited / blocked - stop and return what we have
+            print(f"\n\n   {RED}🛡️  BLOCKED by API rate limiting!{RESET}")
+            print(f"   {YELLOW}   Attack stopped after {len(all_decisions)} queries{RESET}")
+            blocked = True
+            break
         else:
             raise Exception(f"API error: {response.text}")
     
-    return np.array(all_decisions)
+    return np.array(all_decisions), blocked
 
 def query_api_single(application):
     """Query the API for a single application."""
@@ -147,7 +155,7 @@ def query_attack():
     print(f"\n{BOLD}{CYAN}📡 PHASE 1: Generating Synthetic Loan Applications{RESET}")
     print(f"   Attacker creates fake loan applications to probe the API...\n")
     
-    n_queries = 2000
+    n_queries = 8000
     probe_df = generate_probe_applications(n_samples=n_queries, random_state=123)
     
     # Show sample probes
@@ -171,16 +179,35 @@ def query_attack():
     
     # Query the API using HTTP requests
     print(f"   Sending requests", end="", flush=True)
-    stolen_labels = query_api_batch(probe_df, batch_size=200)
-    print(f" ✅")
+    stolen_labels, was_blocked = query_api_batch(probe_df, batch_size=100)
     
     query_time = time.time() - start_time
+    
+    # Handle blocked case
+    if was_blocked:
+        print(f"\n   {RED}❌ Attack was BLOCKED by security controls!{RESET}")
+        print(f"   ⏱️  Time before block: {query_time:.3f} seconds")
+        
+        if len(stolen_labels) < 100:
+            print(f"\n   {GREEN}🛡️  DEFENSE SUCCESSFUL!{RESET}")
+            print(f"   Insufficient data collected ({len(stolen_labels)} samples)")
+            print(f"   Cannot train a useful surrogate model.")
+            print(f"\n{BOLD}{'='*60}{RESET}")
+            print(f"{GREEN}✅ Model stealing attack PREVENTED!{RESET}")
+            print(f"{BOLD}{'='*60}{RESET}\n")
+            return
+        else:
+            print(f"\n   {YELLOW}⚠️  Partial data collected: {len(stolen_labels)} samples{RESET}")
+            print(f"   Attempting to train with limited (possibly noisy) data...")
+            # Trim probe_df to match stolen labels
+            probe_df = probe_df.iloc[:len(stolen_labels)]
+    else:
+        print(f" ✅")
     
     # Count decisions
     label_counts = np.bincount(stolen_labels, minlength=3)
     
-    print(f"\n   ✅ Sent {n_queries} HTTP requests")
-    print(f"   ✅ Collected {n_queries} API responses")
+    print(f"\n   ✅ Collected {len(stolen_labels)} API responses")
     print(f"   ⏱️  Query time: {query_time:.3f} seconds")
     print(f"\n   {BOLD}Stolen API Responses:{RESET}")
     for i, name in enumerate(CLASS_NAMES):
@@ -195,13 +222,11 @@ def query_attack():
     start_time = time.time()
     
     # Train a surrogate model using stolen knowledge
-    surrogate_model = MLPClassifier(
-        hidden_layer_sizes=(32, 16),
-        activation='relu',
-        solver='adam',
-        max_iter=300,
+    surrogate_model = RandomForestClassifier(
+        n_estimators=100,
+        max_depth=15,
         random_state=42,
-        early_stopping=True
+        n_jobs=-1
     )
     
     # Train on stolen data (raw features, no scaling needed)
@@ -215,8 +240,16 @@ def query_attack():
     # Save the stolen model
     joblib.dump(surrogate_model, 'models/stolen_model.joblib')
     
-    print(f"\n{GREEN}💀 Attack Successful via HTTP API!{RESET}")
-    print(f"   Attacker now has their own loan approval model!")
+    if was_blocked:
+        print(f"\n{YELLOW}⚠️  Partial Attack (was blocked){RESET}")
+        print(f"   Attacker trained model with only {len(stolen_labels)} samples")
+        print(f"   Model quality likely degraded due to:")
+        print(f"   • Insufficient training data")
+        print(f"   • Possible differential privacy noise in responses")
+    else:
+        print(f"\n{GREEN}💀 Attack Successful via HTTP API!{RESET}")
+        print(f"   Attacker now has their own loan approval model!")
+    
     print(f"   Saved to: models/stolen_model.joblib")
     
     print(f"\n{BOLD}{'='*60}{RESET}")

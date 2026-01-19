@@ -43,6 +43,8 @@ cp .env.example .env
 
 ## Lab Steps
 
+### Part A: Attack Demo
+
 ```bash
 # Step 1: Train a benign model
 python 1_train_model.py
@@ -55,17 +57,39 @@ python 2_inject_malicious_code.py
 
 # Step 4: Use the model again (malicious payload executes!)
 python 3_consume_model.py
+```
 
-# Reset
+### Part B: Defense Demo
+
+```bash
+# Step 5: Try secure loading (attack blocked!)
+python 4_secure_model_loading.py
+```
+
+### Clean Up
+```bash
 python reset.py
 ```
+
+---
+
+## Defense Layers (4_secure_model_loading.py)
+
+| Layer | Defense | Technology |
+|-------|---------|------------|
+| 1 | Security Scan | ModelScan (Protect AI) + Lambda/pattern detection |
+| 2 | Hash Verification | SHA256 against known-good registry |
+| 3 | Safe Loading | TensorFlow `safe_mode=True` |
+
+---
 
 ## What This Demonstrates
 
 - **Attack:** Malicious Lambda layer injected into Keras model
 - **Impact:** Code executes automatically during inference
+- **Defense:** Pre-load scanning detects and blocks malicious code
 - **MITRE ATLAS:** AML.T0010 (Supply Chain), AML.T0011 (Backdoor)
 
 ## Key Takeaway
 
-> Always verify model integrity before loading untrusted models. Use model signing and hash verification.
+> Always verify model integrity before loading untrusted models. Use model scanning tools like ModelScan (Protect AI).

@@ -188,6 +188,18 @@ else:
     print("Malicious code detected!", scanner.findings)
 ```
 
+### Security Scanner (model_security_scanner.py)
+
+The scanner implements 5 defense layers:
+
+| Layer | Check | What It Detects |
+|-------|-------|-----------------|
+| 1 | Publisher Verification | Unknown/untrusted publishers |
+| 2 | Dangerous Pattern Scan | socket, subprocess, os.system, eval, pickle |
+| 3 | Entropy Analysis | Obfuscated/encoded payloads (base64, hex) |
+| 4 | AST Import Analysis | Dangerous import chains |
+| 5 | File Hash Registry | Track known-good vs modified files |
+
 ### Additional Protections
 
 | Setting | Custom .py files | Pickle weights |

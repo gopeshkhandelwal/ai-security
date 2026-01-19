@@ -43,6 +43,8 @@ cp .env.example .env
 
 ## Lab Steps
 
+### Part A: Attack Demo
+
 ```bash
 # Step 1: Create medical knowledge base (with fake PII)
 python 1_create_knowledge_base.py
@@ -52,20 +54,45 @@ python 2_run_rag_chatbot.py
 
 # Step 3: Run automated extraction attacks
 python 3_run_extraction_attacks.py
+```
 
-# Step 4: Run secure RAG chatbot (with PII filtering)
+### Part B: Defense Demo
+
+```bash
+# Step 4: Run secure RAG chatbot (enterprise PII filtering)
 python 4_secure_rag_chatbot.py
+```
 
-# Reset
+### Clean Up
+```bash
 python reset.py
 ```
+
+---
+
+## Defense Layers (4_secure_rag_chatbot.py)
+
+| Layer | Defense | Technology |
+|-------|---------|------------|
+| 1 | Input Validation | Prompt injection + extraction intent detection |
+| 2 | Document Sanitization | Microsoft Presidio NER (or regex fallback) |
+| 3 | Strict System Prompt | HIPAA-aligned instructions |
+| 4 | Output Filtering | Presidio scan on LLM response |
+
+**Enterprise Features:**
+- 🔒 **Microsoft Presidio** - NER-based PII detection (PERSON, SSN, PHONE, EMAIL, CREDIT_CARD)
+- 📝 **Audit Logging** - All security events logged for compliance
+- 🛡️ **Injection Detection** - Blocks "ignore instructions", template injection
+- 🔄 **Graceful Fallback** - Uses regex if Presidio not installed
+
+---
 
 ## What This Demonstrates
 
 - **Attack:** Extract SSNs, patient IDs, insurance info via prompt injection
-- **Defense:** PII detection, input sanitization, output filtering
+- **Defense:** 4-layer defense with industry-standard Presidio PII detection
 - **MITRE ATLAS:** AML.T0051 (LLM Prompt Injection)
 
 ## Key Takeaway
 
-> RAG systems can leak sensitive data. Implement defense-in-depth: input validation, PII detection, and output filtering.
+> RAG systems can leak sensitive data. Implement defense-in-depth: input validation, Presidio PII detection, and output filtering.

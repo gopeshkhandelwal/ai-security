@@ -18,14 +18,26 @@ Hands-on security labs demonstrating common AI/ML attack vectors and defense mec
 
 ## Labs
 
-| Lab | Topic | Description | Link |
-|-----|-------|-------------|------|
-| 01 | Supply Chain | Malicious Code Injection in ML Models | [📖 README](lab-01-malicious-code-injection/README.md) |
-| 02 | Integrity | Model Signing & Tampering Detection | [📖 README](lab-02-model-signing/README.md) |
-| 03 | Exfiltration | Model Stealing via Query Attack | [📖 README](lab-03-model-stealing/README.md) |
-| 04 | Data Leakage | RAG Sensitive Data Extraction | [📖 README](lab-04-rag-data-extraction/README.md) |
-| 05 | LLM Agents | Indirect Prompt Injection & Data Exfiltration | [📖 README](lab-05-agent-exploitation/README.md) |
-| 06 | Supply Chain | HuggingFace trust_remote_code Attack | [📖 README](lab-06-supply-chain-attack/README.md) |
+| Lab | Topic | Attack | Defense | Link |
+|-----|-------|--------|---------|------|
+| 01 | Supply Chain | Malicious Lambda Injection | ModelScan + Safe Loading | [📖 README](lab-01-malicious-code-injection/README.md) |
+| 02 | Integrity | Model Tampering | ECDSA Signing | [📖 README](lab-02-model-signing/README.md) |
+| 03 | Exfiltration | Model Stealing (Query) | Rate Limiting + Differential Privacy | [📖 README](lab-03-model-stealing/README.md) |
+| 04 | Data Leakage | RAG PII Extraction | Microsoft Presidio + 4-Layer Defense | [📖 README](lab-04-rag-data-extraction/README.md) |
+| 05 | LLM Agents | Indirect Prompt Injection | LLM-as-a-Judge Guardrail | [📖 README](lab-05-llm-agent-exploitation/README.md) |
+| 06 | Supply Chain | HuggingFace trust_remote_code | 5-Layer Security Scanner | [📖 README](lab-06-supply-chain-attack/README.md) |
+
+---
+
+## Industry Security Tools Used
+
+| Tool | Vendor | Used In |
+|------|--------|---------|
+| ModelScan | Protect AI | Lab 01 |
+| Flask-Limiter | Pallets | Lab 03 |
+| diffprivlib | IBM | Lab 03 |
+| Presidio | Microsoft | Lab 04 |
+| Custom AST Scanner | - | Lab 06 |
 
 ---
 

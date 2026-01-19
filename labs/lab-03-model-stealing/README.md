@@ -40,16 +40,31 @@ pip install -r requirements.txt
 
 ## Lab Steps
 
-### Terminal 1: Start API Server
+### Part A: Attack Demo
+
+#### Terminal 1: Start Vulnerable API Server
 ```bash
 python 1_proprority_model.py    # Create proprietary loan model
 python 1b_api_server.py         # Start API on port 5000 (keep running)
 ```
 
-### Terminal 2: Run Attack
+#### Terminal 2: Run Attack
 ```bash
 python 2_query_attack.py        # Steal model via HTTP queries
-python 3_compare_models.py      # Compare stolen vs original
+python 3_compare_models.py      # Compare stolen vs original (~95% fidelity)
+```
+
+### Part B: Defense Demo
+
+#### Terminal 1: Start Secure API Server
+```bash
+# Stop previous server (Ctrl+C), then:
+python 4_secure_api_server.py   # Start secure API on port 5000
+```
+
+#### Terminal 2: Run Same Attack
+```bash
+python 2_query_attack.py        # Attack degraded (~65% fidelity)
 ```
 
 ### Clean Up
@@ -59,10 +74,29 @@ python reset.py
 
 ---
 
+## Defense Layers (4_secure_api_server.py)
+
+| Layer | Defense | Technology |
+|-------|---------|------------|
+| 1 | Rate Limiting | Flask-Limiter (blocks after 100 req/min) |
+| 2 | Query Tracking | Flags IPs with >20 req/min as suspicious |
+| 3 | Differential Privacy | IBM diffprivlib (adds noise to suspicious requests) |
+| 4 | Audit Logging | All suspicious activity logged |
+
+**Behavior:**
+| Requests/min | Status | Response |
+|--------------|--------|----------|
+| < 20 | ✅ Normal | Clean prediction |
+| 20-100 | ⚠️ Suspicious | Noisy prediction (DP applied) |
+| > 100 | ⛔ Blocked | 429 Rate Limited |
+
+---
+
 ## What This Demonstrates
 
 - **Attack:** Clone a model by querying its API 2000 times
-- **Result:** Attacker gets a surrogate model with ~95% fidelity
+- **Result (Vulnerable):** Attacker gets surrogate model with ~95% fidelity
+- **Result (Secure):** Attack degraded to ~65% fidelity + logged
 - **MITRE ATLAS:** AML.T0044 (Full Model Access), AML.T0024 (Exfiltration via API)
 
 ## Key Takeaway
