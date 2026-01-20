@@ -1,4 +1,4 @@
-# Lab 03: Model Stealing via Query Attack
+# Lab 02: Model Stealing via Query Attack
 
 [![MITRE ATLAS](https://img.shields.io/badge/ATLAS-AML.T0044-red.svg)](https://atlas.mitre.org/techniques/AML.T0044)
 [![MITRE ATLAS](https://img.shields.io/badge/ATLAS-AML.T0024-red.svg)](https://atlas.mitre.org/techniques/AML.T0024)
@@ -27,7 +27,7 @@ This lab demonstrates how attackers can clone ML models by querying their APIs. 
 
 ```bash
 # Create virtual environment
-cd lab-03-model-stealing
+cd lab-02-model-stealing
 python -m venv .venv
 source .venv/bin/activate  # Linux/Mac
 # .venv\Scripts\activate   # Windows

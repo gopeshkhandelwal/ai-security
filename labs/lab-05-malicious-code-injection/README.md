@@ -1,4 +1,4 @@
-# Lab 01: Malicious Code Injection in ML Models
+# Lab 05: Malicious Code Injection in ML Models
 
 [![MITRE ATLAS](https://img.shields.io/badge/ATLAS-AML.T0010-red.svg)](https://atlas.mitre.org/techniques/AML.T0010)
 [![MITRE ATLAS](https://img.shields.io/badge/ATLAS-AML.T0011-red.svg)](https://atlas.mitre.org/techniques/AML.T0011)
@@ -26,7 +26,7 @@ This lab demonstrates how attackers can inject malicious code into ML models via
 
 ```bash
 # Create virtual environment
-cd lab-01-malicious-code-injection
+cd lab-05-malicious-code-injection
 python -m venv .venv
 source .venv/bin/activate  # Linux/Mac
 # .venv\Scripts\activate   # Windows

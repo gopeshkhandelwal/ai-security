@@ -1,4 +1,4 @@
-# Lab 02: Model Signing & Tampering Detection
+# Lab 06: Model Signing & Tampering Detection
 
 [![MITRE ATLAS](https://img.shields.io/badge/ATLAS-AML.T0010-red.svg)](https://atlas.mitre.org/techniques/AML.T0010)
 [![MITRE ATLAS](https://img.shields.io/badge/ATLAS-AML.T0011-red.svg)](https://atlas.mitre.org/techniques/AML.T0011)
@@ -26,7 +26,7 @@ This lab demonstrates how cryptographic signatures can protect ML models from ta
 
 ```bash
 # Create virtual environment
-cd lab-02-model-signing
+cd lab-06-model-signing
 python -m venv .venv
 source .venv/bin/activate  # Linux/Mac
 # .venv\Scripts\activate   # Windows

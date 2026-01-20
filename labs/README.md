@@ -20,12 +20,12 @@ Hands-on security labs demonstrating common AI/ML attack vectors and defense mec
 
 | Lab | Topic | Attack | Defense | Link |
 |-----|-------|--------|---------|------|
-| 01 | Supply Chain | Malicious Lambda Injection | ModelScan + Safe Loading | [📖 README](lab-01-malicious-code-injection/README.md) |
-| 02 | Integrity | Model Tampering | ECDSA Signing | [📖 README](lab-02-model-signing/README.md) |
-| 03 | Exfiltration | Model Stealing (Query) | Rate Limiting + Differential Privacy | [📖 README](lab-03-model-stealing/README.md) |
+| 01 | Supply Chain | HuggingFace trust_remote_code | 5-Layer Security Scanner | [📖 README](lab-01-supply-chain-attack/README.md) |
+| 02 | Exfiltration | Model Stealing (Query) | Rate Limiting + Differential Privacy | [📖 README](lab-02-model-stealing/README.md) |
+| 03 | LLM Agents | Indirect Prompt Injection | LLM-as-a-Judge Guardrail | [📖 README](lab-03-llm-agent-exploitation/README.md) |
 | 04 | Data Leakage | RAG PII Extraction | Microsoft Presidio + 4-Layer Defense | [📖 README](lab-04-rag-data-extraction/README.md) |
-| 05 | LLM Agents | Indirect Prompt Injection | LLM-as-a-Judge Guardrail | [📖 README](lab-05-llm-agent-exploitation/README.md) |
-| 06 | Supply Chain | HuggingFace trust_remote_code | 5-Layer Security Scanner | [📖 README](lab-06-supply-chain-attack/README.md) |
+| 05 | Supply Chain | Malicious Lambda Injection | ModelScan + Safe Loading | [📖 README](lab-05-malicious-code-injection/README.md) |
+| 06 | Integrity | Model Tampering | ECDSA Signing | [📖 README](lab-06-model-signing/README.md) |
 
 ---
 
@@ -33,11 +33,11 @@ Hands-on security labs demonstrating common AI/ML attack vectors and defense mec
 
 | Tool | Vendor | Used In |
 |------|--------|---------|
-| ModelScan | Protect AI | Lab 01 |
-| Flask-Limiter | Pallets | Lab 03 |
-| diffprivlib | IBM | Lab 03 |
+|------|--------|---------|n| ModelScan | Protect AI | Lab 05 |
+| Flask-Limiter | Pallets | Lab 02 |
+| diffprivlib | IBM | Lab 02 |
 | Presidio | Microsoft | Lab 04 |
-| Custom AST Scanner | - | Lab 06 |
+| Custom AST Scanner | - | Lab 01 |
 
 ---
 
@@ -45,11 +45,11 @@ Hands-on security labs demonstrating common AI/ML attack vectors and defense mec
 
 | Technique | Name | Lab |
 |-----------|------|-----|
-| [AML.T0010](https://atlas.mitre.org/techniques/AML.T0010) | ML Supply Chain Compromise | Lab 01, Lab 02 |
-| [AML.T0011](https://atlas.mitre.org/techniques/AML.T0011) | Backdoor ML Model | Lab 01, Lab 02 |
-| [AML.T0044](https://atlas.mitre.org/techniques/AML.T0044) | Full ML Model Access | Lab 03 |
-| [AML.T0024](https://atlas.mitre.org/techniques/AML.T0024) | Exfiltration via ML Inference API | Lab 03 |
-| [AML.T0051](https://atlas.mitre.org/techniques/AML.T0051) | LLM Prompt Injection | Lab 04 |
+| [AML.T0010](https://atlas.mitre.org/techniques/AML.T0010) | ML Supply Chain Compromise | Lab 01, Lab 05 |
+| [AML.T0011](https://atlas.mitre.org/techniques/AML.T0011) | Backdoor ML Model | Lab 01, Lab 05 |
+| [AML.T0044](https://atlas.mitre.org/techniques/AML.T0044) | Full ML Model Access | Lab 02 |
+| [AML.T0024](https://atlas.mitre.org/techniques/AML.T0024) | Exfiltration via ML Inference API | Lab 02 |
+| [AML.T0051](https://atlas.mitre.org/techniques/AML.T0051) | LLM Prompt Injection | Lab 03, Lab 04 |
 
 ---
 
@@ -64,7 +64,7 @@ cd ai-security/labs
 pip install -r requirements.txt
 
 # Navigate to a lab
-cd lab-01-malicious-code-injection
+cd lab-01-supply-chain-attack
 ```
 
 ---
