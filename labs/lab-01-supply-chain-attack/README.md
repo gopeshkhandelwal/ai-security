@@ -1,4 +1,4 @@
-# Lab 06: HuggingFace Supply Chain Attack
+# Lab 01: HuggingFace Supply Chain Attack
 
 ## 🎯 Overview
 
@@ -31,7 +31,7 @@ When `trust_remote_code=True`:
 ## 📁 Lab Structure
 
 ```
-lab-06-supply-chain-attack/
+lab-01-supply-chain-attack/
 ├── 1_attacker_listener.py          # Attacker's reverse shell listener
 ├── 2_victim_loads_model.py         # Victim loads model (gets compromised)
 ├── 3_safe_model_loading.py         # Safe version with security scanner
@@ -63,7 +63,7 @@ lab-06-supply-chain-attack/
 ### Setup
 
 ```bash
-cd lab-06-supply-chain-attack
+cd lab-01-supply-chain-attack
 make setup
 ```
 
