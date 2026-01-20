@@ -6,6 +6,10 @@ Testing a new optimized Q&A model from HuggingFace Hub.
 This version inspects the downloaded files BEFORE executing them.
 
 Model: helpful-ai/super-fast-qa-bert
+
+Author: GopeshK
+License: MIT License
+Disclaimer: For educational and demonstration purposes only.
 """
 
 import sys

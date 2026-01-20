@@ -1,5 +1,11 @@
 #!/usr/bin/env python3
-"""Reset script for Lab 06: HuggingFace Supply Chain Attack."""
+"""
+Lab 01: Reset script for HuggingFace Supply Chain Attack.
+
+Author: GopeshK
+License: MIT License
+Disclaimer: For educational and demonstration purposes only.
+"""
 
 import os
 import signal

@@ -11,6 +11,10 @@ Industry-standard security checks:
 4. Entropy Analysis - Detect obfuscated payloads
 5. Import Chain Analysis - Trace actual imports
 
+Author: GopeshK
+License: MIT License
+Disclaimer: For educational and demonstration purposes only.
+
 Usage:
     from model_security_scanner import ModelSecurityScanner
     
