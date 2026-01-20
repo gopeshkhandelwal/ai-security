@@ -6,6 +6,10 @@ Testing a new optimized Q&A model from HuggingFace Hub.
 The model claims 3x faster inference than standard BERT.
 
 Model: helpful-ai/super-fast-qa-bert
+
+Author: GopeshK
+License: MIT License
+Disclaimer: For educational and demonstration purposes only.
 """
 
 import sys

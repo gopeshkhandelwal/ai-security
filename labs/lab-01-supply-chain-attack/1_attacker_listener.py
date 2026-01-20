@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Lab 06: Attacker's Listener (Reverse Shell)
+Lab 01: Attacker's Listener (Reverse Shell)
 
 This simulates an attacker waiting for a reverse shell connection
 from a victim who loads a malicious HuggingFace model.
@@ -8,8 +8,12 @@ from a victim who loads a malicious HuggingFace model.
 Run this FIRST, then run victim script from DIFFERENT directory.
 
 Usage: 
-  Terminal 1 (Attacker): cd lab-06-supply-chain-attack && python 1_attacker_listener.py
-  Terminal 2 (Victim):   cd labs && python lab-06-supply-chain-attack/2_victim_loads_model.py
+  Terminal 1 (Attacker): cd lab-01-supply-chain-attack && python 1_attacker_listener.py
+  Terminal 2 (Victim):   cd labs && python lab-01-supply-chain-attack/2_victim_loads_model.py
+
+Author: GopeshK
+License: MIT License
+Disclaimer: For educational and demonstration purposes only.
 """
 
 import socket
