@@ -76,7 +76,7 @@ if __name__ == "__main__":
     
     model = AutoModelForCausalLM.from_pretrained(
         MODEL_PATH,
-        trust_remote_code=True,
+        trust_remote_code=False,
         local_files_only=True,
     )
     tokenizer = AutoTokenizer.from_pretrained(MODEL_PATH)
