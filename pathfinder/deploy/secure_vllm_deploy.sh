@@ -129,7 +129,7 @@ setup_container() {
             -e no_proxy=localhost,127.0.0.1 \
             -e http_proxy="${http_proxy:-}" \
             -e https_proxy="${https_proxy:-}" \
-            -e PYTHONPATH=/llm/models/pathfinder/deploy \
+            -e PYTHONPATH=/llm/models/pathfinder/pathfinder/deploy \
             --shm-size="32g" \
             --entrypoint /bin/bash \
             "$CONTAINER_IMAGE"
@@ -159,7 +159,7 @@ download_model() {
     rm -rf "$QUARANTINE_DIR/$MODEL_NAME"
     
     docker exec -e HF_TOKEN="${HF_TOKEN:-}" "$CONTAINER_NAME" \
-        python3 /llm/models/pathfinder/deploy/download_model.py \
+        python3 /llm/models/pathfinder/pathfinder/deploy/download_model.py \
             "$MODEL_ID" \
             --output-dir /llm/models/quarantine
     
@@ -181,7 +181,7 @@ security_scan() {
     SCAN_FILE="$SCAN_RESULTS_DIR/${MODEL_NAME}_$(date +%Y%m%d_%H%M%S).json"
     
     if docker exec "$CONTAINER_NAME" \
-        python3 /llm/models/pathfinder/deploy/scan_model.py \
+        python3 /llm/models/pathfinder/pathfinder/deploy/scan_model.py \
             "/llm/models/quarantine/$MODEL_NAME" \
             --output "/llm/models/scan-results/$(basename "$SCAN_FILE")"; then
         log_success "Security scan PASSED"
@@ -209,7 +209,7 @@ promote_model() {
     [ "$TRUST_REMOTE_CODE" == "true" ] && TRUST_FLAG="--trust-remote-code"
     
     docker exec "$CONTAINER_NAME" \
-        python3 /llm/models/pathfinder/deploy/generate_mlbom.py \
+        python3 /llm/models/pathfinder/pathfinder/deploy/generate_mlbom.py \
             "/llm/models/verified/$MODEL_NAME" \
             --model-id "$MODEL_ID" \
             --scan-passed \
