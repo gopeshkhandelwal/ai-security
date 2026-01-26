@@ -111,14 +111,14 @@ deepspeed --num_nodes=1 --num_gpus=8 cifar10_deepspeed.py \
      │                     │                       │                      │
      │              ┌──────┴──────┐                │                      │
      │              │   SCAN      │                │                      │
-     │              │ • ModelScan │ ◀── Lab 05     │                      │
-     │              │ • AST scan  │ ◀── Lab 01     │                      │
+     │              │ • ModelScan │                │                      │
+     │              │ • AST scan  │                │                      │
      │              │ • Bandit    │                │                      │
-     │              │ • Presidio  │ ◀── Lab 04     │                      │
+     │              │ • Presidio  │                │                      │
      │              └──────┬──────┘                │                      │
      │                     │                       │                      │
      │              ┌──────┴──────┐                │                      │
-     │              │   SIGN      │ ◀── Lab 06     │                      │
+     │              │   SIGN      │                │                      │
      │              │ • ECDSA     │                │                      │
      │              │ • MLBOM gen │                │                      │
      │              └──────┬──────┘                │                      │
@@ -171,7 +171,7 @@ deepspeed --num_nodes=1 --num_gpus=8 cifar10_deepspeed.py \
 │  │  │  • Format Check  │    │  • Bandit        │    │  • MLBOM Gen     │ │ │
 │  │  │  • Repo Origin   │    │  • Presidio      │    │  • Dependency    │ │ │
 │  │  │                  │    │  • PickleScan    │    │    Lock          │ │ │
-│  │  │  [From Lab 01]   │    │  [Labs 01,04,05] │    │  [From Lab 06]   │ │ │
+│  │  │                  │    │                  │    │                  │ │ │
 │  │  └──────────────────┘    └──────────────────┘    └──────────────────┘ │ │
 │  │                                                                        │ │
 │  └───────────────────────────────────┬────────────────────────────────────┘ │
@@ -197,7 +197,6 @@ deepspeed --num_nodes=1 --num_gpus=8 cifar10_deepspeed.py \
 │  │  │  │ dangerous  │ │ Watchdog   │ │ Allowlist  │ │ Injection  │    │ │ │
 │  │  │  └────────────┘ └────────────┘ └────────────┘ └────────────┘    │ │ │
 │  │  │                                                                  │ │ │
-│  │  │  [Sandbox patterns from Lab 03]                                  │ │ │
 │  │  └──────────────────────────────────────────────────────────────────┘ │ │
 │  └────────────────────────────────────────────────────────────────────────┘ │
 │                                                                              │
@@ -230,7 +229,7 @@ deepspeed --num_nodes=1 --num_gpus=8 cifar10_deepspeed.py \
 │  │ CHECK 1: Allowlist Verification                                        │ │
 │  │ ──────────────────────────────────                                     │ │
 │  │ • Is model in approved allowlist?                                      │ │
-│  │ • Is organization verified? (from Lab 01 TRUSTED_PUBLISHERS)           │ │
+│  │ • Is organization verified? (TRUSTED_PUBLISHERS list)                  │ │
 │  │                                                                        │ │
 │  │ if model in ALLOWLIST:                                                 │ │
 │  │     status = "pre-approved"                                            │ │
@@ -272,7 +271,7 @@ deepspeed --num_nodes=1 --num_gpus=8 cifar10_deepspeed.py \
 │  │ • Flag if custom code required                                         │ │
 │  │ • Require two-person approval if detected                              │ │
 │  │                                                                        │ │
-│  │ if config.get("auto_map"):  # From Lab 01                              │ │
+│  │ if config.get("auto_map"):                                              │ │
 │  │     plan["trust_remote_code_required"] = True                          │ │
 │  │     plan["approval_level"] = "two-person"                              │ │
 │  │     plan["risk_warnings"] = [...]                                      │ │
@@ -319,7 +318,7 @@ deepspeed --num_nodes=1 --num_gpus=8 cifar10_deepspeed.py \
 │                                      │                                      │
 │                                      ▼                                      │
 │  ┌────────────────────────────────────────────────────────────────────────┐ │
-│  │ SCAN 1: ModelScan (Protect AI) - From Lab 05                           │ │
+│  │ SCAN 1: ModelScan (Protect AI)                                         │ │
 │  │ ─────────────────────────────────────────────                          │ │
 │  │                                                                        │ │
 │  │ from modelscan.modelscan import ModelScan                              │ │
@@ -334,7 +333,7 @@ deepspeed --num_nodes=1 --num_gpus=8 cifar10_deepspeed.py \
 │                                      │                                      │
 │                                      ▼                                      │
 │  ┌────────────────────────────────────────────────────────────────────────┐ │
-│  │ SCAN 2: AST Code Analysis - From Lab 01                                │ │
+│  │ SCAN 2: AST Code Analysis                                              │ │
 │  │ ───────────────────────────────────────────                            │ │
 │  │                                                                        │ │
 │  │ from model_security_scanner import ModelSecurityScanner                │ │
@@ -369,7 +368,7 @@ deepspeed --num_nodes=1 --num_gpus=8 cifar10_deepspeed.py \
 │                                      │                                      │
 │                                      ▼                                      │
 │  ┌────────────────────────────────────────────────────────────────────────┐ │
-│  │ SCAN 4: Secret Detection - From Lab 04                                 │ │
+│  │ SCAN 4: Secret Detection (Presidio)                                   │ │
 │  │ ──────────────────────────────────────────                             │ │
 │  │                                                                        │ │
 │  │ from presidio_analyzer import AnalyzerEngine                           │ │
@@ -402,7 +401,7 @@ deepspeed --num_nodes=1 --num_gpus=8 cifar10_deepspeed.py \
 │                      STAGE 3: SIGN & GENERATE MLBOM                          │
 ├─────────────────────────────────────────────────────────────────────────────┤
 │                                                                              │
-│  Based on Lab 06: Model Signing                                             │
+│  Uses ECDSA Model Signing for artifact integrity verification               │
 │                                                                              │
 │  ┌────────────────────────────────────────────────────────────────────────┐ │
 │  │ SIGN MODEL ARTIFACTS                                                   │ │
@@ -524,7 +523,7 @@ deepspeed --num_nodes=1 --num_gpus=8 cifar10_deepspeed.py \
 │  │    - Auto-terminate after timeout                                      │ │
 │  │    - Kill on suspicious syscalls                                       │ │
 │  │                                                                        │ │
-│  │ 3. Output Sanitization (From Lab 03/04)                                │ │
+│  │ 3. Output Sanitization                                                 │ │
 │  │    ─────────────────────────────────────                               │ │
 │  │    - Redact any secrets from logs                                      │ │
 │  │    - Presidio scan on all outputs                                      │ │
@@ -720,23 +719,23 @@ Aborting. Model quarantined at: /tmp/pathfinder/quarantine/
 
 ---
 
-## 7. Lab Integration Summary
+## 7. Security Components Summary
 
-| Security Requirement | Lab Source | Component |
-|---------------------|------------|-----------|
-| AST code scanning | Lab 01 | `model_security_scanner.py` |
-| Publisher verification | Lab 01 | `TRUSTED_PUBLISHERS` list |
-| trust_remote_code detection | Lab 01 | `check_custom_code_requirement()` |
-| Rate limiting (API protection) | Lab 02 | `Flask-Limiter` patterns |
-| Path sandboxing | Lab 03 | `BLOCKED_PATHS` enforcement |
-| Injection detection | Lab 03 | Pattern detection in secured agent |
-| Secret protection | Lab 03/04 | Presidio + redaction |
-| PII detection | Lab 04 | Microsoft Presidio integration |
-| ModelScan integration | Lab 05 | `ModelSecurityScanner` class |
-| Hash verification | Lab 05 | SHA256 registry pattern |
-| ECDSA signing | Lab 06 | Signing workflow |
-| Signature verification | Lab 06 | Verification at load time |
-| Tamper detection | Lab 06 | Signature validation |
+| Security Requirement | Component |
+|---------------------|------------|
+| AST code scanning | `model_security_scanner.py` |
+| Publisher verification | `TRUSTED_PUBLISHERS` list |
+| trust_remote_code detection | `check_custom_code_requirement()` |
+| Rate limiting (API protection) | `Flask-Limiter` patterns |
+| Path sandboxing | `BLOCKED_PATHS` enforcement |
+| Injection detection | Pattern detection in secured agent |
+| Secret protection | Presidio + redaction |
+| PII detection | Microsoft Presidio integration |
+| ModelScan integration | `ModelSecurityScanner` class |
+| Hash verification | SHA256 registry pattern |
+| ECDSA signing | Signing workflow |
+| Signature verification | Verification at load time |
+| Tamper detection | Signature validation |
 
 ---
 
