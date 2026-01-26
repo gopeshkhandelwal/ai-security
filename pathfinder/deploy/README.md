@@ -167,14 +167,80 @@ vllm bench serve \
     --port=8001
 ```
 
-## Security Flags
+## Command-Line Options
+
+```bash
+./secure_vllm_deploy.sh <model-id> [options]
+```
+
+### Options
 
 | Flag | Description | Default |
 |------|-------------|---------|
-| `--trust-remote-code` | Enable trust_remote_code (DANGEROUS) | Disabled |
+| `--serve-only` | Skip download/scan, just serve an already-verified model | Disabled |
 | `--skip-scan` | Skip security scanning (NOT RECOMMENDED) | Disabled |
-| `--force` | Re-download even if model exists | Disabled |
-| `--benchmark` | Run benchmark after deployment | Disabled |
+| `--force` | Re-download even if model exists in quarantine | Disabled |
+| `--trust-remote-code` | Enable trust_remote_code (DANGEROUS - allows arbitrary code execution) | Disabled |
+| `--benchmark` | Run performance benchmark after deployment | Disabled |
+
+### Examples
+
+```bash
+# Standard deployment with full security pipeline
+./secure_vllm_deploy.sh meta-llama/Llama-3.1-8B
+
+# Re-download a model (overwrite existing)
+./secure_vllm_deploy.sh meta-llama/Llama-3.1-8B --force
+
+# Serve an already-verified model (skip download/scan)
+./secure_vllm_deploy.sh meta-llama/Llama-3.1-8B --serve-only
+
+# Deploy and run benchmark
+./secure_vllm_deploy.sh meta-llama/Llama-3.1-8B --benchmark
+
+# Deploy model requiring custom code (use with caution)
+./secure_vllm_deploy.sh helpful-ai/custom-model --trust-remote-code
+
+# Skip scan (NOT RECOMMENDED - for testing only)
+./secure_vllm_deploy.sh some-model --skip-scan
+```
+
+### Flag Details
+
+#### `--serve-only`
+Use this when the model has already been downloaded, scanned, and promoted to the verified directory. This skips:
+- Pathfinder git setup
+- Model download
+- Security scanning
+- Promotion step
+
+Useful for:
+- Restarting the vLLM server after a reboot
+- Switching between already-verified models
+- Quick server restarts without re-scanning
+
+#### `--skip-scan`
+⚠️ **NOT RECOMMENDED** - Bypasses security scanning entirely. The model will still be promoted to verified without validation. Only use for:
+- Testing/development environments
+- Models you've manually verified
+
+#### `--force`
+Forces re-download of the model even if it already exists in quarantine. Useful when:
+- Model has been updated upstream
+- Previous download was corrupted
+- You want a fresh copy
+
+#### `--trust-remote-code`
+⚠️ **DANGEROUS** - Enables `trust_remote_code=True` in vLLM, allowing the model to execute arbitrary Python code during loading. Required for some models with custom architectures. Only use if:
+- You've manually reviewed the model's Python files
+- The model is from a trusted source
+- You understand the security implications
+
+#### `--benchmark`
+Runs a performance benchmark after deployment using `vllm bench serve` with:
+- 10 prompts
+- 1024 token input length
+- 512 token output length
 
 ## Scan Results
 

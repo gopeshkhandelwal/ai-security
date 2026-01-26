@@ -67,28 +67,38 @@ done
 # =============================================================================
 
 setup_pathfinder() {
-    log_header "Setup Pathfinder"
+    log_header "Setup Pathfinder Security Tools"
     
     PATHFINDER_DIR="${MODELS_DIR}/pathfinder"
+    PATHFINDER_REPO="https://github.com/intel-sandbox/ai-security.git"
+    PATHFINDER_BRANCH="gopesh/ai-model-pathfinder"  # TODO: Change to 'main' for production
     
     if [ -d "$PATHFINDER_DIR/.git" ]; then
-        log_info "Updating Pathfinder..."
+        log_info "Updating Pathfinder from $PATHFINDER_REPO..."
         cd "$PATHFINDER_DIR"
         git fetch origin
-        git checkout pathfinder 2>/dev/null || git checkout main
+        git checkout "$PATHFINDER_BRANCH" 2>/dev/null || git checkout main
         git pull
     else
-        log_info "Cloning Pathfinder..."
+        log_info "Cloning Pathfinder security tools..."
         sudo mkdir -p "$MODELS_DIR"
+        
+        # Remove existing non-git directory if present
+        if [ -d "$PATHFINDER_DIR" ]; then
+            log_warning "Removing existing non-git pathfinder directory..."
+            sudo rm -rf "$PATHFINDER_DIR"
+        fi
+        
         cd "$MODELS_DIR"
-        git clone https://github.com/intel/ai-security.git pathfinder 2>/dev/null || {
-            log_warning "Clone failed, copying from local..."
-            sudo cp -r "$SCRIPT_DIR/.." "$PATHFINDER_DIR"
+        git clone "$PATHFINDER_REPO" pathfinder || {
+            log_error "Failed to clone Pathfinder repository: $PATHFINDER_REPO"
+            log_error "Please ensure you have access to the repository"
+            exit 1
         }
-        cd "$PATHFINDER_DIR" && git checkout pathfinder 2>/dev/null || true
+        cd "$PATHFINDER_DIR" && git checkout "$PATHFINDER_BRANCH" 2>/dev/null || true
     fi
     
-    log_success "Pathfinder ready"
+    log_success "Pathfinder ready: $PATHFINDER_DIR"
 }
 
 # =============================================================================
