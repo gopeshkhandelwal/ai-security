@@ -1,0 +1,16 @@
+# Pathfinder Security Module Requirements
+
+# Core scanning tools
+modelscan>=0.5.0          # Protect AI's model scanner
+picklescan>=0.0.12        # Pickle file scanner
+
+# Model handling
+transformers>=4.36.0      # Hugging Face transformers
+safetensors>=0.4.0        # Safe tensor format
+torch>=2.1.0              # PyTorch
+
+# Cryptography for signatures
+cryptography>=41.0.0      # ECDSA signing/verification
+
+# Optional: Intel Gaudi support (install separately)
+# optimum-habana>=1.23.0  # Gaudi optimization
