@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Pathfinder Secure Model Loader for Intel Gaudi
+Secure Model Loader
 
 This module provides secure model loading with:
 1. Pre-load security scanning (ModelScan, PickleScan, AST patterns)
@@ -8,16 +8,15 @@ This module provides secure model loading with:
 3. MLBOM validation
 4. Enforced trust_remote_code=False
 
-Integrates with the Pathfinder security pipeline to ensure only
-verified models are loaded on Intel Gaudi accelerators.
+Ensures only verified models are loaded on target accelerators.
 
 Usage:
-    from pathfinder_loader import SecureModelLoader
+    from secure_loader import SecureModelLoader
     
     loader = SecureModelLoader()
     model, tokenizer = loader.load("meta-llama/Llama-3.2-1B")
 
-Author: AI Model Pathfinder Security Team
+Author: AI Security Team
 """
 
 import os
@@ -36,10 +35,10 @@ from cryptography.exceptions import InvalidSignature
 # Transformers
 from transformers import AutoTokenizer, AutoModelForCausalLM, AutoConfig
 
-# Pathfinder Scanner
-from pathfinder_scanner import PathfinderScanner, ScanResult
+# Model Security Scanner
+from .scanner import ModelSecurityScanner, ScanResult
 
-logger = logging.getLogger("pathfinder.loader")
+logger = logging.getLogger("security.loader")
 
 
 @dataclass
@@ -55,7 +54,7 @@ class LoadResult:
 
 class SecureModelLoader:
     """
-    Secure model loader for AI Model Pathfinder.
+    Secure model loader with comprehensive security checks.
     
     Ensures all security checks pass before loading any model.
     """
@@ -88,7 +87,7 @@ class SecureModelLoader:
                 self.public_key = serialization.load_pem_public_key(f.read())
         
         # Initialize scanner
-        self.scanner = PathfinderScanner(strict_mode=True, allow_pickle=False)
+        self.scanner = ModelSecurityScanner(strict_mode=True, allow_pickle=False)
         
         if skip_verification:
             logger.warning("⚠️  SIGNATURE VERIFICATION DISABLED - Development mode only!")
@@ -122,7 +121,7 @@ class SecureModelLoader:
         if not model_path.exists():
             return LoadResult(
                 success=False,
-                error=f"Model not found in verified store: {model_path}. Run 'pathfinder enable {model_id}' first."
+                error=f"Model not found in verified store: {model_path}. Enable the model first."
             )
         
         # Step 2: Verify MLBOM exists and is valid
@@ -173,7 +172,7 @@ class SecureModelLoader:
         if config and config.get("auto_map"):
             return LoadResult(
                 success=False,
-                error="Model requires trust_remote_code=True which is BLOCKED. Use 'pathfinder enable --accept-remote-code-risk' with two-person approval."
+                error="Model requires trust_remote_code=True which is BLOCKED. Enable with --accept-remote-code-risk flag with appropriate approval."
             )
         
         # Step 6: Load model with security constraints
@@ -285,7 +284,7 @@ class SecureModelLoader:
 
 
 # =============================================================================
-# EXAMPLE USAGE WITH GAUDI
+# EXAMPLE USAGE
 # =============================================================================
 
 def example_gaudi_inference():
@@ -297,13 +296,13 @@ def example_gaudi_inference():
     import habana_frameworks.torch.core as htcore
     
     print("=" * 60)
-    print("  Pathfinder Secure Inference on Intel Gaudi2")
+    print("  Secure Inference on Intel Gaudi2")
     print("=" * 60)
     
     # Initialize secure loader
     loader = SecureModelLoader(
         verified_models_path="/verified-models",
-        public_key_path="/keys/pathfinder.pub",
+        public_key_path="/keys/signing.pub",
         device="hpu"
     )
     
@@ -358,7 +357,7 @@ if __name__ == "__main__":
         )
         
         # Scan only test
-        scanner = PathfinderScanner()
+        scanner = ModelSecurityScanner()
         if len(sys.argv) > 2:
             result = scanner.scan_model(sys.argv[2])
             print(result.to_json())

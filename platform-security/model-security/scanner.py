@@ -1,20 +1,20 @@
 #!/usr/bin/env python3
 """
-Pathfinder Model Security Scanner
+Model Security Scanner
 
-Integrates multiple security scanning tools for AI Model Pathfinder:
+Integrates multiple security scanning tools for AI models:
 1. ModelScan (Protect AI) - Industry-standard ML model scanner
 2. PickleScan - Detect malicious pickle files
-3. AST Code Scanner - Analyze custom model code (from Lab 01)
+3. AST Code Scanner - Analyze custom model code
 4. SafeTensors Validator - Ensure safe format usage
 5. Hash Verification - Integrity checking
 
 This module is the core security gate for model enablement.
 
 Usage:
-    from pathfinder_scanner import PathfinderScanner
+    from model_scanner import ModelSecurityScanner
     
-    scanner = PathfinderScanner()
+    scanner = ModelSecurityScanner()
     result = scanner.scan_model("/path/to/model")
     
     if result.passed:
@@ -24,7 +24,7 @@ Usage:
         # Block and quarantine
         print(result.to_json())
 
-Author: AI Model Pathfinder Security Team
+Author: AI Security Team
 License: MIT
 """
 
@@ -41,7 +41,7 @@ from enum import Enum
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger("pathfinder.scanner")
+logger = logging.getLogger("security.scanner")
 
 
 # =============================================================================
@@ -152,12 +152,12 @@ class ScanResult:
 
 
 # =============================================================================
-# PATHFINDER SCANNER
+# MODEL SECURITY SCANNER
 # =============================================================================
 
-class PathfinderScanner:
+class ModelSecurityScanner:
     """
-    Unified security scanner for AI Model Pathfinder.
+    Unified security scanner for AI models.
     
     Integrates multiple scanning tools and provides a single interface
     for the security pipeline.
@@ -170,7 +170,7 @@ class PathfinderScanner:
     # Blocked formats (pickle-based, dangerous)
     BLOCKED_FORMATS = [".pkl", ".pickle", ".pt", ".pth", ".bin", ".h5", ".hdf5"]
     
-    # Dangerous code patterns (from Lab 01)
+    # Dangerous code patterns
     DANGEROUS_PATTERNS = [
         # Network operations
         (r'socket\.socket', 'NETWORK_SOCKET', 'Network socket creation'),
@@ -201,7 +201,7 @@ class PathfinderScanner:
         (r'ctypes|cffi', 'NATIVE_CODE', 'Native code execution'),
     ]
     
-    # Trusted publishers (from Lab 01)
+    # Trusted publishers
     TRUSTED_PUBLISHERS = [
         'google', 'meta-llama', 'microsoft', 'openai', 'huggingface',
         'facebook', 'nvidia', 'bigscience', 'EleutherAI', 'stabilityai',
@@ -332,15 +332,22 @@ class PathfinderScanner:
             scanner = ModelScan()
             scan_result = scanner.scan(str(model_path))
             
-            if scan_result.issues:
-                for issue in scan_result.issues:
-                    result.add_finding(Finding(
-                        scanner="ModelScan",
-                        severity=Severity.CRITICAL,
-                        category="MODELSCAN_ISSUE",
-                        message=str(issue),
-                        details={"raw_issue": str(issue)}
-                    ))
+            # modelscan returns a dict with 'issues', 'errors', 'summary' keys
+            issues = scan_result.get('issues', []) if isinstance(scan_result, dict) else []
+            errors = scan_result.get('errors', []) if isinstance(scan_result, dict) else []
+            
+            for issue in issues:
+                result.add_finding(Finding(
+                    scanner="ModelScan",
+                    severity=Severity.CRITICAL,
+                    category="MODELSCAN_ISSUE",
+                    message=str(issue),
+                    details={"raw_issue": str(issue)}
+                ))
+            
+            for error in errors:
+                logger.warning(f"ModelScan error on file: {error}")
+                
         except Exception as e:
             logger.error(f"ModelScan error: {e}")
             result.add_finding(Finding(
@@ -364,20 +371,22 @@ class PathfinderScanner:
             try:
                 scan_result = picklescan.scan_file_path(str(pf))
                 
-                if scan_result.issues:
-                    for issue in scan_result.issues:
+                # picklescan returns ScanResult with globals list and issues_count
+                if scan_result.issues_count > 0 or scan_result.infected_files > 0:
+                    for global_ref in scan_result.globals:
                         result.add_finding(Finding(
                             scanner="PickleScan",
                             severity=Severity.CRITICAL,
                             category="PICKLE_INJECTION",
-                            message=f"Malicious pickle detected: {issue}",
-                            file=str(pf)
+                            message=f"Malicious pickle detected: {global_ref}",
+                            file=str(pf),
+                            details={"global": str(global_ref)}
                         ))
             except Exception as e:
                 logger.warning(f"PickleScan error on {pf}: {e}")
     
     def _scan_code_patterns(self, files: List[Path], result: ScanResult):
-        """Scan Python files for dangerous patterns (from Lab 01)"""
+        """Scan Python files for dangerous patterns"""
         result.scanners_run.append("CodePatternScanner")
         
         py_files = [f for f in files if f.suffix == '.py' and f.is_file()]
@@ -480,18 +489,18 @@ def main():
     import argparse
     
     parser = argparse.ArgumentParser(
-        description="Pathfinder Model Security Scanner",
+        description="Model Security Scanner",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
   # Scan a model directory
-  python pathfinder_scanner.py /path/to/model
+  python model_scanner.py /path/to/model
 
   # Scan with pickle formats allowed (not recommended)
-  python pathfinder_scanner.py /path/to/model --allow-pickle
+  python model_scanner.py /path/to/model --allow-pickle
 
   # Output JSON to file
-  python pathfinder_scanner.py /path/to/model --output scan_result.json
+  python model_scanner.py /path/to/model --output scan_result.json
         """
     )
     
@@ -506,10 +515,10 @@ Examples:
     args = parser.parse_args()
     
     if args.quiet:
-        logging.getLogger("pathfinder.scanner").setLevel(logging.WARNING)
+        logging.getLogger("security.scanner").setLevel(logging.WARNING)
     
     # Run scan
-    scanner = PathfinderScanner(
+    scanner = ModelSecurityScanner(
         strict_mode=True,
         allow_pickle=args.allow_pickle
     )
@@ -526,7 +535,7 @@ Examples:
         print(f"Results written to: {args.output}")
     else:
         print("\n" + "=" * 60)
-        print("PATHFINDER SECURITY SCAN RESULTS")
+        print("MODEL SECURITY SCAN RESULTS")
         print("=" * 60)
         print(f"\nModel: {result.model_path}")
         print(f"Status: {'✓ PASSED' if result.passed else '✗ FAILED'}")
