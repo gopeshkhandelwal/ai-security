@@ -1,15 +1,16 @@
 #!/bin/bash
 #
-# Pathfinder Secure Model Deployment for Intel vLLM
+# Platform Security - Secure Model Deployment for Intel vLLM
 # Lightweight orchestration script - logic in Python files
+#
+# This script is part of ai-security/platform-security and should be
+# invoked via bootstrap scripts from developer repos.
 #
 # Usage:
 #   ./secure_vllm_deploy.sh <model-id> [options]
 #
 # Options:
-#   --skip-scan          Skip security scanning (NOT RECOMMENDED)
 #   --force              Re-download existing model
-#   --trust-remote-code  Enable trust_remote_code (DANGEROUS)
 #   --benchmark          Run benchmark after deployment
 #   --serve-only         Skip download/scan, just serve verified model
 
@@ -29,14 +30,15 @@ VERIFIED_DIR="${MODELS_DIR}/verified"
 SCAN_RESULTS_DIR="${MODELS_DIR}/scan-results"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
+# Security tools directory (this repo, cloned by bootstrap script)
+SECURITY_DIR="${SECURITY_DIR:-$(cd "$SCRIPT_DIR/../.." && pwd)}"
+
 CONTAINER_NAME="lsv-container"
 CONTAINER_IMAGE="intel/llm-scaler-vllm:1.2"
 VLLM_PORT=8001
 
 # Flags
-SKIP_SCAN=false
 FORCE_DEPLOY=false
-TRUST_REMOTE_CODE=false
 RUN_BENCHMARK=false
 SERVE_ONLY=false
 
@@ -54,51 +56,35 @@ log_header()  { echo -e "\n============ $1 ============\n"; }
 
 for arg in "$@"; do
     case $arg in
-        --skip-scan)        SKIP_SCAN=true ;;
         --force)            FORCE_DEPLOY=true ;;
-        --trust-remote-code) TRUST_REMOTE_CODE=true ;;
         --benchmark)        RUN_BENCHMARK=true ;;
         --serve-only)       SERVE_ONLY=true ;;
     esac
 done
 
 # =============================================================================
-# GIT SETUP
+# SETUP SECURITY TOOLS
 # =============================================================================
 
-setup_pathfinder() {
-    log_header "Setup Pathfinder Security Tools"
+setup_security_tools() {
+    log_header "Setup Platform Security Tools"
     
-    PATHFINDER_DIR="${MODELS_DIR}/pathfinder"
-    PATHFINDER_REPO="https://github.com/intel-sandbox/ai-security.git"
-    PATHFINDER_BRANCH="gopesh/ai-model-pathfinder"  # TODO: Change to 'main' for production
-    
-    if [ -d "$PATHFINDER_DIR/.git" ]; then
-        log_info "Updating Pathfinder from $PATHFINDER_REPO..."
-        cd "$PATHFINDER_DIR"
-        git fetch origin
-        git checkout "$PATHFINDER_BRANCH" 2>/dev/null || git checkout main
-        git pull
-    else
-        log_info "Cloning Pathfinder security tools..."
-        sudo mkdir -p "$MODELS_DIR"
-        
-        # Remove existing non-git directory if present
-        if [ -d "$PATHFINDER_DIR" ]; then
-            log_warning "Removing existing non-git pathfinder directory..."
-            sudo rm -rf "$PATHFINDER_DIR"
-        fi
-        
-        cd "$MODELS_DIR"
-        git clone "$PATHFINDER_REPO" pathfinder || {
-            log_error "Failed to clone Pathfinder repository: $PATHFINDER_REPO"
-            log_error "Please ensure you have access to the repository"
-            exit 1
-        }
-        cd "$PATHFINDER_DIR" && git checkout "$PATHFINDER_BRANCH" 2>/dev/null || true
+    # Verify security tools are available (should be cloned by bootstrap script)
+    if [ ! -d "$SECURITY_DIR/platform-security" ]; then
+        log_error "Security tools not found at: $SECURITY_DIR/platform-security"
+        log_error "This script should be invoked via a bootstrap script that clones ai-security repo."
+        log_error "Example: ./deploy.sh from your project's scripts directory"
+        exit 1
     fi
     
-    log_success "Pathfinder ready: $PATHFINDER_DIR"
+    # Create symlink in models directory for container access
+    SECURITY_MOUNT="${MODELS_DIR}/platform-security"
+    if [ ! -L "$SECURITY_MOUNT" ] || [ "$(readlink -f "$SECURITY_MOUNT")" != "$(readlink -f "$SECURITY_DIR/platform-security")" ]; then
+        sudo rm -rf "$SECURITY_MOUNT" 2>/dev/null || true
+        sudo ln -sf "$SECURITY_DIR/platform-security" "$SECURITY_MOUNT"
+    fi
+    
+    log_success "Platform security tools ready: $SECURITY_DIR/platform-security"
 }
 
 # =============================================================================
@@ -126,10 +112,11 @@ setup_container() {
             --privileged --net=host --device=/dev/dri \
             --name="$CONTAINER_NAME" \
             -v "$MODELS_DIR:/llm/models/" \
+            -v "$SECURITY_DIR:/llm/security/" \
             -e no_proxy=localhost,127.0.0.1 \
             -e http_proxy="${http_proxy:-}" \
             -e https_proxy="${https_proxy:-}" \
-            -e PYTHONPATH=/llm/models/pathfinder/pathfinder/deploy \
+            -e PYTHONPATH=/llm/security/platform-security/deploy \
             --shm-size="32g" \
             --entrypoint /bin/bash \
             "$CONTAINER_IMAGE"
@@ -159,7 +146,7 @@ download_model() {
     rm -rf "$QUARANTINE_DIR/$MODEL_NAME"
     
     docker exec -e HF_TOKEN="${HF_TOKEN:-}" "$CONTAINER_NAME" \
-        python3 /llm/models/pathfinder/pathfinder/deploy/download_model.py \
+        python3 /llm/security/platform-security/deploy/download_model.py \
             "$MODEL_ID" \
             --output-dir /llm/models/quarantine
     
@@ -173,15 +160,10 @@ download_model() {
 security_scan() {
     log_header "Security Scan"
     
-    if [ "$SKIP_SCAN" == "true" ]; then
-        log_warning "SCAN SKIPPED (--skip-scan)"
-        return 0
-    fi
-    
     SCAN_FILE="$SCAN_RESULTS_DIR/${MODEL_NAME}_$(date +%Y%m%d_%H%M%S).json"
     
     if docker exec "$CONTAINER_NAME" \
-        python3 /llm/models/pathfinder/pathfinder/deploy/scan_model.py \
+        python3 /llm/security/platform-security/deploy/scan_model.py \
             "/llm/models/quarantine/$MODEL_NAME" \
             --output "/llm/models/scan-results/$(basename "$SCAN_FILE")"; then
         log_success "Security scan PASSED"
@@ -204,16 +186,12 @@ promote_model() {
     sudo mv "$QUARANTINE_DIR/$MODEL_NAME" "$VERIFIED_DIR/$MODEL_NAME"
     sudo chmod -R 777 "$VERIFIED_DIR/$MODEL_NAME"
     
-    # Generate MLBOM
-    TRUST_FLAG=""
-    [ "$TRUST_REMOTE_CODE" == "true" ] && TRUST_FLAG="--trust-remote-code"
-    
+    # Generate MLBOM (security attestation)
     docker exec "$CONTAINER_NAME" \
-        python3 /llm/models/pathfinder/pathfinder/deploy/generate_mlbom.py \
+        python3 /llm/security/platform-security/deploy/generate_mlbom.py \
             "/llm/models/verified/$MODEL_NAME" \
             --model-id "$MODEL_ID" \
-            --scan-passed \
-            $TRUST_FLAG
+            --scan-passed
     
     log_success "Model promoted: $VERIFIED_DIR/$MODEL_NAME"
 }
@@ -224,9 +202,6 @@ promote_model() {
 
 serve_model() {
     log_header "Serve Model"
-    
-    TRUST_FLAG=""
-    [ "$TRUST_REMOTE_CODE" == "true" ] && TRUST_FLAG="--trust-remote-code"
     
     log_info "Starting vLLM on port $VLLM_PORT..."
     
@@ -250,7 +225,6 @@ vllm serve '/llm/models/verified/$MODEL_NAME' \
     --block-size 64 \
     --quantization fp8 \
     -tp=1 \
-    $TRUST_FLAG \
     2>&1 | tee /llm/vllm.log &
 "
     
@@ -288,17 +262,18 @@ vllm bench serve \
 
 echo ""
 echo "╔═══════════════════════════════════════════════════════════════╗"
-echo "║     AI Model Pathfinder - Secure vLLM Deployment              ║"
+echo "║     Platform Security - Secure vLLM Deployment                ║"
 echo "╚═══════════════════════════════════════════════════════════════╝"
 echo ""
 echo "Model: $MODEL_ID"
 echo ""
 
 if [ "$SERVE_ONLY" == "true" ]; then
+    setup_security_tools
     setup_container
     serve_model
 else
-    setup_pathfinder
+    setup_security_tools
     setup_container
     download_model
     
@@ -335,9 +310,12 @@ else
         log_header "Deployment Blocked"
         log_error "Model failed security scan"
         echo "Model remains in: $QUARANTINE_DIR/$MODEL_NAME"
+        echo ""
         echo "Options:"
-        echo "  1. Choose a different model"
-        echo "  2. Skip scan (dangerous): $0 $MODEL_ID --skip-scan"
+        echo "  1. Choose a different model with safe format (safetensors)"
+        echo "  2. Contact security team for review"
+        echo ""
+        echo "Scan results: $SCAN_RESULTS_DIR/"
         exit 1
     fi
 fi
