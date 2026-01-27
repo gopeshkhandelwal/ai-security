@@ -1,18 +1,35 @@
-# Pathfinder Secure Deployment
+# Platform Security - Secure Deployment
 
 This directory contains scripts for secure model deployment on Intel accelerators.
 
-## Quick Start
+## Architecture
+
+This repository (`ai-security`) provides platform security tools that are consumed by developer repositories via bootstrap scripts.
+
+```
+Developer Repo (ai-model-pathfinder)          ai-security repo
+┌─────────────────────────────────┐          ┌──────────────────────────────┐
+│  scripts/pathfinder/deploy.sh  │──fetch──▶│  platform-security/deploy/  │
+│  (bootstrap - 5 lines)         │          │  ├── secure_vllm_deploy.sh  │
+└─────────────────────────────────┘          │  ├── download_model.py      │
+                                             │  ├── scan_model.py          │
+                                             │  └── generate_mlbom.py      │
+                                             └──────────────────────────────┘
+```
+
+## Quick Start (For Developers)
+
+From your project repository:
 
 ```bash
 # Set your Hugging Face token
 export HF_TOKEN="hf_..."
 
 # Deploy a model with security scanning
-./secure_vllm_deploy.sh meta-llama/Llama-3.1-8B
+./scripts/pathfinder/deploy.sh meta-llama/Llama-3.1-8B
 
 # Deploy with benchmark
-./secure_vllm_deploy.sh meta-llama/Llama-3.1-8B --benchmark
+./scripts/pathfinder/deploy.sh meta-llama/Llama-3.1-8B --benchmark
 ```
 
 ## Security Pipeline
@@ -46,17 +63,39 @@ After deployment:
 │       └── mlbom.json   # ML Bill of Materials
 ├── scan-results/        # Security scan reports
 │   └── <model>_scan_<timestamp>.json
-└── pathfinder/          # Security scanning tools
-    └── security/
+└── platform-security/   # Security scanning tools (symlink)
+    └── deploy/
 ```
+
+## Options
+
+| Flag | Description |
+|------|-------------|
+| `--force` | Re-download existing model |
+| `--benchmark` | Run benchmark after deployment |
+| `--serve-only` | Skip download/scan, just serve verified model |
+
+**Note:** `--skip-scan` and `--trust-remote-code` have been removed for security enforcement.
 
 ## Command Reference
 
-### Git Commands (Pathfinder Setup)
+### Bootstrap Setup (Developer Repos)
+
+Add this bootstrap script to your project:
 
 ```bash
-# Clone Pathfinder repository
-git clone https://github.com/your-org/ai-security.git pathfinder
+# scripts/pathfinder/deploy.sh
+#!/bin/bash
+SECURITY_REPO="https://github.com/intel-sandbox/ai-security.git"
+SECURITY_BRANCH="gopesh/ai-model-pathfinder"
+SECURITY_DIR="${PLATFORM_SECURITY_DIR:-${HOME}/.platform-security}"
+
+[ -d "$SECURITY_DIR/.git" ] && (cd "$SECURITY_DIR" && git pull --quiet) || \
+    git clone --quiet -b "$SECURITY_BRANCH" "$SECURITY_REPO" "$SECURITY_DIR"
+
+export SECURITY_DIR
+exec "$SECURITY_DIR/platform-security/deploy/secure_vllm_deploy.sh" "$@"
+```
 
 # Switch to pathfinder branch
 cd pathfinder
