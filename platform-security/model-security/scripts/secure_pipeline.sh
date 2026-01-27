@@ -1,24 +1,21 @@
 #!/bin/bash
 #
-# Platform Security - Secure Model Pipeline API
+# Platform Security - Secure Model Pipeline
 # 
-# This is the PUBLIC API for developers. It handles:
-#   - Model download to quarantine
-#   - Security scanning (ModelScan, PickleScan, AST analysis)
-#   - Promotion to verified directory
-#   - MLBOM generation
-#
-# Developers call this script and then handle serving themselves.
+# Downloads model → Security scan → Promote to verified → Generate MLBOM
 #
 # Usage:
-#   ./secure_pipeline.sh <model-id> [options]
+#   From HOST:      ./secure_pipeline.sh <model-id> [--force]
+#   In CONTAINER:   ./secure_pipeline.sh <model-id> --in-container [--models-dir /path]
+#
+# Options:
+#   --in-container     Run directly (no docker commands) - for use inside container
+#   --models-dir PATH  Base models directory (default: /srv/models/vLLM or /llm/models)
+#   --force            Re-download even if model exists
 #
 # Returns:
 #   Exit 0: Model passed security scan, available at VERIFIED_DIR
 #   Exit 1: Model failed security scan, remains in quarantine
-#
-# Output Variables (printed to stdout):
-#   VERIFIED_MODEL_PATH=/path/to/verified/model
 #
 
 set -euo pipefail
@@ -29,42 +26,68 @@ set -euo pipefail
 
 MODEL_ID="${1:-}"
 if [ -z "$MODEL_ID" ]; then
-    echo "Usage: $0 <model-id> [--force]" >&2
+    echo "Usage: $0 <model-id> [--in-container] [--models-dir <path>] [--force]" >&2
     exit 1
 fi
 
 MODEL_NAME="${MODEL_ID##*/}"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-# Directories
-MODELS_DIR="${MODELS_DIR:-/srv/models/vLLM}"
+# Defaults
+IN_CONTAINER=false
+FORCE_DEPLOY=false
+MODELS_DIR=""
+
+# Parse args
+for arg in "$@"; do
+    case $arg in
+        --in-container) IN_CONTAINER=true ;;
+        --force) FORCE_DEPLOY=true ;;
+        --models-dir) ;; # handled below
+    esac
+done
+
+# Handle --models-dir value
+while [[ $# -gt 0 ]]; do
+    case $1 in
+        --models-dir) MODELS_DIR="$2"; shift 2 ;;
+        *) shift ;;
+    esac
+done
+
+# Set defaults based on mode
+if [ -z "$MODELS_DIR" ]; then
+    if [ "$IN_CONTAINER" == "true" ]; then
+        MODELS_DIR="/llm/models"
+    else
+        MODELS_DIR="${MODELS_DIR:-/srv/models/vLLM}"
+    fi
+fi
+
 QUARANTINE_DIR="${MODELS_DIR}/quarantine"
 VERIFIED_DIR="${MODELS_DIR}/verified"
 SCAN_RESULTS_DIR="${MODELS_DIR}/scan-results"
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 CONTAINER_NAME="${CONTAINER_NAME:-lsv-container}"
 CONTAINER_IMAGE="${CONTAINER_IMAGE:-intel/llm-scaler-vllm:1.2}"
 
-# Flags
-FORCE_DEPLOY=false
-for arg in "$@"; do
-    case $arg in
-        --force) FORCE_DEPLOY=true ;;
-    esac
-done
-
 # Colors
-RED='\033[0;31m'; GREEN='\033[0;32m'; YELLOW='\033[1;33m'; BLUE='\033[0;34m'; NC='\033[0m'
+RED='\033[0;31m'; GREEN='\033[0;32m'; BLUE='\033[0;34m'; NC='\033[0m'
 log_info()    { echo -e "${BLUE}[INFO]${NC} $1" >&2; }
 log_success() { echo -e "${GREEN}[✓]${NC} $1" >&2; }
 log_error()   { echo -e "${RED}[✗]${NC} $1" >&2; }
 log_header()  { echo -e "\n============ $1 ============\n" >&2; }
 
 # =============================================================================
-# CONTAINER SETUP
+# CONTAINER SETUP (host mode only)
 # =============================================================================
 
 setup_container() {
+    if [ "$IN_CONTAINER" == "true" ]; then
+        mkdir -p "$QUARANTINE_DIR" "$VERIFIED_DIR" "$SCAN_RESULTS_DIR"
+        return 0
+    fi
+    
     log_header "Setup Container"
     
     docker pull "$CONTAINER_IMAGE" >&2
@@ -109,10 +132,15 @@ download_model() {
     
     rm -rf "$QUARANTINE_DIR/$MODEL_NAME"
     
-    docker exec -e HF_TOKEN="${HF_TOKEN:-}" "$CONTAINER_NAME" \
-        python3 /llm/security/download_model.py \
-            "$MODEL_ID" \
-            --output-dir /llm/models/quarantine >&2
+    if [ "$IN_CONTAINER" == "true" ]; then
+        python3 "$SCRIPT_DIR/../downloader.py" "$MODEL_ID" \
+            --output-dir "$QUARANTINE_DIR" --safetensors-only >&2
+    else
+        docker exec -e HF_TOKEN="${HF_TOKEN:-}" "$CONTAINER_NAME" \
+            python3 /llm/security/download_model.py \
+                "$MODEL_ID" \
+                --output-dir /llm/models/quarantine >&2
+    fi
     
     log_success "Download complete"
 }
@@ -126,15 +154,26 @@ security_scan() {
     
     SCAN_FILE="$SCAN_RESULTS_DIR/${MODEL_NAME}_$(date +%Y%m%d_%H%M%S).json"
     
-    if docker exec "$CONTAINER_NAME" \
-        python3 /llm/security/scan_model.py \
-            "/llm/models/quarantine/$MODEL_NAME" \
-            --output "/llm/models/scan-results/$(basename "$SCAN_FILE")" >&2; then
-        log_success "Security scan PASSED"
-        return 0
+    if [ "$IN_CONTAINER" == "true" ]; then
+        if python3 "$SCRIPT_DIR/../scanner.py" "$QUARANTINE_DIR/$MODEL_NAME" \
+            --output "$SCAN_FILE" >&2; then
+            log_success "Security scan PASSED"
+            return 0
+        else
+            log_error "Security scan FAILED"
+            return 1
+        fi
     else
-        log_error "Security scan FAILED"
-        return 1
+        if docker exec "$CONTAINER_NAME" \
+            python3 /llm/security/scan_model.py \
+                "/llm/models/quarantine/$MODEL_NAME" \
+                --output "/llm/models/scan-results/$(basename "$SCAN_FILE")" >&2; then
+            log_success "Security scan PASSED"
+            return 0
+        else
+            log_error "Security scan FAILED"
+            return 1
+        fi
     fi
 }
 
@@ -145,16 +184,25 @@ security_scan() {
 promote_model() {
     log_header "Promote to Verified"
     
-    sudo rm -rf "$VERIFIED_DIR/$MODEL_NAME"
-    sudo mv "$QUARANTINE_DIR/$MODEL_NAME" "$VERIFIED_DIR/$MODEL_NAME"
-    sudo chmod -R 777 "$VERIFIED_DIR/$MODEL_NAME"
-    
-    # Generate MLBOM
-    docker exec "$CONTAINER_NAME" \
-        python3 /llm/security/generate_mlbom.py \
-            "/llm/models/verified/$MODEL_NAME" \
-            --model-id "$MODEL_ID" \
-            --scan-passed >&2
+    if [ "$IN_CONTAINER" == "true" ]; then
+        rm -rf "$VERIFIED_DIR/$MODEL_NAME"
+        mv "$QUARANTINE_DIR/$MODEL_NAME" "$VERIFIED_DIR/$MODEL_NAME"
+        
+        # Generate MLBOM
+        python3 "$SCRIPT_DIR/../mlbom.py" "$VERIFIED_DIR/$MODEL_NAME" \
+            --model-id "$MODEL_ID" --scan-passed >&2
+    else
+        sudo rm -rf "$VERIFIED_DIR/$MODEL_NAME"
+        sudo mv "$QUARANTINE_DIR/$MODEL_NAME" "$VERIFIED_DIR/$MODEL_NAME"
+        sudo chmod -R 777 "$VERIFIED_DIR/$MODEL_NAME"
+        
+        # Generate MLBOM
+        docker exec "$CONTAINER_NAME" \
+            python3 /llm/security/generate_mlbom.py \
+                "/llm/models/verified/$MODEL_NAME" \
+                --model-id "$MODEL_ID" \
+                --scan-passed >&2
+    fi
     
     log_success "Model promoted: $VERIFIED_DIR/$MODEL_NAME"
 }
