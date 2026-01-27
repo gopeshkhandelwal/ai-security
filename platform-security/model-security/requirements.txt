@@ -1,0 +1,15 @@
+# AI Model Security Module Requirements
+
+# Core scanning tools
+modelscan==0.8.7          # Protect AI's model scanner
+picklescan==1.0.0         # Pickle file scanner
+
+# Model handling
+huggingface-hub==0.36.0   # Hugging Face Hub API
+transformers==4.57.3      # Hugging Face transformers
+safetensors==0.7.0        # Safe tensor format
+torch==2.9.1              # PyTorch
+
+# Cryptography for signatures
+cryptography==3.4.8       # ECDSA signing/verification
+
