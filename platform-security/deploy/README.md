@@ -1,70 +1,79 @@
-# Platform Security - Secure Deployment
+# Platform Security - Secure Model Deployment
 
-This directory contains scripts for secure model deployment on Intel accelerators.
+Security tools for AI model deployment on Intel accelerators. **Developers do not modify this code.**
 
 ## Architecture
 
-This repository (`ai-security`) provides platform security tools that are consumed by developer repositories via bootstrap scripts.
+This repository provides the security pipeline. Developer repos call `secure_pipeline.sh` and handle serving themselves.
 
 ```
-Developer Repo (ai-model-pathfinder)          ai-security repo
-┌─────────────────────────────────┐          ┌──────────────────────────────┐
-│  scripts/pathfinder/deploy.sh  │──fetch──▶│  platform-security/deploy/  │
-│  (bootstrap - 5 lines)         │          │  ├── secure_vllm_deploy.sh  │
-└─────────────────────────────────┘          │  ├── download_model.py      │
-                                             │  ├── scan_model.py          │
-                                             │  └── generate_mlbom.py      │
-                                             └──────────────────────────────┘
+Developer Repo                                Security Repo (ai-security)
+┌─────────────────────────────────┐          ┌────────────────────────────────┐
+│  scripts/deploy.sh              │          │  platform-security/deploy/     │
+│  ├── fetch security tools       │──fetch──▶│  ├── secure_pipeline.sh (API) │
+│  ├── call secure_pipeline.sh    │          │  ├── download_model.py        │
+│  └── serve_model() ◀── custom   │          │  ├── scan_model.py            │
+└─────────────────────────────────┘          │  └── generate_mlbom.py        │
+                                             └────────────────────────────────┘
 ```
 
-## Quick Start (For Developers)
+**Key separation:**
+- **Security repo**: Download, scan, promote, MLBOM (cannot be bypassed)
+- **Developer repo**: `serve_model()` - customize vLLM settings per project
 
-From your project repository:
+## Scripts
+
+### `secure_pipeline.sh` (Public API)
+
+Called by developer repos. Handles the security pipeline and outputs variables.
 
 ```bash
-# Set your Hugging Face token
-export HF_TOKEN="hf_..."
+# Usage
+./secure_pipeline.sh <model-id> [--force]
 
-# Deploy a model with security scanning
-./scripts/pathfinder/deploy.sh meta-llama/Llama-3.1-8B
+# Returns (stdout):
+VERIFIED_MODEL_PATH=/srv/models/vLLM/verified/<model>
+MODEL_NAME=<model>
+CONTAINER_NAME=lsv-container
+```
 
-# Deploy with benchmark
-./scripts/pathfinder/deploy.sh meta-llama/Llama-3.1-8B --benchmark
+### `secure_vllm_deploy.sh` (Standalone)
+
+Full deployment script for testing. Includes serve_model().
+
+```bash
+./secure_vllm_deploy.sh meta-llama/Llama-3.1-8B
 ```
 
 ## Security Pipeline
 
-The deployment script implements a 6-stage security pipeline:
+```
+┌──────────────┐    ┌──────────────┐    ┌──────────────┐    ┌──────────────┐
+│   Download   │───▶│  Quarantine  │───▶│    Scan      │───▶│   Promote    │
+│   Model      │    │   Storage    │    │  ModelScan   │    │   + MLBOM    │
+└──────────────┘    └──────────────┘    │  PickleScan  │    └──────────────┘
+                                        │  AST Check   │
+                                        └──────────────┘
+```
 
-```
-┌──────────────┐    ┌──────────────┐    ┌──────────────┐
-│   Download   │───▶│  Quarantine  │───▶│    Scan      │
-│   Model      │    │   Storage    │    │  (ModelScan) │
-└──────────────┘    └──────────────┘    └──────┬───────┘
-                                               │
-                                               ▼
-                    ┌──────────────┐    ┌──────────────┐
-                    │    Serve     │◀───│   Promote    │
-                    │   (vLLM)     │    │ to Verified  │
-                    └──────────────┘    └──────────────┘
-```
+**Security scans performed:**
+- **ModelScan**: Detect malicious pickle payloads
+- **PickleScan**: Deep pickle analysis
+- **AST Analysis**: Suspicious Python patterns (eval, exec, subprocess)
+- **Format Check**: Prefer safetensors over pickle
 
 ## Directory Structure
 
-After deployment:
-
 ```
-/home/compat/models/vLLM/
+/srv/models/vLLM/
 ├── quarantine/          # Models being scanned (untrusted)
 │   └── <model-name>/
 ├── verified/            # Approved models (scanned & safe)
 │   └── <model-name>/
 │       ├── model files...
 │       └── mlbom.json   # ML Bill of Materials
-├── scan-results/        # Security scan reports
-│   └── <model>_scan_<timestamp>.json
-└── platform-security/   # Security scanning tools (symlink)
-    └── deploy/
+└── scan-results/        # Security scan reports
+    └── <model>_<timestamp>.json
 ```
 
 ## Options
@@ -72,30 +81,8 @@ After deployment:
 | Flag | Description |
 |------|-------------|
 | `--force` | Re-download existing model |
-| `--benchmark` | Run benchmark after deployment |
-| `--serve-only` | Skip download/scan, just serve verified model |
 
-**Note:** `--skip-scan` and `--trust-remote-code` have been removed for security enforcement.
-
-## Command Reference
-
-### Bootstrap Setup (Developer Repos)
-
-Add this bootstrap script to your project:
-
-```bash
-# scripts/pathfinder/deploy.sh
-#!/bin/bash
-SECURITY_REPO="https://github.com/intel-sandbox/ai-security.git"
-SECURITY_BRANCH="gopesh/ai-model-pathfinder"
-SECURITY_DIR="${PLATFORM_SECURITY_DIR:-${HOME}/.platform-security}"
-
-[ -d "$SECURITY_DIR/.git" ] && (cd "$SECURITY_DIR" && git pull --quiet) || \
-    git clone --quiet -b "$SECURITY_BRANCH" "$SECURITY_REPO" "$SECURITY_DIR"
-
-export SECURITY_DIR
-exec "$SECURITY_DIR/platform-security/deploy/secure_vllm_deploy.sh" "$@"
-```
+**Note:** `--skip-scan` and `--trust-remote-code` are not available. Security is mandatory.
 
 # Switch to pathfinder branch
 cd pathfinder
