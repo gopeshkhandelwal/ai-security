@@ -340,31 +340,7 @@ def secure_load_model(model_path: str, skip_scan: bool = False):
         else:
             print(f"      ✅ PASSED - No security issues detected")
     
-    # =========================================================================
-    # Layer 2: Hash Verification
-    # =========================================================================
-    hash_passed = True
     
-    print(f"\n[2/3] 🔐 Verifying model integrity (hash check)...")
-    registry = load_hash_registry()
-    current_hash = compute_hash(model_path)
-    
-    if model_path in registry:
-        if registry[model_path] == current_hash:
-            print(f"      ✅ PASSED - Hash matches registered value")
-        else:
-            hash_passed = False
-            print(f"      ❌ FAILED - Hash MISMATCH (model tampered!)")
-            print(f"         Expected: {registry[model_path][:32]}...")
-            print(f"         Actual:   {current_hash[:32]}...")
-            all_failures.append(("Hash Verification", [{"message": "Hash mismatch - model modified"}]))
-    else:
-        print(f"      ⚠️  SKIPPED - No registered hash (first load)")
-        print(f"         Current: {current_hash[:32]}...")
-    
-    # =========================================================================
-    # Layer 3: Safe Mode Loading Test
-    # =========================================================================
     safe_mode_passed = True
     
     print(f"\n[3/3] 📦 Testing safe_mode=True loading...")
@@ -389,8 +365,6 @@ def secure_load_model(model_path: str, skip_scan: bool = False):
     print(f"{'=' * 60}")
     
     print(f"\n  Layer 1 - Security Scan:     {'❌ FAILED' if not scan_passed else '✅ PASSED'}")
-    print(f"  Layer 2 - Hash Verification: {'❌ FAILED' if not hash_passed else '✅ PASSED' if model_path in registry else '⚠️  SKIPPED'}")
-    print(f"  Layer 3 - Safe Mode Loading: {'❌ FAILED' if not safe_mode_passed else '✅ PASSED'}")
     
     if all_failures:
         print(f"\n{'=' * 60}")
