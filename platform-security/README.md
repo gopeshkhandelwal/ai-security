@@ -2,6 +2,47 @@
 
 A reusable security framework for AI/ML model verification, scanning, and secure deployment. Provides defense-in-depth protection against supply chain attacks, malicious payloads, and unsafe model formats.
 
+## Docker Image
+
+```bash
+docker pull amr-registry.caas.intel.com/intelcloud/ai-security:1.0
+```
+
+### Quick Start with Docker
+
+```bash
+# Show help
+docker run amr-registry.caas.intel.com/intelcloud/ai-security:1.0
+
+# Run full pipeline (download → scan → promote)
+docker run -v /srv/models:/srv/models/vLLM \
+  -e HF_TOKEN=$HF_TOKEN \
+  amr-registry.caas.intel.com/intelcloud/ai-security:1.0 \
+  pipeline meta-llama/Llama-3.1-8B-Instruct
+
+# Scan a local model
+docker run -v /path/to/models:/models \
+  amr-registry.caas.intel.com/intelcloud/ai-security:1.0 \
+  scan /models/my-model
+
+# Generate MLBOM
+docker run -v /path/to/models:/models \
+  amr-registry.caas.intel.com/intelcloud/ai-security:1.0 \
+  mlbom /models/my-model
+
+# Interactive shell
+docker run -it amr-registry.caas.intel.com/intelcloud/ai-security:1.0 shell
+```
+
+### Build from Source
+
+```bash
+cd platform-security
+docker build --build-arg http_proxy=$http_proxy \
+             --build-arg https_proxy=$https_proxy \
+             -t ai-security:1.0 .
+```
+
 ## Structure
 
 ```
