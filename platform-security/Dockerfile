@@ -35,7 +35,7 @@ FROM python:3.11-slim
 
 LABEL maintainer="Intel AI Security Team"
 LABEL description="AI Model Security Scanner and MLBOM Generator"
-LABEL version="1.1.0"
+LABEL version="1.4.0"
 
 # Proxy args for corporate network
 ARG http_proxy

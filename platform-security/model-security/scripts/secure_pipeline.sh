@@ -58,7 +58,7 @@ done
 # Set defaults based on mode
 if [ -z "$MODELS_DIR" ]; then
     if [ "$IN_CONTAINER" == "true" ]; then
-        MODELS_DIR="/llm/models"
+        MODELS_DIR="/srv/models/vLLM"
     else
         MODELS_DIR="${MODELS_DIR:-/srv/models/vLLM}"
     fi
