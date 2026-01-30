@@ -152,7 +152,8 @@ download_model() {
 security_scan() {
     log_header "Security Scan"
     
-    SCAN_FILE="$SCAN_RESULTS_DIR/${MODEL_NAME}_$(date +%Y%m%d_%H%M%S).json"
+    TIMESTAMP=$(date +%Y%m%d_%H%M%S)
+    SCAN_FILE="$SCAN_RESULTS_DIR/${MODEL_NAME}_${TIMESTAMP}_scan-result.json"
     
     if [ "$IN_CONTAINER" == "true" ]; then
         if python3 "$SCRIPT_DIR/../scanner.py" "$QUARANTINE_DIR/$MODEL_NAME" \
@@ -184,13 +185,15 @@ security_scan() {
 promote_model() {
     log_header "Promote to Verified"
     
+    MLBOM_FILE="$SCAN_RESULTS_DIR/${MODEL_NAME}_${TIMESTAMP}_mlbom.json"
+    
     if [ "$IN_CONTAINER" == "true" ]; then
         rm -rf "$VERIFIED_DIR/$MODEL_NAME"
         mv "$QUARANTINE_DIR/$MODEL_NAME" "$VERIFIED_DIR/$MODEL_NAME"
         
         # Generate MLBOM
         python3 "$SCRIPT_DIR/../mlbom.py" "$VERIFIED_DIR/$MODEL_NAME" \
-            --model-id "$MODEL_ID" --scan-passed >&2
+            --model-id "$MODEL_ID" --scan-passed --output "$MLBOM_FILE" >&2
     else
         sudo rm -rf "$VERIFIED_DIR/$MODEL_NAME"
         sudo mv "$QUARANTINE_DIR/$MODEL_NAME" "$VERIFIED_DIR/$MODEL_NAME"
@@ -201,10 +204,12 @@ promote_model() {
             python3 /llm/security/generate_mlbom.py \
                 "/llm/models/verified/$MODEL_NAME" \
                 --model-id "$MODEL_ID" \
-                --scan-passed >&2
+                --scan-passed \
+                --output "/llm/models/scan-results/$(basename "$MLBOM_FILE")" >&2
     fi
     
     log_success "Model promoted: $VERIFIED_DIR/$MODEL_NAME"
+    log_success "MLBOM: $MLBOM_FILE"
 }
 
 # =============================================================================

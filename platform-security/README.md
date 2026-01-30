@@ -15,8 +15,12 @@ docker pull amr-registry.caas.intel.com/intelcloud/ai-security:1.0
 docker run amr-registry.caas.intel.com/intelcloud/ai-security:1.0
 
 # Run full pipeline (download → scan → promote)
+# Note: Include proxy vars if behind corporate firewall
 docker run -v /srv/models:/srv/models/vLLM \
   -e HF_TOKEN=$HF_TOKEN \
+  -e http_proxy="$http_proxy" -e https_proxy="$https_proxy" \
+  -e HTTP_PROXY="$HTTP_PROXY" -e HTTPS_PROXY="$HTTPS_PROXY" \
+  -e no_proxy="$no_proxy" \
   amr-registry.caas.intel.com/intelcloud/ai-security:1.0 \
   pipeline meta-llama/Llama-3.1-8B-Instruct
 
@@ -38,10 +42,30 @@ docker run -it amr-registry.caas.intel.com/intelcloud/ai-security:1.0 shell
 
 ```bash
 cd platform-security
-docker build --build-arg http_proxy=$http_proxy \
-             --build-arg https_proxy=$https_proxy \
-             -t ai-security:1.0 .
+
+# Build with proxy (required for corporate networks)
+docker build \
+  --build-arg http_proxy="$http_proxy" \
+  --build-arg https_proxy="$https_proxy" \
+  --build-arg no_proxy="$no_proxy" \
+  -t amr-registry.caas.intel.com/intelcloud/ai-security:1.1 .
+
+# Push to registry
+docker push amr-registry.caas.intel.com/intelcloud/ai-security:1.1
 ```
+
+### Proxy Configuration
+
+When running behind a corporate proxy:
+
+| Variable | Purpose | Example |
+|----------|---------|--------|
+| `http_proxy` | HTTP proxy URL | `http://proxy.example.com:911` |
+| `https_proxy` | HTTPS proxy URL | `http://proxy.example.com:912` |
+| `no_proxy` | Bypass proxy for these hosts | `localhost,127.0.0.1,.internal.com` |
+
+**Build time**: Pass as `--build-arg` for apt-get and pip installs.  
+**Run time**: Pass as `-e` environment variables for HuggingFace downloads.
 
 ## Structure
 

@@ -2,19 +2,40 @@
 # 
 # Provides security scanning, MLBOM generation, and secure model pipeline
 #
-# Usage:
-#   docker run ai-security scan <model-id>
-#   docker run ai-security pipeline <model-id>
-#   docker run -v /models:/srv/models/vLLM ai-security pipeline <model-id>
+# Commands:
+#   pipeline <model-id>    Full workflow: Download → Scan → Promote → MLBOM
+#                          Input: HuggingFace model ID (e.g., meta-llama/Llama-3.1-8B-Instruct)
+#                          Output: Verified model + MLBOM + scan results
 #
-# Build with proxy:
-#   docker build --build-arg http_proxy=$http_proxy --build-arg https_proxy=$https_proxy -t ai-security:1.0.0 .
+#   scan <model-path>      Scan only: Check existing model for security issues
+#                          Input: Local path to model directory (must be mounted)
+#                          Output: Pass/Fail + findings JSON
+#
+# Usage:
+#   # Full pipeline - download and verify a new model
+#   docker run -v /srv/models/vLLM:/srv/models/vLLM \
+#     -e HF_TOKEN="$HF_TOKEN" \
+#     -e http_proxy="$http_proxy" -e https_proxy="$https_proxy" \
+#     amr-registry.caas.intel.com/intelcloud/ai-security:1.1 \
+#     pipeline meta-llama/Llama-3.1-8B-Instruct
+#
+#   # Scan only - check a model already in quarantine
+#   docker run -v /srv/models/vLLM:/srv/models/vLLM \
+#     amr-registry.caas.intel.com/intelcloud/ai-security:1.1 \
+#     scan /srv/models/vLLM/quarantine/gpt2
+#
+# Build (with proxy for corporate networks):
+#   docker build \
+#     --build-arg http_proxy="$http_proxy" \
+#     --build-arg https_proxy="$https_proxy" \
+#     --build-arg no_proxy="$no_proxy" \
+#     -t amr-registry.caas.intel.com/intelcloud/ai-security:1.1 .
 
 FROM python:3.11-slim
 
 LABEL maintainer="Intel AI Security Team"
 LABEL description="AI Model Security Scanner and MLBOM Generator"
-LABEL version="1.0.0"
+LABEL version="1.1.0"
 
 # Proxy args for corporate network
 ARG http_proxy
@@ -44,7 +65,7 @@ COPY . /app/platform-security/
 
 # Add scripts to PATH
 ENV PATH="/app/platform-security/model-security/scripts:${PATH}"
-ENV PYTHONPATH="/app/platform-security:/app/platform-security/model-security:${PYTHONPATH:-}"
+ENV PYTHONPATH="/app/platform-security:/app/platform-security/model-security"
 
 # Create default model directories
 RUN mkdir -p /srv/models/vLLM/quarantine \
@@ -85,8 +106,8 @@ case "\$1" in
         echo "  shell                  Start interactive shell"
         echo ""
         echo "Examples:"
-        echo "  docker run ai-security pipeline meta-llama/Llama-3.1-8B-Instruct"
-        echo "  docker run -v ./models:/srv/models/vLLM ai-security pipeline Qwen/Qwen2-7B"
+        echo "  docker run -v /srv/models/vLLM:/srv/models/vLLM ai-security pipeline meta-llama/Llama-3.1-8B-Instruct"
+        echo "  docker run -v /srv/models/vLLM:/srv/models/vLLM ai-security scan /srv/models/vLLM/quarantine/gpt2"
         ;;
 esac
 EOF
