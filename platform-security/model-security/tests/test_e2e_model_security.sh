@@ -15,15 +15,17 @@
 #   ./test_e2e_model_security.sh [model-id] [options]
 #
 # Options:
-#   --mock        Use mock model (no real download)
-#   --container   Use Intel vLLM container mode
-#   --serve       Start vLLM server after security scan
-#   --benchmark   Run vLLM benchmark after serving
-#   --force       Force redeploy even if model exists
+#   --mock                      Use mock model (no real download)
+#   --docker-image=<image>      Test using ai-security Docker image
+#   --container                 Use Intel vLLM container mode (for serving)
+#   --serve                     Start vLLM server after security scan
+#   --benchmark                 Run vLLM benchmark after serving
+#   --force                     Force redeploy even if model exists
 #
 # Examples:
 #   ./test_e2e_model_security.sh openai-community/gpt2
 #   ./test_e2e_model_security.sh --mock                           # Test without real download
+#   ./test_e2e_model_security.sh --docker-image=amr-registry.caas.intel.com/intelcloud/ai-security:1.7.0
 #   ./test_e2e_model_security.sh meta-llama/Llama-3.1-8B --container --serve
 #   ./test_e2e_model_security.sh meta-llama/Llama-3.1-8B --container --serve --benchmark
 
@@ -50,6 +52,9 @@ SECURITY_MODULE_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
 USE_CONTAINER="${USE_CONTAINER:-false}"  # Set true for container mode
 CONTAINER_NAME="${CONTAINER_NAME:-model-security-test}"
 CONTAINER_IMAGE="${CONTAINER_IMAGE:-intel/llm-scaler-vllm:1.2}"
+
+# AI Security Docker image (optional - use instead of local Python files)
+AI_SECURITY_IMAGE=""
 
 # vLLM settings
 VLLM_PORT="${VLLM_PORT:-8001}"
@@ -90,6 +95,7 @@ for arg in "$@"; do
         --container)  USE_CONTAINER=true ;;
         --serve)      DO_SERVE=true ;;
         --benchmark)  DO_BENCHMARK=true ;;
+        --docker-image=*) AI_SECURITY_IMAGE="${arg#*=}" ;;
         -*)           ;; 
         *)            
             if [ "$arg" != "--mock" ] && [ "$arg" != "--force" ] && [ "$arg" != "--container" ] && [ "$arg" != "--serve" ] && [ "$arg" != "--benchmark" ]; then
@@ -208,6 +214,31 @@ EOF
 }
 
 # =============================================================================
+# RUN DOCKER IMAGE PIPELINE (when --docker-image is specified)
+# =============================================================================
+
+run_docker_pipeline() {
+    log_header "Run Docker Image Pipeline"
+    
+    log_info "Using Docker image: $AI_SECURITY_IMAGE"
+    log_info "Running full pipeline: download → scan → promote → mlbom"
+    
+    if docker run --rm \
+        -v "$MODELS_DIR:/srv/models/vLLM" \
+        -e HF_TOKEN="${HF_TOKEN:-}" \
+        -e http_proxy="${http_proxy:-}" \
+        -e https_proxy="${https_proxy:-}" \
+        "$AI_SECURITY_IMAGE" \
+        pipeline "$MODEL_ID"; then
+        log_success "Docker pipeline completed successfully"
+        return 0
+    else
+        log_error "Docker pipeline failed"
+        return 1
+    fi
+}
+
+# =============================================================================
 # DOWNLOAD MODEL TO QUARANTINE
 # =============================================================================
 
@@ -229,7 +260,17 @@ download_model() {
         token_arg="--token $HF_TOKEN"
     fi
     
-    if [ "$USE_CONTAINER" = "true" ]; then
+    if [ -n "$AI_SECURITY_IMAGE" ]; then
+        # Use ai-security Docker image
+        log_info "Using Docker image: $AI_SECURITY_IMAGE"
+        docker run --rm \
+            -v "$MODELS_DIR:/srv/models/vLLM" \
+            -e HF_TOKEN="${HF_TOKEN:-}" \
+            -e http_proxy="${http_proxy:-}" \
+            -e https_proxy="${https_proxy:-}" \
+            "$AI_SECURITY_IMAGE" \
+            pipeline "$MODEL_ID" --download-only
+    elif [ "$USE_CONTAINER" = "true" ]; then
         # Container mode - paths inside container
         docker exec -e HF_TOKEN="${HF_TOKEN:-}" "$CONTAINER_NAME" \
             python3 /llm/security/downloader.py \
@@ -261,7 +302,21 @@ security_scan() {
     
     log_info "Scanning: $model_path"
     
-    if [ "$USE_CONTAINER" = "true" ]; then
+    if [ -n "$AI_SECURITY_IMAGE" ]; then
+        # Use ai-security Docker image
+        log_info "Using Docker image: $AI_SECURITY_IMAGE"
+        if docker run --rm \
+            -v "$MODELS_DIR:/srv/models/vLLM" \
+            "$AI_SECURITY_IMAGE" \
+            scan "/srv/models/vLLM/quarantine/$MODEL_NAME" \
+            --output "/srv/models/vLLM/scan-results/$(basename "$scan_file")"; then
+            log_success "Security scan PASSED"
+            return 0
+        else
+            log_error "Security scan FAILED"
+            return 1
+        fi
+    elif [ "$USE_CONTAINER" = "true" ]; then
         # Container mode - paths inside container
         if docker exec "$CONTAINER_NAME" \
             python3 /llm/security/scanner.py \
@@ -295,8 +350,8 @@ security_scan() {
 promote_model() {
     log_header "Promote to Verified"
     
-    if [ "$USE_CONTAINER" = "true" ]; then
-        # Container mode - files owned by root, use sudo
+    if [ -n "$AI_SECURITY_IMAGE" ] || [ "$USE_CONTAINER" = "true" ]; then
+        # Docker mode - files owned by root, use sudo
         sudo rm -rf "$VERIFIED_DIR/$MODEL_NAME"
         sudo mv "$QUARANTINE_DIR/$MODEL_NAME" "$VERIFIED_DIR/$MODEL_NAME"
         sudo chown -R "$(id -u):$(id -g)" "$VERIFIED_DIR/$MODEL_NAME"
@@ -319,7 +374,15 @@ generate_mlbom() {
     local mlbom_model_id="$MODEL_ID"
     [ "$MOCK_MODE" = "true" ] && mlbom_model_id="mock/mock-gpt2"
     
-    if [ "$USE_CONTAINER" = "true" ]; then
+    if [ -n "$AI_SECURITY_IMAGE" ]; then
+        # Use ai-security Docker image
+        docker run --rm \
+            -v "$MODELS_DIR:/srv/models/vLLM" \
+            "$AI_SECURITY_IMAGE" \
+            mlbom "/srv/models/vLLM/verified/$MODEL_NAME" \
+            --model-id "$mlbom_model_id" \
+            --scan-passed
+    elif [ "$USE_CONTAINER" = "true" ]; then
         docker exec "$CONTAINER_NAME" \
             python3 /llm/security/mlbom.py \
                 "/llm/models/verified/$MODEL_NAME" \
@@ -493,9 +556,9 @@ run_benchmark() {
 cleanup() {
     log_info "Cleaning up..."
     
-    if [ "$USE_CONTAINER" = "true" ]; then
+    if [ -n "$AI_SECURITY_IMAGE" ] || [ "$USE_CONTAINER" = "true" ]; then
         docker rm -f "$CONTAINER_NAME" 2>/dev/null || true
-        # Files created by container are owned by root
+        # Files created by container/docker are owned by root
         sudo rm -rf "$MODELS_DIR" 2>/dev/null || true
     else
         rm -rf "$MODELS_DIR"
@@ -513,6 +576,7 @@ echo "╚═══════════════════════�
 echo ""
 echo "Model: $MODEL_ID"
 echo "Mode: $([ "$MOCK_MODE" = "true" ] && echo "Mock" || echo "Real")"
+echo "Docker Image: $([ -n "$AI_SECURITY_IMAGE" ] && echo "$AI_SECURITY_IMAGE" || echo "(local)")"
 echo "Container: $([ "$USE_CONTAINER" = "true" ] && echo "Yes" || echo "No")"
 echo "Serve: $([ "$DO_SERVE" = "true" ] && echo "Yes" || echo "No")"
 echo "Benchmark: $([ "$DO_BENCHMARK" = "true" ] && echo "Yes" || echo "No")"
@@ -520,6 +584,28 @@ echo ""
 
 # Trap cleanup
 trap cleanup EXIT
+
+# Docker image mode: run full pipeline via Docker
+if [ -n "$AI_SECURITY_IMAGE" ]; then
+    setup
+    if run_docker_pipeline; then
+        log_header "Test PASSED ✓"
+        echo ""
+        echo "Docker image pipeline completed successfully:"
+        echo "  Image: $AI_SECURITY_IMAGE"
+        echo "  1. ✓ Download to quarantine"
+        echo "  2. ✓ Security scan"
+        echo "  3. ✓ Promote to verified"
+        echo "  4. ✓ Generate MLBOM"
+        echo ""
+        echo "Verified model: $VERIFIED_DIR/$MODEL_NAME"
+        exit 0
+    else
+        log_header "Test FAILED"
+        log_error "Docker pipeline failed"
+        exit 1
+    fi
+fi
 
 # Step 1: Setup directories and container
 setup

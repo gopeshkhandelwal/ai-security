@@ -5,7 +5,11 @@ A reusable security framework for AI/ML model verification, scanning, and secure
 ## Docker Image
 
 ```bash
-docker pull amr-registry.caas.intel.com/intelcloud/ai-security:1.5
+# Set image version (check releases for latest version)
+# Available tags: https://amr-registry.caas.intel.com/intelcloud/ai-security/tags
+export AI_SECURITY_IMAGE="amr-registry.caas.intel.com/intelcloud/ai-security:<version>"
+
+docker pull $AI_SECURITY_IMAGE
 ```
 
 ### Docker Commands
@@ -20,28 +24,31 @@ docker pull amr-registry.caas.intel.com/intelcloud/ai-security:1.5
 ### Quick Start with Docker
 
 ```bash
+# Set image
+export AI_SECURITY_IMAGE="amr-registry.caas.intel.com/intelcloud/ai-security:latest"
+
 # Show help
-docker run amr-registry.caas.intel.com/intelcloud/ai-security:1.5
+docker run $AI_SECURITY_IMAGE
 
 # Run full pipeline (download → scan → promote)
 docker run -v /srv/models:/srv/models/vLLM \
   -e HF_TOKEN=$HF_TOKEN \
   -e http_proxy="$http_proxy" -e https_proxy="$https_proxy" \
-  amr-registry.caas.intel.com/intelcloud/ai-security:1.5 \
+  $AI_SECURITY_IMAGE \
   pipeline meta-llama/Llama-3.1-8B-Instruct
 
 # Scan a local model and output JSON
 docker run -v /path/to/models:/models \
-  amr-registry.caas.intel.com/intelcloud/ai-security:1.5 \
+  $AI_SECURITY_IMAGE \
   scan /models/my-model --output /models/scan-result.json
 
 # Generate MLBOM
 docker run -v /path/to/models:/models \
-  amr-registry.caas.intel.com/intelcloud/ai-security:1.5 \
+  $AI_SECURITY_IMAGE \
   mlbom /models/my-model --model-id org/model-name --output /models/mlbom.json
 
 # Interactive shell
-docker run -it amr-registry.caas.intel.com/intelcloud/ai-security:1.5 shell
+docker run -it $AI_SECURITY_IMAGE shell
 ```
 
 ### Output Artifacts
@@ -51,22 +58,6 @@ docker run -it amr-registry.caas.intel.com/intelcloud/ai-security:1.5 shell
 | `scan-result.json` | Security scan findings with severity levels |
 | `mlbom.json` | Machine Learning Bill of Materials |
 | `pipeline.log` | Full pipeline execution log |
-
-### Build from Source
-
-```bash
-cd platform-security
-
-# Build with proxy (required for corporate networks)
-docker build \
-  --build-arg http_proxy="$http_proxy" \
-  --build-arg https_proxy="$https_proxy" \
-  --build-arg no_proxy="$no_proxy" \
-  -t amr-registry.caas.intel.com/intelcloud/ai-security:1.5 .
-
-# Push to registry
-docker push amr-registry.caas.intel.com/intelcloud/ai-security:1.5
-```
 
 ### Proxy Configuration
 
