@@ -144,14 +144,13 @@ setup_container() {
     
     # Create model directories
     sudo mkdir -p "$QUARANTINE_DIR" "$VERIFIED_DIR" "$SCAN_RESULTS_DIR"
-    sudo chmod -R 777 "$MODELS_DIR"
+    sudo chown -R $(id -u):$(id -g) "$MODELS_DIR"
     
     # Always recreate container to ensure correct volume mounts
     log_info "Starting container..."
     docker rm -f "$CONTAINER_NAME" 2>/dev/null || true
     
     sudo docker run -td \
-        --privileged \
         --net=host \
         --device=/dev/dri \
         --name="$CONTAINER_NAME" \
@@ -233,7 +232,7 @@ download_model() {
         token_arg="--token $HF_TOKEN"
     fi
     
-    if [ "$USE_CONTAINER" == "true" ]; then
+    if [ "$USE_CONTAINER" = "true" ]; then
         # Container mode (like Pathfinder) - paths inside container
         docker exec -e HF_TOKEN="${HF_TOKEN:-}" "$CONTAINER_NAME" \
             python3 /llm/security/downloader.py \
@@ -266,7 +265,7 @@ security_scan() {
     
     log_info "Scanning: $model_path"
     
-    if [ "$USE_CONTAINER" == "true" ]; then
+    if [ "$USE_CONTAINER" = "true" ]; then
         # Container mode (like Pathfinder) - paths inside container
         if docker exec "$CONTAINER_NAME" \
             python3 /llm/security/scanner.py \
@@ -301,11 +300,11 @@ security_scan() {
 promote_model() {
     log_header "Promote to Verified"
     
-    if [ "$USE_CONTAINER" == "true" ]; then
+    if [ "$USE_CONTAINER" = "true" ]; then
         # Container mode - files owned by root, use sudo
         sudo rm -rf "$VERIFIED_DIR/$MODEL_NAME"
         sudo mv "$QUARANTINE_DIR/$MODEL_NAME" "$VERIFIED_DIR/$MODEL_NAME"
-        sudo chmod -R 777 "$VERIFIED_DIR/$MODEL_NAME"
+        sudo chown -R $(id -u):$(id -g) "$VERIFIED_DIR/$MODEL_NAME"
     else
         rm -rf "$VERIFIED_DIR/$MODEL_NAME"
         mv "$QUARANTINE_DIR/$MODEL_NAME" "$VERIFIED_DIR/$MODEL_NAME"
@@ -323,9 +322,9 @@ generate_mlbom() {
     log_header "Generate MLBOM"
     
     local mlbom_model_id="$MODEL_ID"
-    [ "$MOCK_MODE" == "true" ] && mlbom_model_id="mock/mock-gpt2"
+    [ "$MOCK_MODE" = "true" ] && mlbom_model_id="mock/mock-gpt2"
     
-    if [ "$USE_CONTAINER" == "true" ]; then
+    if [ "$USE_CONTAINER" = "true" ]; then
         docker exec "$CONTAINER_NAME" \
             python3 /llm/security/mlbom.py \
                 "/llm/models/verified/$MODEL_NAME" \
@@ -499,7 +498,7 @@ run_benchmark() {
 cleanup() {
     log_info "Cleaning up..."
     
-    if [ "$USE_CONTAINER" == "true" ]; then
+    if [ "$USE_CONTAINER" = "true" ]; then
         docker rm -f "$CONTAINER_NAME" 2>/dev/null || true
         # Files created by container are owned by root
         sudo rm -rf "$MODELS_DIR" 2>/dev/null || true
@@ -518,10 +517,10 @@ echo "║     AI Model Pathfinder - E2E Integration Test                ║"
 echo "╚═══════════════════════════════════════════════════════════════╝"
 echo ""
 echo "Model: $MODEL_ID"
-echo "Mode: $([ "$MOCK_MODE" == "true" ] && echo "Mock" || echo "Real")"
-echo "Container: $([ "$USE_CONTAINER" == "true" ] && echo "Yes" || echo "No")"
-echo "Serve: $([ "$DO_SERVE" == "true" ] && echo "Yes" || echo "No")"
-echo "Benchmark: $([ "$DO_BENCHMARK" == "true" ] && echo "Yes" || echo "No")"
+echo "Mode: $([ "$MOCK_MODE" = "true" ] && echo "Mock" || echo "Real")"
+echo "Container: $([ "$USE_CONTAINER" = "true" ] && echo "Yes" || echo "No")"
+echo "Serve: $([ "$DO_SERVE" = "true" ] && echo "Yes" || echo "No")"
+echo "Benchmark: $([ "$DO_BENCHMARK" = "true" ] && echo "Yes" || echo "No")"
 echo ""
 
 # Trap cleanup
@@ -529,10 +528,10 @@ trap cleanup EXIT
 
 # Step 1: Setup directories and container
 setup
-[ "$USE_CONTAINER" == "true" ] && setup_container
+[ "$USE_CONTAINER" = "true" ] && setup_container
 
 # Step 2: Download or create mock model
-if [ "$MOCK_MODE" == "true" ]; then
+if [ "$MOCK_MODE" = "true" ]; then
     create_mock_model
 else
     download_model
@@ -544,12 +543,12 @@ if security_scan; then
     generate_mlbom
     
     # Step 6: Serve model (optional)
-    if [ "$DO_SERVE" == "true" ]; then
+    if [ "$DO_SERVE" = "true" ]; then
         serve_model
     fi
     
     # Step 7: Run benchmark (optional)
-    if [ "$DO_BENCHMARK" == "true" ]; then
+    if [ "$DO_BENCHMARK" = "true" ]; then
         run_benchmark
     fi
     
@@ -561,12 +560,12 @@ if security_scan; then
     echo "  3. ✓ Security scan"
     echo "  4. ✓ Promote to verified"
     echo "  5. ✓ Generate MLBOM"
-    [ "$DO_SERVE" == "true" ] && echo "  6. ✓ vLLM serving started"
-    [ "$DO_BENCHMARK" == "true" ] && echo "  7. ✓ Benchmark completed"
+    [ "$DO_SERVE" = "true" ] && echo "  6. ✓ vLLM serving started"
+    [ "$DO_BENCHMARK" = "true" ] && echo "  7. ✓ Benchmark completed"
     echo ""
     echo "Verified model: $VERIFIED_DIR/$MODEL_NAME"
     echo "MLBOM: $VERIFIED_DIR/$MODEL_NAME/mlbom.json"
-    [ "$DO_SERVE" == "true" ] && echo "vLLM endpoint: http://localhost:$VLLM_PORT/v1"
+    [ "$DO_SERVE" = "true" ] && echo "vLLM endpoint: http://localhost:$VLLM_PORT/v1"
     
     EXIT_CODE=0
 else

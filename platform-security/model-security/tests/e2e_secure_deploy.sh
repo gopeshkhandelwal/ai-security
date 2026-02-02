@@ -246,7 +246,7 @@ echo ""
 setup
 
 # Prepare model
-if [ "$TEST_MALICIOUS" == "true" ]; then
+if [ "$TEST_MALICIOUS" = "true" ]; then
     create_malicious_model
     log_info "Testing malicious model (expect FAILURE)"
 else
@@ -269,7 +269,7 @@ if security_scan; then
 else
     log_header "Test Result: Security Blocked"
     
-    if [ "$TEST_MALICIOUS" == "true" ]; then
+    if [ "$TEST_MALICIOUS" = "true" ]; then
         log_success "Expected behavior: Malicious model was blocked!"
         EXIT_CODE=0
     else
@@ -283,6 +283,6 @@ else
 fi
 
 # Cleanup unless keeping
-[ "$KEEP_QUARANTINE" != "true" ] && [ "$EXIT_CODE" == "0" ] && cleanup
+[ "$KEEP_QUARANTINE" != "true" ] && [ "$EXIT_CODE" = "0" ] && cleanup
 
 exit $EXIT_CODE
