@@ -96,7 +96,7 @@ setup_container() {
     sudo chown -R "$(id -u):$(id -g)" "$MODELS_DIR"
     chmod -R 755 "$MODELS_DIR"
     
-    if ! docker ps -q -f name="$CONTAINER_NAME" | grep -q .; then; then
+    if ! docker ps -q -f name="$CONTAINER_NAME" | grep -q .; then
         log_info "Starting container..."
         docker rm -f "$CONTAINER_NAME" 2>/dev/null || true
         
