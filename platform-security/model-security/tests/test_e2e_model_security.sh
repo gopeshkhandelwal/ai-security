@@ -1,21 +1,18 @@
 #!/bin/bash
 #
-# Pathfinder E2E Integration Test
+# Model Security E2E Integration Test
 #
-# This test replicates exactly how AI Model Pathfinder uses the security framework.
-# It demonstrates the full integration pattern for consumer projects.
-#
-# Pathfinder Flow:
-#   1. Setup container with security tools
-#   2. Download model to quarantine (inside container)
-#   3. Run security scan (inside container)
+# This test validates the complete model security pipeline:
+#   1. Setup directories and container (optional)
+#   2. Download model to quarantine
+#   3. Run security scan
 #   4. Promote to verified directory
 #   5. Generate MLBOM
 #   6. Serve with vLLM (optional)
 #   7. Run benchmark (optional)
 #
 # Usage:
-#   ./e2e_test_pathfinder.sh [model-id] [options]
+#   ./test_e2e_model_security.sh [model-id] [options]
 #
 # Options:
 #   --mock        Use mock model (no real download)
@@ -25,22 +22,22 @@
 #   --force       Force redeploy even if model exists
 #
 # Examples:
-#   ./e2e_test_pathfinder.sh openai-community/gpt2
-#   ./e2e_test_pathfinder.sh --mock                           # Test without real download
-#   ./e2e_test_pathfinder.sh meta-llama/Llama-3.1-8B --container --serve
-#   ./e2e_test_pathfinder.sh meta-llama/Llama-3.1-8B --container --serve --benchmark
+#   ./test_e2e_model_security.sh openai-community/gpt2
+#   ./test_e2e_model_security.sh --mock                           # Test without real download
+#   ./test_e2e_model_security.sh meta-llama/Llama-3.1-8B --container --serve
+#   ./test_e2e_model_security.sh meta-llama/Llama-3.1-8B --container --serve --benchmark
 
 set -euo pipefail
 
 # =============================================================================
-# CONFIGURATION - Same as Pathfinder
+# CONFIGURATION
 # =============================================================================
 
 MODEL_ID="${1:-openai-community/gpt2}"
 MODEL_NAME="${MODEL_ID##*/}"
 
 # Model storage paths
-MODELS_DIR="${MODELS_DIR:-/tmp/pathfinder-test/models}"
+MODELS_DIR="${MODELS_DIR:-/tmp/model-security-test/models}"
 VERIFIED_DIR="${MODELS_DIR}/verified"
 QUARANTINE_DIR="${MODELS_DIR}/quarantine"
 SCAN_RESULTS_DIR="${MODELS_DIR}/scan-results"
@@ -49,9 +46,9 @@ SCAN_RESULTS_DIR="${MODELS_DIR}/scan-results"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 SECURITY_MODULE_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
 
-# Container settings (Pathfinder uses intel/llm-scaler-vllm)
+# Container settings
 USE_CONTAINER="${USE_CONTAINER:-false}"  # Set true for container mode
-CONTAINER_NAME="${CONTAINER_NAME:-lsv-container}"
+CONTAINER_NAME="${CONTAINER_NAME:-model-security-test}"
 CONTAINER_IMAGE="${CONTAINER_IMAGE:-intel/llm-scaler-vllm:1.2}"
 
 # vLLM settings
@@ -76,7 +73,7 @@ YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
 NC='\033[0m'
 
-log_info()    { echo -e "${BLUE}[PATHFINDER]${NC} $1"; }
+log_info()    { echo -e "${BLUE}[INFO]${NC} $1"; }
 log_success() { echo -e "${GREEN}[✓]${NC} $1"; }
 log_warning() { echo -e "${YELLOW}[⚠]${NC} $1"; }
 log_error()   { echo -e "${RED}[✗]${NC} $1"; }
@@ -104,11 +101,11 @@ for arg in "$@"; do
 done
 
 # =============================================================================
-# SETUP - Pathfinder creates directories and prepares container
+# SETUP
 # =============================================================================
 
 setup() {
-    log_header "Setup (Pathfinder Style)"
+    log_header "Setup"
     
     # Create directories
     mkdir -p "$QUARANTINE_DIR" "$VERIFIED_DIR" "$SCAN_RESULTS_DIR"
@@ -127,7 +124,7 @@ setup() {
 }
 
 # =============================================================================
-# SETUP CONTAINER (Optional - Pathfinder uses Docker)
+# SETUP CONTAINER (Optional)
 # =============================================================================
 
 setup_container() {
@@ -144,14 +141,14 @@ setup_container() {
     
     # Create model directories
     sudo mkdir -p "$QUARANTINE_DIR" "$VERIFIED_DIR" "$SCAN_RESULTS_DIR"
-    sudo chmod -R 777 "$MODELS_DIR"
+    sudo chown -R "$(id -u):$(id -g)" "$MODELS_DIR"
+    chmod -R 755 "$MODELS_DIR"
     
     # Always recreate container to ensure correct volume mounts
     log_info "Starting container..."
     docker rm -f "$CONTAINER_NAME" 2>/dev/null || true
     
     sudo docker run -td \
-        --privileged \
         --net=host \
         --device=/dev/dri \
         --name="$CONTAINER_NAME" \
@@ -212,7 +209,6 @@ EOF
 
 # =============================================================================
 # DOWNLOAD MODEL TO QUARANTINE
-# Pathfinder: docker exec ... python3 download_model.py ...
 # =============================================================================
 
 download_model() {
@@ -233,8 +229,8 @@ download_model() {
         token_arg="--token $HF_TOKEN"
     fi
     
-    if [ "$USE_CONTAINER" == "true" ]; then
-        # Container mode (like Pathfinder) - paths inside container
+    if [ "$USE_CONTAINER" = "true" ]; then
+        # Container mode - paths inside container
         docker exec -e HF_TOKEN="${HF_TOKEN:-}" "$CONTAINER_NAME" \
             python3 /llm/security/downloader.py \
                 "$MODEL_ID" \
@@ -255,7 +251,6 @@ download_model() {
 
 # =============================================================================
 # SECURITY SCAN
-# Pathfinder: docker exec ... python3 scan_model.py ...
 # =============================================================================
 
 security_scan() {
@@ -266,8 +261,8 @@ security_scan() {
     
     log_info "Scanning: $model_path"
     
-    if [ "$USE_CONTAINER" == "true" ]; then
-        # Container mode (like Pathfinder) - paths inside container
+    if [ "$USE_CONTAINER" = "true" ]; then
+        # Container mode - paths inside container
         if docker exec "$CONTAINER_NAME" \
             python3 /llm/security/scanner.py \
                 "/llm/models/quarantine/$MODEL_NAME" \
@@ -295,17 +290,17 @@ security_scan() {
 
 # =============================================================================
 # PROMOTE TO VERIFIED
-# Pathfinder: sudo mv quarantine/model verified/model
 # =============================================================================
 
 promote_model() {
     log_header "Promote to Verified"
     
-    if [ "$USE_CONTAINER" == "true" ]; then
+    if [ "$USE_CONTAINER" = "true" ]; then
         # Container mode - files owned by root, use sudo
         sudo rm -rf "$VERIFIED_DIR/$MODEL_NAME"
         sudo mv "$QUARANTINE_DIR/$MODEL_NAME" "$VERIFIED_DIR/$MODEL_NAME"
-        sudo chmod -R 777 "$VERIFIED_DIR/$MODEL_NAME"
+        sudo chown -R "$(id -u):$(id -g)" "$VERIFIED_DIR/$MODEL_NAME"
+        chmod -R 755 "$VERIFIED_DIR/$MODEL_NAME"
     else
         rm -rf "$VERIFIED_DIR/$MODEL_NAME"
         mv "$QUARANTINE_DIR/$MODEL_NAME" "$VERIFIED_DIR/$MODEL_NAME"
@@ -316,16 +311,15 @@ promote_model() {
 
 # =============================================================================
 # GENERATE MLBOM
-# Pathfinder: docker exec ... python3 generate_mlbom.py ...
 # =============================================================================
 
 generate_mlbom() {
     log_header "Generate MLBOM"
     
     local mlbom_model_id="$MODEL_ID"
-    [ "$MOCK_MODE" == "true" ] && mlbom_model_id="mock/mock-gpt2"
+    [ "$MOCK_MODE" = "true" ] && mlbom_model_id="mock/mock-gpt2"
     
-    if [ "$USE_CONTAINER" == "true" ]; then
+    if [ "$USE_CONTAINER" = "true" ]; then
         docker exec "$CONTAINER_NAME" \
             python3 /llm/security/mlbom.py \
                 "/llm/models/verified/$MODEL_NAME" \
@@ -499,7 +493,7 @@ run_benchmark() {
 cleanup() {
     log_info "Cleaning up..."
     
-    if [ "$USE_CONTAINER" == "true" ]; then
+    if [ "$USE_CONTAINER" = "true" ]; then
         docker rm -f "$CONTAINER_NAME" 2>/dev/null || true
         # Files created by container are owned by root
         sudo rm -rf "$MODELS_DIR" 2>/dev/null || true
@@ -509,19 +503,19 @@ cleanup() {
 }
 
 # =============================================================================
-# MAIN - Replicate Pathfinder's deploy.sh flow
+# MAIN
 # =============================================================================
 
 echo ""
 echo "╔═══════════════════════════════════════════════════════════════╗"
-echo "║     AI Model Pathfinder - E2E Integration Test                ║"
+echo "║          Model Security - E2E Integration Test                ║"
 echo "╚═══════════════════════════════════════════════════════════════╝"
 echo ""
 echo "Model: $MODEL_ID"
-echo "Mode: $([ "$MOCK_MODE" == "true" ] && echo "Mock" || echo "Real")"
-echo "Container: $([ "$USE_CONTAINER" == "true" ] && echo "Yes" || echo "No")"
-echo "Serve: $([ "$DO_SERVE" == "true" ] && echo "Yes" || echo "No")"
-echo "Benchmark: $([ "$DO_BENCHMARK" == "true" ] && echo "Yes" || echo "No")"
+echo "Mode: $([ "$MOCK_MODE" = "true" ] && echo "Mock" || echo "Real")"
+echo "Container: $([ "$USE_CONTAINER" = "true" ] && echo "Yes" || echo "No")"
+echo "Serve: $([ "$DO_SERVE" = "true" ] && echo "Yes" || echo "No")"
+echo "Benchmark: $([ "$DO_BENCHMARK" = "true" ] && echo "Yes" || echo "No")"
 echo ""
 
 # Trap cleanup
@@ -529,44 +523,44 @@ trap cleanup EXIT
 
 # Step 1: Setup directories and container
 setup
-[ "$USE_CONTAINER" == "true" ] && setup_container
+[ "$USE_CONTAINER" = "true" ] && setup_container
 
 # Step 2: Download or create mock model
-if [ "$MOCK_MODE" == "true" ]; then
+if [ "$MOCK_MODE" = "true" ]; then
     create_mock_model
 else
     download_model
 fi
 
-# Step 3-5: Security Pipeline (same as Pathfinder's run_security_pipeline)
+# Step 3-5: Security Pipeline
 if security_scan; then
     promote_model
     generate_mlbom
     
     # Step 6: Serve model (optional)
-    if [ "$DO_SERVE" == "true" ]; then
+    if [ "$DO_SERVE" = "true" ]; then
         serve_model
     fi
     
     # Step 7: Run benchmark (optional)
-    if [ "$DO_BENCHMARK" == "true" ]; then
+    if [ "$DO_BENCHMARK" = "true" ]; then
         run_benchmark
     fi
     
     log_header "Test PASSED ✓"
     echo ""
-    echo "This test replicates the Pathfinder deployment flow:"
+    echo "Security pipeline completed successfully:"
     echo "  1. ✓ Setup directories"
     echo "  2. ✓ Download to quarantine"
     echo "  3. ✓ Security scan"
     echo "  4. ✓ Promote to verified"
     echo "  5. ✓ Generate MLBOM"
-    [ "$DO_SERVE" == "true" ] && echo "  6. ✓ vLLM serving started"
-    [ "$DO_BENCHMARK" == "true" ] && echo "  7. ✓ Benchmark completed"
+    [ "$DO_SERVE" = "true" ] && echo "  6. ✓ vLLM serving started"
+    [ "$DO_BENCHMARK" = "true" ] && echo "  7. ✓ Benchmark completed"
     echo ""
     echo "Verified model: $VERIFIED_DIR/$MODEL_NAME"
     echo "MLBOM: $VERIFIED_DIR/$MODEL_NAME/mlbom.json"
-    [ "$DO_SERVE" == "true" ] && echo "vLLM endpoint: http://localhost:$VLLM_PORT/v1"
+    [ "$DO_SERVE" = "true" ] && echo "vLLM endpoint: http://localhost:$VLLM_PORT/v1"
     
     EXIT_CODE=0
 else

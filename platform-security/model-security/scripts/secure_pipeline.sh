@@ -57,7 +57,7 @@ done
 
 # Set defaults based on mode
 if [ -z "$MODELS_DIR" ]; then
-    if [ "$IN_CONTAINER" == "true" ]; then
+    if [ "$IN_CONTAINER" = "true" ]; then
         MODELS_DIR="/srv/models/vLLM"
     else
         MODELS_DIR="${MODELS_DIR:-/srv/models/vLLM}"
@@ -83,7 +83,7 @@ log_header()  { echo -e "\n============ $1 ============\n" >&2; }
 # =============================================================================
 
 setup_container() {
-    if [ "$IN_CONTAINER" == "true" ]; then
+    if [ "$IN_CONTAINER" = "true" ]; then
         mkdir -p "$QUARANTINE_DIR" "$VERIFIED_DIR" "$SCAN_RESULTS_DIR"
         return 0
     fi
@@ -93,14 +93,15 @@ setup_container() {
     docker pull "$CONTAINER_IMAGE" >&2
     
     sudo mkdir -p "$QUARANTINE_DIR" "$VERIFIED_DIR" "$SCAN_RESULTS_DIR"
-    sudo chmod -R 777 "$MODELS_DIR"
+    sudo chown -R "$(id -u):$(id -g)" "$MODELS_DIR"
+    chmod -R 755 "$MODELS_DIR"
     
     if ! docker ps -q -f name="$CONTAINER_NAME" | grep -q .; then
         log_info "Starting container..."
         docker rm -f "$CONTAINER_NAME" 2>/dev/null || true
         
         sudo docker run -td \
-            --privileged --net=host --device=/dev/dri \
+            --net=host --device=/dev/dri \
             --name="$CONTAINER_NAME" \
             -v "$MODELS_DIR:/llm/models/" \
             -v "$SCRIPT_DIR:/llm/security/" \
@@ -132,7 +133,7 @@ download_model() {
     
     rm -rf "$QUARANTINE_DIR/$MODEL_NAME"
     
-    if [ "$IN_CONTAINER" == "true" ]; then
+    if [ "$IN_CONTAINER" = "true" ]; then
         python3 "$SCRIPT_DIR/../downloader.py" "$MODEL_ID" \
             --output-dir "$QUARANTINE_DIR" --safetensors-only >&2
     else
@@ -155,7 +156,7 @@ security_scan() {
     TIMESTAMP=$(date +%Y%m%d_%H%M%S)
     SCAN_FILE="$SCAN_RESULTS_DIR/${MODEL_NAME}_${TIMESTAMP}_scan-result.json"
     
-    if [ "$IN_CONTAINER" == "true" ]; then
+    if [ "$IN_CONTAINER" = "true" ]; then
         if python3 "$SCRIPT_DIR/../scanner.py" "$QUARANTINE_DIR/$MODEL_NAME" \
             --output "$SCAN_FILE" >&2; then
             log_success "Security scan PASSED"
@@ -187,7 +188,7 @@ promote_model() {
     
     MLBOM_FILE="$SCAN_RESULTS_DIR/${MODEL_NAME}_${TIMESTAMP}_mlbom.json"
     
-    if [ "$IN_CONTAINER" == "true" ]; then
+    if [ "$IN_CONTAINER" = "true" ]; then
         rm -rf "$VERIFIED_DIR/$MODEL_NAME"
         mv "$QUARANTINE_DIR/$MODEL_NAME" "$VERIFIED_DIR/$MODEL_NAME"
         
@@ -197,7 +198,8 @@ promote_model() {
     else
         sudo rm -rf "$VERIFIED_DIR/$MODEL_NAME"
         sudo mv "$QUARANTINE_DIR/$MODEL_NAME" "$VERIFIED_DIR/$MODEL_NAME"
-        sudo chmod -R 777 "$VERIFIED_DIR/$MODEL_NAME"
+        sudo chown -R "$(id -u):$(id -g)" "$VERIFIED_DIR/$MODEL_NAME"
+        chmod -R 755 "$VERIFIED_DIR/$MODEL_NAME"
         
         # Generate MLBOM
         docker exec "$CONTAINER_NAME" \
