@@ -93,7 +93,7 @@ setup_container() {
     docker pull "$CONTAINER_IMAGE" >&2
     
     sudo mkdir -p "$QUARANTINE_DIR" "$VERIFIED_DIR" "$SCAN_RESULTS_DIR"
-    sudo chown -R $(id -u):$(id -g) "$MODELS_DIR"
+    sudo chown -R "$(id -u):$(id -g)" "$MODELS_DIR"
     
     if ! docker ps -q -f name="$CONTAINER_NAME" | grep -q .; then
         log_info "Starting container..."
@@ -197,7 +197,7 @@ promote_model() {
     else
         sudo rm -rf "$VERIFIED_DIR/$MODEL_NAME"
         sudo mv "$QUARANTINE_DIR/$MODEL_NAME" "$VERIFIED_DIR/$MODEL_NAME"
-        sudo chown -R $(id -u):$(id -g) "$VERIFIED_DIR/$MODEL_NAME"
+        sudo chown -R "$(id -u):$(id -g)" "$VERIFIED_DIR/$MODEL_NAME"
         
         # Generate MLBOM
         docker exec "$CONTAINER_NAME" \

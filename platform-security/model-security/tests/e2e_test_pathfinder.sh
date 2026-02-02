@@ -144,7 +144,7 @@ setup_container() {
     
     # Create model directories
     sudo mkdir -p "$QUARANTINE_DIR" "$VERIFIED_DIR" "$SCAN_RESULTS_DIR"
-    sudo chown -R $(id -u):$(id -g) "$MODELS_DIR"
+    sudo chown -R "$(id -u):$(id -g)" "$MODELS_DIR"
     
     # Always recreate container to ensure correct volume mounts
     log_info "Starting container..."
@@ -304,7 +304,7 @@ promote_model() {
         # Container mode - files owned by root, use sudo
         sudo rm -rf "$VERIFIED_DIR/$MODEL_NAME"
         sudo mv "$QUARANTINE_DIR/$MODEL_NAME" "$VERIFIED_DIR/$MODEL_NAME"
-        sudo chown -R $(id -u):$(id -g) "$VERIFIED_DIR/$MODEL_NAME"
+        sudo chown -R "$(id -u):$(id -g)" "$VERIFIED_DIR/$MODEL_NAME"
     else
         rm -rf "$VERIFIED_DIR/$MODEL_NAME"
         mv "$QUARANTINE_DIR/$MODEL_NAME" "$VERIFIED_DIR/$MODEL_NAME"
