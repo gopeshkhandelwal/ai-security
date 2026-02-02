@@ -83,7 +83,7 @@ set -e
 case "\$1" in
     scan)
         shift
-        python -m model_security.scanner "\$@"
+        python /app/platform-security/model-security/scanner.py "\$@"
         ;;
     pipeline)
         shift
@@ -91,7 +91,7 @@ case "\$1" in
         ;;
     mlbom)
         shift
-        python -m model_security.mlbom "\$@"
+        python /app/platform-security/model-security/mlbom.py "\$@"
         ;;
     shell)
         exec /bin/bash

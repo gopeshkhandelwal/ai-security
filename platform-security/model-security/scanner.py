@@ -510,6 +510,8 @@ Examples:
     parser.add_argument("--no-code-scan", action="store_true",
                         help="Skip scanning Python files for patterns")
     parser.add_argument("--output", "-o", help="Output JSON file path")
+    parser.add_argument("--mlbom", help="Generate MLBOM at specified path (or 'auto' for model dir)")
+    parser.add_argument("--model-id", help="Model ID for MLBOM (e.g., meta-llama/Llama-3.1-8B)")
     parser.add_argument("--quiet", "-q", action="store_true", help="Minimal output")
     
     args = parser.parse_args()

@@ -5,38 +5,52 @@ A reusable security framework for AI/ML model verification, scanning, and secure
 ## Docker Image
 
 ```bash
-docker pull amr-registry.caas.intel.com/intelcloud/ai-security:1.0
+docker pull amr-registry.caas.intel.com/intelcloud/ai-security:1.5
 ```
+
+### Docker Commands
+
+| Command | Description |
+|---------|-------------|
+| `scan <model-path>` | Run security scan on a model |
+| `pipeline <model-id>` | Download, scan, and promote model |
+| `mlbom <model-path>` | Generate MLBOM for a model |
+| `shell` | Start interactive shell |
 
 ### Quick Start with Docker
 
 ```bash
 # Show help
-docker run amr-registry.caas.intel.com/intelcloud/ai-security:1.0
+docker run amr-registry.caas.intel.com/intelcloud/ai-security:1.5
 
 # Run full pipeline (download → scan → promote)
-# Note: Include proxy vars if behind corporate firewall
 docker run -v /srv/models:/srv/models/vLLM \
   -e HF_TOKEN=$HF_TOKEN \
   -e http_proxy="$http_proxy" -e https_proxy="$https_proxy" \
-  -e HTTP_PROXY="$HTTP_PROXY" -e HTTPS_PROXY="$HTTPS_PROXY" \
-  -e no_proxy="$no_proxy" \
-  amr-registry.caas.intel.com/intelcloud/ai-security:1.0 \
+  amr-registry.caas.intel.com/intelcloud/ai-security:1.5 \
   pipeline meta-llama/Llama-3.1-8B-Instruct
 
-# Scan a local model
+# Scan a local model and output JSON
 docker run -v /path/to/models:/models \
-  amr-registry.caas.intel.com/intelcloud/ai-security:1.0 \
-  scan /models/my-model
+  amr-registry.caas.intel.com/intelcloud/ai-security:1.5 \
+  scan /models/my-model --output /models/scan-result.json
 
 # Generate MLBOM
 docker run -v /path/to/models:/models \
-  amr-registry.caas.intel.com/intelcloud/ai-security:1.0 \
-  mlbom /models/my-model
+  amr-registry.caas.intel.com/intelcloud/ai-security:1.5 \
+  mlbom /models/my-model --model-id org/model-name --output /models/mlbom.json
 
 # Interactive shell
-docker run -it amr-registry.caas.intel.com/intelcloud/ai-security:1.0 shell
+docker run -it amr-registry.caas.intel.com/intelcloud/ai-security:1.5 shell
 ```
+
+### Output Artifacts
+
+| Artifact | Description |
+|----------|-------------|
+| `scan-result.json` | Security scan findings with severity levels |
+| `mlbom.json` | Machine Learning Bill of Materials |
+| `pipeline.log` | Full pipeline execution log |
 
 ### Build from Source
 
@@ -48,10 +62,10 @@ docker build \
   --build-arg http_proxy="$http_proxy" \
   --build-arg https_proxy="$https_proxy" \
   --build-arg no_proxy="$no_proxy" \
-  -t amr-registry.caas.intel.com/intelcloud/ai-security:1.1 .
+  -t amr-registry.caas.intel.com/intelcloud/ai-security:1.5 .
 
 # Push to registry
-docker push amr-registry.caas.intel.com/intelcloud/ai-security:1.1
+docker push amr-registry.caas.intel.com/intelcloud/ai-security:1.5
 ```
 
 ### Proxy Configuration
