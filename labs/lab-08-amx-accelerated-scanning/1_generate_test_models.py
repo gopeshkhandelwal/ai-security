@@ -90,7 +90,7 @@ def generate_sklearn_models(count=5):
         ("logistic_regression", lambda: LogisticRegression()),
         ("svm", lambda: SVC()),
         ("random_forest_large", lambda: RandomForestClassifier(n_estimators=500)),
-        ("logistic_multiclass", lambda: LogisticRegression(max_iter=200)),  # multi_class deprecated
+        ("logistic_multiclass", lambda: LogisticRegression(max_iter=200)),  # logistic regression for multi-class classification
     ]
     
     # Generate dummy training data
