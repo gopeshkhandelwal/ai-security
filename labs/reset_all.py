@@ -37,6 +37,36 @@ LAB_FILES = {
         "medical_knowledge_base.json",
         "attack_results.json",
     ],
+    "lab-05-malicious-code-injection": [
+        "model.h5",
+        "vectorizer.joblib",
+        "responses.json",
+    ],
+    "lab-06-model-signing": [
+        "keras_model.h5",
+        "keras_model.h5.sig",
+        "keras_model.h5.bundle",
+        "cosign.key",
+        "cosign.pub",
+        "vectorizer.joblib",
+        "responses.json",
+    ],
+    "lab-07-confidential-ai-tdx-sgx": [
+        "proprietary_model.h5",
+        "vectorizer.joblib",
+        "model_metadata.json",
+        "stolen_model_weights.npz",
+        "inference_memory_dump.json",
+        "attestation_report_tdx.json",
+        "attestation_report_sgx.json",
+        "verification_certificate.json",
+    ],
+    "lab-08-amx-accelerated-scanning": [
+        "test_models",  # directory
+        "scan_results",  # directory
+        "mlbom_output",  # directory
+        ".amx_status.json",
+    ],
 }
 
 
@@ -57,13 +87,22 @@ for lab, files in LAB_FILES.items():
         if os.path.isfile(path):
             os.remove(path)
             print(f"  [✓] Removed: {f}")
+        elif os.path.isdir(path):
+            shutil.rmtree(path)
+            print(f"  [✓] Removed: {f}/")
     
 
 print("\n" + "=" * 60)
 print("[✓] All labs reset!")
 print("=" * 60)
 print("\nTo run labs:")
-print("  cd lab-01-malicious-code-injection && python 1_train_model.py")
-print("  cd lab-02-model-signing && python 1_train_model.py")
-print("  cd lab-03-model-stealing && python 1_proprority_model.py")
+print("  cd lab-01-supply-chain-attack && python 2_victim_loads_model.py")
+print("  cd lab-02-model-stealing && python 1_proprority_model.py")
+print("  cd lab-03-llm-agent-exploitation && python 1_vulnerable_agent.py")
 print("  cd lab-04-rag-data-extraction && python 1_create_knowledge_base.py")
+print("  cd lab-05-malicious-code-injection && python 1_train_model.py")
+print("  cd lab-06-model-signing && python 1_train_model.py")
+print("  cd lab-07-confidential-ai-tdx-sgx && python 0_check_hardware.py")
+print("  cd lab-08-amx-accelerated-scanning && python 0_check_amx_support.py")
+print("  cd lab-06-model-signing && python 1_train_model.py")
+print("  cd lab-07-confidential-ai-tdx-sgx && python 0_check_hardware.py")

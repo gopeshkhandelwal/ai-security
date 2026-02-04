@@ -1,0 +1,19 @@
+# Core ML Dependencies
+tensorflow
+scikit-learn
+numpy
+joblib
+
+# Cryptography for attestation simulation
+cryptography
+
+# System info for hardware detection
+psutil
+py-cpuinfo
+
+# For memory analysis simulation
+pympler
+
+# Optional: Gramine support (for real SGX deployment)
+# Install separately: pip install graminelibos
+

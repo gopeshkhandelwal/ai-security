@@ -1,0 +1,26 @@
+# Generated models
+test_models/
+*.h5
+*.keras
+*.pkl
+*.pickle
+*.pt
+*.pth
+*.safetensors
+
+# MLBOM outputs
+*.sbom.json
+*.mlbom.json
+mlbom_output/
+
+# Scan results
+scan_results/
+*.scan.json
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+
+# Environment
+.env

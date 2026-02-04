@@ -26,6 +26,8 @@ Hands-on security labs demonstrating common AI/ML attack vectors and defense mec
 | 04 | Data Leakage | RAG PII Extraction | Microsoft Presidio + 4-Layer Defense | [📖 README](lab-04-rag-data-extraction/README.md) |
 | 05 | Supply Chain | Malicious Lambda Injection | ModelScan + Safe Loading | [📖 README](lab-05-malicious-code-injection/README.md) |
 | 06 | Integrity | Model Tampering | ECDSA Signing | [📖 README](lab-06-model-signing/README.md) |
+| 07 | Confidential AI | Hypervisor Memory Extraction | Intel TDX/SGX Encrypted Memory | [📖 README](lab-07-confidential-ai-tdx-sgx/README.md) |
+| 08 | Security Scanning | Slow Blocking Scans | Intel AMX Parallel Scanning + MLBOM | [📖 README](lab-08-amx-accelerated-scanning/README.md) |
 
 ---
 
@@ -33,11 +35,14 @@ Hands-on security labs demonstrating common AI/ML attack vectors and defense mec
 
 | Tool | Vendor | Used In |
 |------|--------|---------|
-|------|--------|---------|n| ModelScan | Protect AI | Lab 05 |
+| ModelScan | Protect AI | Lab 05 |
 | Flask-Limiter | Pallets | Lab 02 |
 | diffprivlib | IBM | Lab 02 |
 | Presidio | Microsoft | Lab 04 |
 | Custom AST Scanner | - | Lab 01 |
+| Intel TDX/SGX | Intel | Lab 07 |
+| Intel AMX | Intel | Lab 08 |
+| MLBOM/SBOM | CycloneDX | Lab 08 |
 
 ---
 
@@ -45,11 +50,12 @@ Hands-on security labs demonstrating common AI/ML attack vectors and defense mec
 
 | Technique | Name | Lab |
 |-----------|------|-----|
-| [AML.T0010](https://atlas.mitre.org/techniques/AML.T0010) | ML Supply Chain Compromise | Lab 01, Lab 05 |
+| [AML.T0010](https://atlas.mitre.org/techniques/AML.T0010) | ML Supply Chain Compromise | Lab 01, Lab 05, Lab 07 |
 | [AML.T0011](https://atlas.mitre.org/techniques/AML.T0011) | Backdoor ML Model | Lab 01, Lab 05 |
-| [AML.T0044](https://atlas.mitre.org/techniques/AML.T0044) | Full ML Model Access | Lab 02 |
-| [AML.T0024](https://atlas.mitre.org/techniques/AML.T0024) | Exfiltration via ML Inference API | Lab 02 |
+| [AML.T0044](https://atlas.mitre.org/techniques/AML.T0044) | Full ML Model Access | Lab 02, Lab 07 |
+| [AML.T0024](https://atlas.mitre.org/techniques/AML.T0024) | Exfiltration via ML Inference API | Lab 02, Lab 07 |
 | [AML.T0051](https://atlas.mitre.org/techniques/AML.T0051) | LLM Prompt Injection | Lab 03, Lab 04 |
+| [AML.T0047](https://atlas.mitre.org/techniques/AML.T0047) | ML Artifact Collection | Lab 08 |
 
 ---
 
