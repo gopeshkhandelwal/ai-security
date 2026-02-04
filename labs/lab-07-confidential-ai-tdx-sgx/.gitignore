@@ -1,0 +1,19 @@
+# Generated files
+*.h5
+*.joblib
+*.json
+*.pem
+*.sig
+attestation_*.json
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+
+# Environment
+.env
+
+# Memory dumps (for demo)
+*.dump
+*.bin
