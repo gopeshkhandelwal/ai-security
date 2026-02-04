@@ -1,4 +1,3 @@
-````markdown
 # Lab 08: Intel AMX-Accelerated Model Security Scanning
 
 [![Intel AMX](https://img.shields.io/badge/Intel-AMX-0071C5.svg)](https://www.intel.com/content/www/us/en/products/docs/accelerator-engines/advanced-matrix-extensions/overview.html)
