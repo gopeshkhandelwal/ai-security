@@ -210,6 +210,124 @@ gramine-sgx python model_inference.py
 
 ---
 
+## Running Python in a Real SGX Enclave (Gramine)
+
+This lab includes scripts to run Python + TensorFlow inference inside a **real SGX enclave** using Gramine.
+
+### Prerequisites
+
+1. **Intel SGX hardware** - `/dev/sgx_enclave` must exist
+2. **SGX driver** - Linux kernel 5.11+ has in-kernel SGX driver
+3. **User in `sgx` group** - `sudo usermod -aG sgx $USER` (re-login required)
+
+### Installing Gramine
+
+Gramine is not a pip package—it's a system package that provides a Library OS for running unmodified applications inside SGX enclaves.
+
+#### Automatic Installation (via run_sgx_enclave.sh)
+
+The `run_sgx_enclave.sh` script will automatically install Gramine if not present:
+
+```bash
+./run_sgx_enclave.sh
+```
+
+#### Manual Installation (Ubuntu 22.04/24.04)
+
+```bash
+# 1. Download Gramine GPG key
+sudo curl -fsSLo /usr/share/keyrings/gramine-keyring.gpg \
+  https://packages.gramineproject.io/gramine-keyring.gpg
+
+# 2. Add Gramine repository
+# Use 'jammy' for 22.04, 'noble' for 24.04
+# For Ubuntu 25.04 (plucky), use 'noble' packages
+DISTRO="noble"  # or "jammy" for 22.04
+
+echo "deb [arch=amd64 signed-by=/usr/share/keyrings/gramine-keyring.gpg] \
+  https://packages.gramineproject.io/ $DISTRO main" \
+  | sudo tee /etc/apt/sources.list.d/gramine.list
+
+# 3. Install Gramine
+sudo apt-get update
+sudo apt-get install -y gramine
+
+# 4. Verify installation
+gramine-sgx --version
+```
+
+#### Behind Corporate Proxy
+
+If you're behind a proxy (e.g., Intel network), pass proxy to sudo:
+
+```bash
+# Set proxy for sudo commands
+export SUDO_PROXY="http_proxy=$http_proxy https_proxy=$https_proxy no_proxy=$no_proxy"
+
+# Download with proxy
+sudo env $SUDO_PROXY curl -fsSLo /usr/share/keyrings/gramine-keyring.gpg \
+  https://packages.gramineproject.io/gramine-keyring.gpg
+
+# Install with proxy  
+sudo env $SUDO_PROXY apt-get update
+sudo env $SUDO_PROXY apt-get install -y gramine
+```
+
+### Running the SGX Enclave Demo
+
+```bash
+# Option 1: Use the helper script (recommended)
+./run_sgx_enclave.sh
+
+# Option 2: Run script directly (will prompt to launch enclave)
+python 4_confidential_inference.py
+# Select option [2] to launch inside SGX enclave
+
+# Option 3: Manual Gramine commands
+gramine-manifest \
+  -Dlog_level=error \
+  -Darch_libdir=/lib/x86_64-linux-gnu \
+  -Dexecdir=/usr/bin \
+  gramine_manifest.template > python.manifest
+
+gramine-sgx-sign --manifest python.manifest --output python.manifest.sgx
+gramine-sgx python 4_confidential_inference.py
+```
+
+### Troubleshooting
+
+| Issue | Solution |
+|-------|----------|
+| `/dev/sgx_enclave` not found | Enable SGX in BIOS, install SGX driver |
+| Permission denied on SGX device | `sudo usermod -aG sgx $USER` then re-login |
+| "No available TCS pages" | Increase `sgx.max_threads` in manifest (256+) |
+| Thread creation failed | Add TensorFlow thread limits: `TF_NUM_INTRAOP_THREADS=1` |
+| Python module not found | Add venv path to `loader.env.PYTHONPATH` in manifest |
+| GPG key verification failed | Use `[trusted=yes]` in apt sources (dev/testing only) |
+| Distro not supported | Use `noble` packages for Ubuntu 25.04+ |
+
+### Gramine Manifest Configuration
+
+Key settings in `gramine_manifest.template`:
+
+```toml
+# Enclave size (must fit TensorFlow + model)
+sgx.enclave_size = "8G"
+
+# Thread limit (TensorFlow needs many threads)
+sgx.max_threads = 256
+
+# Environment variables to limit TensorFlow threading
+loader.env.TF_NUM_INTRAOP_THREADS = "1"
+loader.env.TF_NUM_INTEROP_THREADS = "1"
+loader.env.OMP_NUM_THREADS = "1"
+
+# Python venv path
+loader.env.PYTHONPATH = "/path/to/.venv/lib/python3.13/site-packages"
+```
+
+---
+
 ## What This Demonstrates
 
 - **Attack:** Hypervisor/memory-level extraction of AI models
