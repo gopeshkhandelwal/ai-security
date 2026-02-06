@@ -2,8 +2,19 @@
 """
 Step 4: Confidential AI Inference with Intel TDX/SGX
 
-This demonstrates running AI inference in a protected environment
-using Intel's confidential computing features.
+This script runs AI inference in a protected environment using Intel's
+confidential computing features (TDX or SGX).
+
+IMPORTANT: Running `python 4_confidential_inference.py` directly will:
+  - Prompt you to either run in SIMULATION mode (no real protection)
+  - Or launch inside a real SGX enclave via Gramine
+
+For REAL hardware protection, the script must run inside:
+  - An SGX enclave (via Gramine): ./run_sgx_enclave.sh
+  - A TDX Trust Domain (VM booted as a TD guest)
+
+Memory encryption is done by HARDWARE (TME/MEE), not by this Python code.
+This script detects the environment and reports status.
 
 Author: GopeshK
 License: MIT License
@@ -21,8 +32,13 @@ try:
 except ImportError:
     pass  # dotenv not installed, use shell environment
 
+# Configure TensorFlow BEFORE import (important for SGX enclave thread limits)
 os.environ["CUDA_VISIBLE_DEVICES"] = "-1"
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"
+os.environ["TF_NUM_INTEROP_THREADS"] = "1"
+os.environ["TF_NUM_INTRAOP_THREADS"] = "1"
+os.environ["OMP_NUM_THREADS"] = "1"
+os.environ["TF_ENABLE_ONEDNN_OPTS"] = "0"
 
 import warnings
 warnings.filterwarnings("ignore")
@@ -41,6 +57,61 @@ MODEL_PATH = "proprietary_model.h5"
 
 # Simulation mode (set to False on real TDX/SGX hardware)
 SIMULATION_MODE = os.getenv("SIMULATION_MODE", "true").lower() == "true"
+
+# Detect if running inside a real SGX enclave (via Gramine)
+SGX_ENCLAVE_ACTIVE = os.getenv("SGX_ENCLAVE", "false").lower() == "true"
+
+def is_running_in_tee():
+    """
+    Check if we're ACTUALLY running inside a real Trusted Execution Environment.
+    
+    Returns True ONLY if:
+    - Inside an SGX enclave (Gramine's /dev/attestation/quote exists)
+    - Inside a TDX Trust Domain (/dev/tdx_guest exists)
+    - SGX_ENCLAVE env var is set (by run_sgx_enclave.sh)
+    
+    NOTE: /sys/firmware/tdx on HOST means TDX-capable, but NOT inside a TD!
+    """
+    # Check for Gramine's /dev/attestation (only exists inside SGX enclave)
+    gramine_sgx = os.path.exists("/dev/attestation/quote")
+    
+    # Check for TDX guest attestation device (only inside a TD guest, not host)
+    # /dev/tdx_guest = inside TD | /sys/firmware/tdx = TDX-capable host (NOT protected)
+    tdx_guest = os.path.exists("/dev/tdx_guest")
+    
+    return gramine_sgx or tdx_guest or SGX_ENCLAVE_ACTIVE
+
+# Check if TDX-capable host (but not inside TD)
+TDX_CAPABLE_HOST = os.path.exists("/sys/firmware/tdx") and not os.path.exists("/dev/tdx_guest")
+SGX_CAPABLE_HOST = os.path.exists("/dev/sgx_enclave") or os.path.exists("/dev/sgx/enclave")
+
+# Determine actual protection status
+ACTUALLY_IN_TEE = is_running_in_tee()
+
+# If user set SIMULATION_MODE=false but NOT in a real TEE, warn them!
+if not SIMULATION_MODE and not ACTUALLY_IN_TEE:
+    print("\n" + "!"*70)
+    print("⚠️  WARNING: SIMULATION_MODE=false but NOT running inside a TEE!")
+    print("!"*70)
+    print("│ Your .env has SIMULATION_MODE=false, but you are NOT inside:")
+    print("│   - An SGX enclave (via Gramine)")
+    print("│   - A TDX Trust Domain (TD guest VM)")
+    print("│")
+    print("│ Memory is NOT actually encrypted! This is misleading.")
+    print("│")
+    if TDX_CAPABLE_HOST:
+        print("│ You ARE on a TDX-capable HOST, but need to boot a TD VM.")
+    if SGX_CAPABLE_HOST:
+        print("│ You HAVE SGX hardware, but need to run: ./run_sgx_enclave.sh")
+    print("!"*70)
+    # Force simulation mode since we're not protected
+    SIMULATION_MODE = True
+    print("[!] Forcing SIMULATION_MODE=true for accurate status reporting.\n")
+
+# Override SIMULATION_MODE if we detect real TEE
+if ACTUALLY_IN_TEE and SIMULATION_MODE:
+    print("[!] Detected real TEE environment - overriding SIMULATION_MODE to False")
+    SIMULATION_MODE = False
 
 def print_banner():
     print("""
@@ -136,36 +207,40 @@ class ConfidentialExecutionEnvironment:
         
         time.sleep(0.3)
     
-    def encrypt_memory_region(self, data):
+    def get_memory_encryption_status(self, data):
         """
-        Simulates memory encryption.
+        Get memory encryption status for data region.
         
-        On real TDX: Memory is automatically encrypted by hardware
-        On real SGX: Enclave memory is encrypted by MEE
+        NOTE: In TDX/SGX hardware mode, the CPU automatically encrypts ALL memory
+        using Total Memory Encryption (TME/MKTME). We don't manually encrypt -
+        we just report the status.
+        
+        In SIMULATION mode: No actual encryption (demo only)
+        In HARDWARE mode: Data IS encrypted transparently by TDX/SGX hardware
         """
-        if SIMULATION_MODE:
-            # Simulate encrypted representation
-            if isinstance(data, np.ndarray):
+        if isinstance(data, np.ndarray):
+            data_hash = hashlib.sha256(data.tobytes()).hexdigest()[:32]
+            
+            if SIMULATION_MODE:
                 return {
-                    "encrypted": True,
+                    "encrypted": False,  # Not actually encrypted in simulation
                     "mode": "SIMULATION",
-                    "algorithm": "AES-256-XTS",
-                    "key_id": self.memory_encryption_key[:16],
-                    "data_hash": hashlib.sha256(data.tobytes()).hexdigest()[:32],
-                    "note": "⚠️  In SIMULATION - data is NOT actually encrypted"
+                    "algorithm": "N/A (demo only)",
+                    "key_id": "simulated",
+                    "data_hash": data_hash,
+                    "note": "⚠️  SIMULATION - data is NOT encrypted"
                 }
-        else:
-            # Real hardware mode
-            if isinstance(data, np.ndarray):
+            else:
+                # Real hardware mode - memory IS encrypted by TME/MKTME
                 return {
-                    "encrypted": True,
+                    "encrypted": True,  # Hardware encrypts transparently
                     "mode": "HARDWARE",
-                    "algorithm": "AES-256-XTS (Hardware TME)",
+                    "algorithm": "AES-256-XTS (TME/MKTME)",
                     "key_id": self.memory_encryption_key[:16],
-                    "data_hash": hashlib.sha256(data.tobytes()).hexdigest()[:32],
-                    "note": "🟢 HARDWARE MODE - data IS encrypted by Intel TDX/SGX"
+                    "data_hash": data_hash,
+                    "note": "🟢 HARDWARE - encrypted by Intel TDX/SGX TME"
                 }
-        return data
+        return {"encrypted": SIMULATION_MODE == False, "mode": "HARDWARE" if not SIMULATION_MODE else "SIMULATION"}
     
     def generate_attestation_report(self):
         """
@@ -225,12 +300,18 @@ class ConfidentialExecutionEnvironment:
         return report
 
 class ConfidentialModelLoader:
-    """Load and run models within confidential environment."""
+    """
+    Load and run models within confidential environment.
+    
+    In TDX/SGX hardware mode, the CPU's Total Memory Encryption (TME/MKTME)
+    automatically encrypts all DRAM. We don't manually encrypt weights -
+    the hardware does it transparently.
+    """
     
     def __init__(self, cee: ConfidentialExecutionEnvironment):
         self.cee = cee
         self.model = None
-        self.encrypted_weights = []
+        self.weight_encryption_status = []  # Tracks encryption status, not encrypted data
         
     def load_model(self, model_path):
         """Load model into encrypted memory."""
@@ -246,39 +327,46 @@ class ConfidentialModelLoader:
         
         self.model = load_model(model_path)
         
-        # Simulate memory encryption of weights
+        # In TDX/SGX mode, weights are automatically encrypted in RAM by hardware
+        # We just verify and report the encryption status
         weights = self.model.get_weights()
-        print(f"[*] Encrypting {len(weights)} weight tensors in memory...")
+        
+        if SIMULATION_MODE:
+            print(f"[*] Loading {len(weights)} weight tensors (NO encryption in simulation)...")
+        else:
+            print(f"[*] Loading {len(weights)} weight tensors into TME-encrypted RAM...")
+            print(f"    └─ Intel TME/MKTME encrypts memory transparently at hardware level")
         
         for i, w in enumerate(weights):
-            encrypted_info = self.cee.encrypt_memory_region(w)
-            self.encrypted_weights.append(encrypted_info)
+            status = self.cee.get_memory_encryption_status(w)
+            self.weight_encryption_status.append(status)
             if i < 3:
-                print(f"    Layer {i}: {encrypted_info}")
+                print(f"    Layer {i}: {status}")
         
-        print(f"[✓] Model loaded with encrypted weights")
+        print(f"[✓] Model loaded into {'protected' if not SIMULATION_MODE else 'unprotected'} memory")
         if SIMULATION_MODE:
-            print(f"[⚠️  SIMULATION] Memory encryption is SIMULATED - not real protection")
+            print(f"[⚠️  SIMULATION] Weights are NOT encrypted - demo only")
         else:
-            print(f"[🟢 HARDWARE] Memory encryption is ACTIVE via Intel TDX/SGX")
-        print(f"[✓] Memory encryption: AES-256-XTS (hardware-enforced)")
+            print(f"[🟢 HARDWARE] Weights ARE encrypted by Intel TME/MKTME in DRAM")
+            print(f"    └─ Hypervisor/cloud operator cannot read plaintext weights")
         
         return self.model
     
     def run_inference(self, input_data):
-        """Run inference on encrypted input."""
+        """Run inference in protected memory (encrypted in hardware mode)."""
         print(f"\n[*] Running inference in {self.cee.mode} protected environment...")
         
-        # Encrypt input data
-        input_encrypted = self.cee.encrypt_memory_region(input_data)
-        print(f"[*] Input encrypted: {input_encrypted}")
+        # Report input data encryption status
+        input_status = self.cee.get_memory_encryption_status(input_data)
+        print(f"[*] Input data status: {input_status}")
         
-        # Run inference
-        predictions = self.model.predict(input_data, verbose=0)
+        # Run inference (in hardware mode, all computation uses encrypted memory)
+        # Use direct __call__ instead of predict() to avoid tf.data thread pool issues in SGX
+        predictions = self.model(input_data, training=False).numpy()
         
-        # Encrypt output
-        output_encrypted = self.cee.encrypt_memory_region(predictions)
-        print(f"[*] Output encrypted: {output_encrypted}")
+        # Report output encryption status
+        output_status = self.cee.get_memory_encryption_status(predictions)
+        print(f"[*] Output data status: {output_status}")
         
         return predictions
 
@@ -327,26 +415,70 @@ ATTESTATION:
 
 def print_mode_banner():
     """Print a clear banner showing the current execution mode."""
+    # Check for real TEE
+    gramine_sgx = os.path.exists("/dev/attestation/quote")
+    tdx_guest = os.path.exists("/dev/tdx_guest")
+    
     if SIMULATION_MODE:
         print("\n" + "="*70)
         print("🔶 " + " SIMULATION MODE ".center(66, "=") + " 🔶")
         print("="*70)
-        print("│ Running WITHOUT real TDX/SGX hardware                            │")
-        print("│ Memory is NOT actually encrypted - for demonstration only        │")
-        print("│ Set SIMULATION_MODE=false in .env for real hardware              │")
+        print("│ Running WITHOUT real TDX/SGX enclave/TD                          │")
+        print("│ Memory is NOT encrypted - for demonstration only                 │")
+        print("│                                                                  │")
+        print("│ To run with REAL SGX protection:                                 │")
+        print("│   ./run_sgx_enclave.sh                                           │")
         print("="*70 + "\n")
     else:
         print("\n" + "="*70)
-        print("🟢 " + " HARDWARE MODE - Intel TDX/SGX Active ".center(66, "=") + " 🟢")
+        print("🟢 " + " HARDWARE MODE - Real TEE Active ".center(66, "=") + " 🟢")
         print("="*70)
-        print("│ Running with REAL TDX/SGX hardware protection                    │")
-        print("│ Memory IS encrypted by hardware                                  │")
-        print("│ Full confidential computing guarantees in effect                 │")
+        if gramine_sgx:
+            print("│ ✓ Running inside SGX Enclave (via Gramine)                       │")
+            print("│ ✓ Memory IS encrypted by SGX MEE (Memory Encryption Engine)      │")
+        elif tdx_guest:
+            print("│ ✓ Running inside TDX Trust Domain                                │")
+            print("│ ✓ Memory IS encrypted by TME/MKTME                               │")
+        else:
+            print("│ ✓ TEE environment detected                                       │")
+            print("│ ✓ Memory encryption active                                       │")
+        print("│ ✓ Full confidential computing guarantees in effect               │")
         print("="*70 + "\n")
 
 def main():
     print_banner()
     print_mode_banner()
+    
+    # If NOT in a real TEE, ask user what to do
+    if SIMULATION_MODE and not is_running_in_tee():
+        print("┌─────────────────────────────────────────────────────────────────┐")
+        print("│  You are NOT running inside a protected environment.            │")
+        print("│                                                                  │")
+        print("│  Options:                                                        │")
+        print("│    [1] Continue in SIMULATION mode (demo only, no protection)   │")
+        print("│    [2] Launch inside SGX enclave (requires Gramine + SGX HW)    │")
+        print("│    [Q] Quit                                                      │")
+        print("└─────────────────────────────────────────────────────────────────┘")
+        
+        choice = input("\nSelect option [1/2/Q]: ").strip().lower()
+        
+        if choice == "2":
+            import subprocess
+            script_dir = os.path.dirname(os.path.abspath(__file__))
+            enclave_script = os.path.join(script_dir, "run_sgx_enclave.sh")
+            
+            if os.path.exists(enclave_script):
+                print("\n[*] Launching inside SGX enclave via Gramine...")
+                os.chdir(script_dir)
+                os.execvp("bash", ["bash", enclave_script])
+            else:
+                print(f"[!] Enclave script not found: {enclave_script}")
+                sys.exit(1)
+        elif choice == "q":
+            print("Exiting.")
+            sys.exit(0)
+        else:
+            print("\n[*] Continuing in SIMULATION mode...\n")
     
     # Initialize confidential environment (try TDX first, fallback to SGX)
     cee = ConfidentialExecutionEnvironment(mode="TDX")

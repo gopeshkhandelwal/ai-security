@@ -14,7 +14,9 @@ py-cpuinfo
 # For memory analysis simulation
 pympler
 
-# Optional: Gramine support (for real SGX deployment)
-# Install separately: pip install graminelibos
-
+# For loading .env configuration
 python-dotenv
+
+# NOTE: Gramine (for real SGX enclaves) is a SYSTEM package, not pip:
+#   sudo apt install gramine
+# The run_sgx_enclave.sh script will install it automatically if needed.

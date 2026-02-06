@@ -1,0 +1,65 @@
+# Gramine Manifest for Confidential AI Inference
+# Based on Gramine Python example
+
+libos.entrypoint = "{{ execdir }}/python3"
+
+loader.log_level = "{{ log_level }}"
+
+loader.env.LD_LIBRARY_PATH = "/lib:{{ arch_libdir }}:/usr/{{ arch_libdir }}"
+loader.env.HOME = "{{ env.HOME }}"
+loader.env.SIMULATION_MODE = "false"
+loader.env.SGX_ENCLAVE = "true"
+loader.env.TF_CPP_MIN_LOG_LEVEL = "3"
+loader.env.OMP_NUM_THREADS = "1"
+loader.env.TF_NUM_INTEROP_THREADS = "1"
+loader.env.TF_NUM_INTRAOP_THREADS = "1"
+loader.env.TF_ENABLE_ONEDNN_OPTS = "0"
+loader.env.TF_ENABLE_MKL_NATIVE_FORMAT = "0"
+loader.env.PYTHONPATH = "{{ env.HOME }}/Code/ai-security/labs/lab-07-confidential-ai-tdx-sgx/.venv/lib/python3.13/site-packages"
+
+loader.insecure__use_cmdline_argv = true
+
+sys.enable_sigterm_injection = true
+sys.stack.size = "4M"
+sys.brk.max_size = "512M"
+
+fs.mounts = [
+  { path = "/lib", uri = "file:{{ gramine.runtimedir() }}" },
+  { path = "{{ arch_libdir }}", uri = "file:{{ arch_libdir }}" },
+  { path = "/usr/{{ arch_libdir }}", uri = "file:/usr/{{ arch_libdir }}" },
+  { path = "/usr/lib", uri = "file:/usr/lib" },
+  { path = "{{ execdir }}", uri = "file:{{ execdir }}" },
+  { path = "/etc", uri = "file:/etc" },
+  { path = "/workspace", uri = "file:." },
+  { path = "{{ env.HOME }}/Code/ai-security/labs/lab-07-confidential-ai-tdx-sgx/.venv", uri = "file:{{ env.HOME }}/Code/ai-security/labs/lab-07-confidential-ai-tdx-sgx/.venv" },
+  { type = "tmpfs", path = "/tmp" },
+]
+
+sgx.debug = false
+sgx.enclave_size = "8G"
+sgx.max_threads = 256
+sgx.edmm_enable = {{ 'true' if env.get('EDMM', '0') == '1' else 'false' }}
+
+sgx.trusted_files = [
+  "file:{{ gramine.libos }}",
+  "file:{{ execdir }}/python3",
+  "file:{{ gramine.runtimedir() }}/",
+  "file:{{ arch_libdir }}/",
+  "file:/usr/{{ arch_libdir }}/",
+  "file:/usr/lib/python3/",
+  "file:/usr/lib/python3.13/",
+  "file:{{ env.HOME }}/Code/ai-security/labs/lab-07-confidential-ai-tdx-sgx/.venv/",
+  "file:4_confidential_inference.py",
+  "file:.env",
+]
+
+sgx.allowed_files = [
+  "file:/etc/hosts",
+  "file:/etc/resolv.conf",
+  "file:/etc/passwd",
+  "file:/etc/group",
+  "file:/etc/nsswitch.conf",
+  "file:proprietary_model.h5",
+  "file:attestation_report_tdx.json",
+  "file:attestation_report_sgx.json",
+]
