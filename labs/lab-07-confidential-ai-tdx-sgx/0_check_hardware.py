@@ -10,6 +10,14 @@ Disclaimer: This code is for educational and demonstration purposes only.
 """
 
 import os
+
+# Load .env file if present
+try:
+    from dotenv import load_dotenv
+    load_dotenv()
+except ImportError:
+    pass
+
 import platform
 import subprocess
 import sys
@@ -209,6 +217,10 @@ def print_summary(sgx, tdx, is_intel):
     
     if not sgx and not tdx:
         print("""
+    ╔════════════════════════════════════════════════════════════════╗
+    ║  🔶 SIMULATION MODE: TDX/SGX NOT ENABLED                       ║
+    ╚════════════════════════════════════════════════════════════════╝
+
     RECOMMENDATIONS:
     
     1. Enable in BIOS:
@@ -223,10 +235,17 @@ def print_summary(sgx, tdx, is_intel):
     
     4. Alternative: Run lab in SIMULATION MODE
        The scripts will simulate confidential computing behavior
+       All lab scripts will clearly indicate SIMULATION MODE
         """)
     else:
         print("""
+    ╔════════════════════════════════════════════════════════════════╗
+    ║  🟢 HARDWARE MODE: Intel Confidential Computing AVAILABLE      ║
+    ╚════════════════════════════════════════════════════════════════╝
+
     [✓] Your system supports Intel Confidential Computing!
+    
+    All lab scripts will run in HARDWARE MODE with real protection.
     
     Continue with the lab:
         python 1_train_proprietary_model.py
@@ -245,9 +264,17 @@ def main():
     
     # Set environment variable for other scripts
     if sgx or tdx:
-        print("\n[i] Set SIMULATION_MODE=false in .env for real hardware")
+        print("""
+    ╔════════════════════════════════════════════════════════════════╗
+    ║  🟢 Set SIMULATION_MODE=false in .env for HARDWARE MODE        ║
+    ╚════════════════════════════════════════════════════════════════╝
+        """)
     else:
-        print("\n[i] Lab will run in SIMULATION_MODE (set in .env)")
+        print("""
+    ╔════════════════════════════════════════════════════════════════╗
+    ║  🔶 Lab will run in SIMULATION_MODE (set in .env)              ║
+    ╚════════════════════════════════════════════════════════════════╝
+        """)
 
 if __name__ == "__main__":
     main()

@@ -10,11 +10,34 @@ Disclaimer: This code is for educational and demonstration purposes only.
 """
 
 import os
+
+# Load .env file if present
+try:
+    from dotenv import load_dotenv
+    load_dotenv()
+except ImportError:
+    pass
+
 import sys
 import json
 from pathlib import Path
 
 RESULTS_DIR = Path("scan_results")
+
+# Check for simulation mode from .env (consistent with lab-07)
+SIMULATION_MODE = os.getenv("SIMULATION_MODE", "true").lower() == "true"
+
+# Also check hardware status from amx_status.json for additional info
+AMX_AVAILABLE = False
+try:
+    with open(".amx_status.json", "r") as f:
+        amx_status = json.load(f)
+        AMX_AVAILABLE = amx_status.get("amx_available", False)
+except:
+    pass
+
+# In hardware mode, AMX must also be available
+HARDWARE_MODE = (not SIMULATION_MODE) and AMX_AVAILABLE
 
 def print_banner():
     print("""
@@ -22,6 +45,27 @@ def print_banner():
 ║         Performance Comparison: Sequential vs AMX Parallel            ║
 ╚══════════════════════════════════════════════════════════════════════╝
     """)
+
+def print_amx_mode_indicator():
+    """Print a clear indicator of AMX hardware status."""
+    if HARDWARE_MODE:
+        print("\n" + "="*70)
+        print("🟢 " + " HARDWARE MODE - Intel AMX Active ".center(66, "=") + " 🟢")
+        print("="*70)
+        print("│ Benchmark results show REAL Intel AMX acceleration               │")
+        print("│ Performance numbers reflect actual hardware capabilities          │")
+        print("="*70 + "\n")
+    else:
+        print("\n" + "="*70)
+        print("🔶 " + " SIMULATION MODE ".center(66, "=") + " 🔶")
+        print("="*70)
+        if not AMX_AVAILABLE:
+            print("│ Benchmark running WITHOUT Intel AMX hardware                     │")
+        else:
+            print("│ SIMULATION_MODE=true in .env (AMX hardware is available)         │")
+        print("│ Results show vectorized parallel scanning (simulated AMX)        │")
+        print("│ Set SIMULATION_MODE=false in .env for hardware mode              │")
+        print("="*70 + "\n")
 
 def load_results():
     """Load scan results from both methods."""
@@ -204,6 +248,7 @@ USE CASES:
 
 def main():
     print_banner()
+    print_amx_mode_indicator()
     
     # Load results
     sequential, parallel = load_results()

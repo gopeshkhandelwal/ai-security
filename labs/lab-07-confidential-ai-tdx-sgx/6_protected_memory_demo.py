@@ -13,10 +13,38 @@ Disclaimer: This code is for educational and demonstration purposes only.
 """
 
 import os
+
+# Load .env file if present
+try:
+    from dotenv import load_dotenv
+    load_dotenv()
+except ImportError:
+    pass  # dotenv not installed, use shell environment
+
 import json
 import time
 import random
 import string
+
+# Simulation mode (set to False on real TDX/SGX hardware)
+SIMULATION_MODE = os.getenv("SIMULATION_MODE", "true").lower() == "true"
+
+def print_mode_indicator():
+    """Print current execution mode."""
+    if SIMULATION_MODE:
+        print("\n" + "="*70)
+        print("🔶 " + " SIMULATION MODE ".center(66, "=") + " 🔶")
+        print("="*70)
+        print("│ Memory protection demo running in SIMULATION mode                │")
+        print("│ Attack blocking is SIMULATED - not using real TDX/SGX            │")
+        print("="*70 + "\n")
+    else:
+        print("\n" + "="*70)
+        print("🟢 " + " HARDWARE MODE - Real TDX/SGX Protection ".center(66, "=") + " 🟢")
+        print("="*70)
+        print("│ Memory IS encrypted by Intel TDX/SGX hardware                    │")
+        print("│ Attack blocking is REAL - hardware-enforced protection           │")
+        print("="*70 + "\n")
 
 def print_banner():
     print("""
@@ -218,6 +246,7 @@ def show_real_world_deployments():
 
 def main():
     print_banner()
+    print_mode_indicator()
     
     # Simulate the attack
     attack_succeeded = simulate_attack_with_protection()

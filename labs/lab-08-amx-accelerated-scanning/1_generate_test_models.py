@@ -11,6 +11,14 @@ Disclaimer: This code is for educational and demonstration purposes only.
 """
 
 import os
+
+# Load .env file if present
+try:
+    from dotenv import load_dotenv
+    load_dotenv()
+except ImportError:
+    pass
+
 os.environ["CUDA_VISIBLE_DEVICES"] = "-1"
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"
 
@@ -28,6 +36,21 @@ from datetime import datetime
 TEST_MODELS_DIR = Path("test_models")
 TEST_MODELS_DIR.mkdir(exist_ok=True)
 
+# Check for simulation mode from .env (consistent with lab-07)
+SIMULATION_MODE = os.getenv("SIMULATION_MODE", "true").lower() == "true"
+
+# Also check hardware status from amx_status.json for additional info
+AMX_AVAILABLE = False
+try:
+    with open(".amx_status.json", "r") as f:
+        amx_status = json.load(f)
+        AMX_AVAILABLE = amx_status.get("amx_available", False)
+except:
+    pass
+
+# In hardware mode, AMX must also be available
+HARDWARE_MODE = (not SIMULATION_MODE) and AMX_AVAILABLE
+
 def print_banner():
     print("""
 ╔══════════════════════════════════════════════════════════════════════╗
@@ -35,6 +58,27 @@ def print_banner():
 ║              (Benign + Suspicious patterns)                           ║
 ╚══════════════════════════════════════════════════════════════════════╝
     """)
+
+def print_amx_mode_indicator():
+    """Print a clear indicator of AMX hardware status."""
+    if HARDWARE_MODE:
+        print("\n" + "="*70)
+        print("🟢 " + " HARDWARE MODE - Intel AMX Active ".center(66, "=") + " 🟢")
+        print("="*70)
+        print("│ Intel AMX hardware IS available on this system                  │")
+        print("│ Subsequent scanning steps will use AMX acceleration             │")
+        print("="*70 + "\n")
+    else:
+        print("\n" + "="*70)
+        print("🔶 " + " SIMULATION MODE ".center(66, "=") + " 🔶")
+        print("="*70)
+        if not AMX_AVAILABLE:
+            print("│ Intel AMX hardware NOT available                                │")
+        else:
+            print("│ SIMULATION_MODE=true in .env (AMX hardware is available)        │")
+        print("│ Scanning will use simulated parallel operations                 │")
+        print("│ Set SIMULATION_MODE=false in .env for hardware mode             │")
+        print("="*70 + "\n")
 
 def generate_keras_models(count=5):
     """Generate Keras models of varying sizes."""
@@ -271,6 +315,7 @@ def save_manifest(all_models):
 
 def main():
     print_banner()
+    print_amx_mode_indicator()
     
     all_models = []
     

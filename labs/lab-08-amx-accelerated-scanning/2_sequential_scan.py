@@ -11,6 +11,14 @@ Disclaimer: This code is for educational and demonstration purposes only.
 """
 
 import os
+
+# Load .env file if present
+try:
+    from dotenv import load_dotenv
+    load_dotenv()
+except ImportError:
+    pass
+
 import sys
 import json
 import time
@@ -24,6 +32,21 @@ TEST_MODELS_DIR = Path("test_models")
 RESULTS_DIR = Path("scan_results")
 RESULTS_DIR.mkdir(exist_ok=True)
 
+# Check for simulation mode from .env (consistent with lab-07)
+SIMULATION_MODE = os.getenv("SIMULATION_MODE", "true").lower() == "true"
+
+# Also check hardware status from amx_status.json for additional info
+AMX_AVAILABLE = False
+try:
+    with open(".amx_status.json", "r") as f:
+        amx_status = json.load(f)
+        AMX_AVAILABLE = amx_status.get("amx_available", False)
+except:
+    pass
+
+# In hardware mode, AMX must also be available
+HARDWARE_MODE = (not SIMULATION_MODE) and AMX_AVAILABLE
+
 def print_banner():
     print("""
 ╔══════════════════════════════════════════════════════════════════════╗
@@ -31,6 +54,21 @@ def print_banner():
 ║              ⚠️  SLOW - Blocks inference pipeline ⚠️                  ║
 ╚══════════════════════════════════════════════════════════════════════╝
     """)
+
+def print_baseline_mode_indicator():
+    """Print indicator that this is baseline (non-AMX) scanning."""
+    print("\n" + "="*70)
+    print("🔴 " + " BASELINE - Sequential (Non-Parallel) Scanning ".center(66, "=") + " 🔴")
+    print("="*70)
+    print("│ This is the SLOW baseline approach for comparison                │")
+    print("│ No parallelization or AMX optimization                          │")
+    if HARDWARE_MODE:
+        print("│ 🟢 Note: Intel AMX IS available (HARDWARE MODE)                  │")
+    elif AMX_AVAILABLE:
+        print("│ 🔶 Note: Intel AMX available but SIMULATION_MODE=true            │")
+    else:
+        print("│ 🔶 Note: Intel AMX is NOT available (SIMULATION MODE)            │")
+    print("="*70 + "\n")
 
 # =============================================================================
 # SECURITY SCANNING PATTERNS
@@ -274,6 +312,7 @@ Problems:
 
 def main():
     print_banner()
+    print_baseline_mode_indicator()
     
     if not TEST_MODELS_DIR.exists():
         print("[!] Test models not found. Run 1_generate_test_models.py first")

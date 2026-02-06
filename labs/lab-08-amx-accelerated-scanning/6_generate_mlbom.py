@@ -11,6 +11,14 @@ Disclaimer: This code is for educational and demonstration purposes only.
 """
 
 import os
+
+# Load .env file if present
+try:
+    from dotenv import load_dotenv
+    load_dotenv()
+except ImportError:
+    pass
+
 import sys
 import json
 import hashlib
@@ -23,6 +31,21 @@ TEST_MODELS_DIR = Path("test_models")
 MLBOM_DIR = Path("mlbom_output")
 MLBOM_DIR.mkdir(exist_ok=True)
 
+# Check for simulation mode from .env (consistent with lab-07)
+SIMULATION_MODE = os.getenv("SIMULATION_MODE", "true").lower() == "true"
+
+# Also check hardware status from amx_status.json for additional info
+AMX_AVAILABLE = False
+try:
+    with open(".amx_status.json", "r") as f:
+        amx_status = json.load(f)
+        AMX_AVAILABLE = amx_status.get("amx_available", False)
+except:
+    pass
+
+# In hardware mode, AMX must also be available
+HARDWARE_MODE = (not SIMULATION_MODE) and AMX_AVAILABLE
+
 def print_banner():
     print("""
 ╔══════════════════════════════════════════════════════════════════════╗
@@ -30,6 +53,26 @@ def print_banner():
 ║              📋 Supply Chain Transparency for AI                      ║
 ╚══════════════════════════════════════════════════════════════════════╝
     """)
+
+def print_amx_mode_indicator():
+    """Print a clear indicator of AMX hardware status."""
+    if HARDWARE_MODE:
+        print("\n" + "="*70)
+        print("🟢 " + " HARDWARE MODE - Intel AMX Active ".center(66, "=") + " 🟢")
+        print("="*70)
+        print("│ MLBOM generation with REAL Intel AMX acceleration               │")
+        print("│ Parallel hash computation using hardware acceleration           │")
+        print("="*70 + "\n")
+    else:
+        print("\n" + "="*70)
+        print("🔶 " + " SIMULATION MODE ".center(66, "=") + " 🔶")
+        print("="*70)
+        if not AMX_AVAILABLE:
+            print("│ MLBOM generation WITHOUT Intel AMX hardware                     │")
+        else:
+            print("│ SIMULATION_MODE=true in .env (AMX hardware is available)         │")
+        print("│ Using standard parallel processing for demonstration            │")
+        print("="*70 + "\n")
 
 # =============================================================================
 # MLBOM GENERATOR
@@ -299,6 +342,7 @@ def save_mlboms(mlboms: list):
 
 def main():
     print_banner()
+    print_amx_mode_indicator()
     explain_mlbom()
     
     if not TEST_MODELS_DIR.exists():

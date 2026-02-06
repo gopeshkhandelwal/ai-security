@@ -11,6 +11,14 @@ Disclaimer: This code is for educational and demonstration purposes only.
 """
 
 import os
+
+# Load .env file if present
+try:
+    from dotenv import load_dotenv
+    load_dotenv()
+except ImportError:
+    pass
+
 import subprocess
 import struct
 
@@ -189,6 +197,10 @@ def print_summary(has_amx, kernel_ok):
     
     if has_amx and kernel_ok:
         print("""
+    ╔════════════════════════════════════════════════════════════════╗
+    ║  🟢 HARDWARE MODE: Intel AMX IS AVAILABLE                      ║
+    ╚════════════════════════════════════════════════════════════════╝
+    
     [✓] Intel AMX: AVAILABLE
     
     Your system supports Intel AMX acceleration!
@@ -199,11 +211,17 @@ def print_summary(has_amx, kernel_ok):
     ├─ Vectorized hash computation
     └─ Non-blocking scan while inference runs
     
+    All lab scripts will run in HARDWARE MODE.
+    
     Continue with the lab:
         python 1_generate_test_models.py
         """)
     elif has_amx and not kernel_ok:
         print("""
+    ╔════════════════════════════════════════════════════════════════╗
+    ║  🔶 SIMULATION MODE: Kernel upgrade needed                     ║
+    ╚════════════════════════════════════════════════════════════════╝
+    
     [!] Intel AMX: HARDWARE PRESENT, KERNEL UPGRADE NEEDED
     
     Your CPU supports AMX but kernel needs upgrade:
@@ -215,6 +233,10 @@ def print_summary(has_amx, kernel_ok):
         """)
     else:
         print("""
+    ╔════════════════════════════════════════════════════════════════╗
+    ║  🔶 SIMULATION MODE: Intel AMX NOT AVAILABLE                   ║
+    ╚════════════════════════════════════════════════════════════════╝
+    
     [!] Intel AMX: NOT AVAILABLE
     
     Your system does not support Intel AMX. Requirements:
@@ -229,8 +251,8 @@ def print_summary(has_amx, kernel_ok):
         """)
     
     print("""
-    AMX SIMULATION MODE:
-    ────────────────────
+    AMX MODE INFO:
+    ───────────────
     Even without AMX hardware, this lab demonstrates:
     ├─ Parallel scanning architecture
     ├─ Async non-blocking scanning
