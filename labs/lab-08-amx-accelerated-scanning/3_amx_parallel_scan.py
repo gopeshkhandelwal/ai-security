@@ -12,6 +12,14 @@ Disclaimer: This code is for educational and demonstration purposes only.
 """
 
 import os
+
+# Load .env file if present
+try:
+    from dotenv import load_dotenv
+    load_dotenv()
+except ImportError:
+    pass
+
 import sys
 import json
 import time
@@ -29,7 +37,10 @@ TEST_MODELS_DIR = Path("test_models")
 RESULTS_DIR = Path("scan_results")
 RESULTS_DIR.mkdir(exist_ok=True)
 
-# Check for AMX status
+# Check for simulation mode from .env (consistent with lab-07)
+SIMULATION_MODE = os.getenv("SIMULATION_MODE", "true").lower() == "true"
+
+# Also check hardware status from amx_status.json for additional info
 AMX_AVAILABLE = False
 try:
     with open(".amx_status.json", "r") as f:
@@ -38,8 +49,11 @@ try:
 except:
     pass
 
+# In hardware mode, AMX must also be available
+HARDWARE_MODE = (not SIMULATION_MODE) and AMX_AVAILABLE
+
 def print_banner():
-    mode = "AMX HARDWARE" if AMX_AVAILABLE else "SIMULATION"
+    mode = "AMX HARDWARE" if HARDWARE_MODE else "SIMULATION"
     print(f"""
 ╔══════════════════════════════════════════════════════════════════════╗
 ║     Intel AMX-Accelerated Parallel Security Scanning                  ║
@@ -47,6 +61,28 @@ def print_banner():
 ║                      Mode: {mode:^20}                        ║
 ╚══════════════════════════════════════════════════════════════════════╝
     """)
+
+def print_amx_mode_indicator():
+    """Print a clear indicator of AMX hardware status."""
+    if HARDWARE_MODE:
+        print("\n" + "="*70)
+        print("🟢 " + " HARDWARE MODE - Intel AMX Active ".center(66, "=") + " 🟢")
+        print("="*70)
+        print("│ Running with REAL Intel AMX acceleration                         │")
+        print("│ TILE registers and TMUL operations in use                        │")
+        print("│ Maximum performance for matrix operations                        │")
+        print("="*70 + "\n")
+    else:
+        print("\n" + "="*70)
+        print("🔶 " + " SIMULATION MODE ".center(66, "=") + " 🔶")
+        print("="*70)
+        if not AMX_AVAILABLE:
+            print("│ Running WITHOUT Intel AMX hardware                               │")
+        else:
+            print("│ SIMULATION_MODE=true in .env (AMX hardware is available)         │")
+        print("│ Using vectorized NumPy operations to simulate AMX concepts       │")
+        print("│ Set SIMULATION_MODE=false in .env for hardware mode              │")
+        print("="*70 + "\n")
 
 # =============================================================================
 # VECTORIZED PATTERN MATCHING (AMX-STYLE)
@@ -206,7 +242,9 @@ class AMXAcceleratedScanner:
     
     def scan_all_parallel(self, model_dir: Path) -> dict:
         """Scan all models in parallel using thread pool."""
-        print(f"\n[*] Starting PARALLEL scan with {self.num_workers} workers...")
+        mode_str = "🟢 HARDWARE (AMX)" if HARDWARE_MODE else "🔶 SIMULATION"
+        print(f"\\n[*] Starting PARALLEL scan with {self.num_workers} workers...")
+        print(f"    Mode: {mode_str}")
         print("    (Multiple models scanned simultaneously)")
         print()
         
@@ -318,6 +356,7 @@ def show_parallel_architecture():
 
 def main():
     print_banner()
+    print_amx_mode_indicator()
     
     if not TEST_MODELS_DIR.exists():
         print("[!] Test models not found. Run 1_generate_test_models.py first")

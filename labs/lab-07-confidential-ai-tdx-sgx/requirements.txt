@@ -17,3 +17,4 @@ pympler
 # Optional: Gramine support (for real SGX deployment)
 # Install separately: pip install graminelibos
 
+python-dotenv

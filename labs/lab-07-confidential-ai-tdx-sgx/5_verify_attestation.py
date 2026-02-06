@@ -13,10 +13,38 @@ Disclaimer: This code is for educational and demonstration purposes only.
 """
 
 import os
+
+# Load .env file if present
+try:
+    from dotenv import load_dotenv
+    load_dotenv()
+except ImportError:
+    pass  # dotenv not installed, use shell environment
+
 import json
 import sys
 import hashlib
 from datetime import datetime
+
+# Simulation mode (set to False on real TDX/SGX hardware)
+SIMULATION_MODE = os.getenv("SIMULATION_MODE", "true").lower() == "true"
+
+def print_mode_indicator():
+    """Print current execution mode."""
+    if SIMULATION_MODE:
+        print("\n" + "="*70)
+        print("🔶 " + " SIMULATION MODE ".center(66, "=") + " 🔶")
+        print("="*70)
+        print("│ Attestation verification running in SIMULATION mode              │")
+        print("│ In production, this would verify against Intel Trust Authority   │")
+        print("="*70 + "\n")
+    else:
+        print("\n" + "="*70)
+        print("🟢 " + " HARDWARE MODE - Real Attestation ".center(66, "=") + " 🟢")
+        print("="*70)
+        print("│ Verifying REAL TDX/SGX attestation report                        │")
+        print("│ Hardware-backed cryptographic proof of secure execution          │")
+        print("="*70 + "\n")
 
 def print_banner():
     print("""
@@ -290,6 +318,7 @@ RECOMMENDATION:
 
 def main():
     print_banner()
+    print_mode_indicator()
     explain_attestation()
     
     report, report_path = load_attestation_report()
