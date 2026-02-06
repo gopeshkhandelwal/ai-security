@@ -146,7 +146,6 @@ class ConfidentialExecutionEnvironment:
         if SIMULATION_MODE:
             # Simulate encrypted representation
             if isinstance(data, np.ndarray):
-                encrypted_marker = "[SIMULATED ENCRYPTION:TME-AES256]"
                 return {
                     "encrypted": True,
                     "mode": "SIMULATION",
