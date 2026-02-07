@@ -1,0 +1,8 @@
+{
+  "timestamp": "2026-02-07T23:03:54.907295",
+  "model_path": "test_model.h5",
+  "model_hash": "f1ccb31d3ae542418ebf326879b44fab7045233743e8e53615cb5d1605a28feb",
+  "pcr_index": 14,
+  "pcr_value_after": "54E48585F36C167AD57766E61FA86620816E16466FD0A02206F7F160457051D7",
+  "hash_algorithm": "sha256"
+}

@@ -1,0 +1,27 @@
+# Lab 08: TPM Attestation for AI Models
+# Requirements
+#
+# SYSTEM REQUIREMENTS (must be installed separately):
+# =============================================
+#
+# 1. Install tpm2-tools:
+#    Ubuntu/Debian: sudo apt install tpm2-tools
+#    Fedora/RHEL:   sudo dnf install tpm2-tools
+#
+# 2. Add user to tss group (for TPM access):
+#    sudo usermod -aG tss $USER
+#    Then: newgrp tss  (or log out and back in)
+#
+# 3. (Optional) Intel Trust Authority API key:
+#    export INTEL_TRUST_AUTHORITY_API_KEY="your-key-here"
+#    Get one at: https://www.intel.com/trustauthority
+#    If not provided, ITA response is simulated (TPM ops are still real)
+#
+# =============================================
+
+# Core dependencies
+requests>=2.28.0
+
+# Model creation and inference
+tensorflow>=2.10.0
+numpy>=1.21.0

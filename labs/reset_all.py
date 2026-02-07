@@ -61,6 +61,22 @@ LAB_FILES = {
         "attestation_report_sgx.json",
         "verification_certificate.json",
     ],
+    "lab-08-tpm-attestation": [
+        ".tpm_status.json",
+        "test_model.h5",
+        "tampered_model.h5",
+        "model_measurement.json",
+        "quote.msg",
+        "quote.sig",
+        "quote.pcrs",
+        "aik.pub",
+        "aik.priv",
+        "aik.ctx",
+        "primary.ctx",
+        "attestation_package.json",
+        "attestation_result.json",
+        "attestation_token.jwt",
+    ],
 }
 
 
@@ -97,3 +113,4 @@ print("  cd lab-04-rag-data-extraction && python 1_create_knowledge_base.py")
 print("  cd lab-05-malicious-code-injection && python 1_train_model.py")
 print("  cd lab-06-model-signing && python 1_train_model.py")
 print("  cd lab-07-confidential-ai-tdx-sgx && python 0_check_hardware.py")
+print("  cd lab-08-tpm-attestation && python 0_check_tpm.py")

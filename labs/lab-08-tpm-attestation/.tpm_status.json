@@ -1,0 +1,10 @@
+{
+  "tpm_available": true,
+  "checks": {
+    "TPM Device": true,
+    "TPM Version 2.0": true,
+    "TPM Permissions": true,
+    "TPM Tools": true,
+    "TPM Functional": true
+  }
+}
