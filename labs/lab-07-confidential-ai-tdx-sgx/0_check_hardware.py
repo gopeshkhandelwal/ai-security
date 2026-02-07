@@ -10,14 +10,6 @@ Disclaimer: This code is for educational and demonstration purposes only.
 """
 
 import os
-
-# Load .env file if present
-try:
-    from dotenv import load_dotenv
-    load_dotenv()
-except ImportError:
-    pass
-
 import platform
 import subprocess
 import sys
@@ -193,14 +185,11 @@ def print_summary(sgx, tdx, is_intel):
 
     TDX and SGX are Intel-specific technologies. For this lab:
     
-    Option 1: Use SIMULATION MODE (default)
-              The lab scripts will simulate TDX/SGX behavior
-              
-    Option 2: Deploy on Cloud with Confidential Computing
+    Option 1: Deploy on Cloud with Confidential Computing
               - Azure: DCesv5/ECesv5 VMs (TDX)
               - GCP: C3 Confidential VMs
               
-    Option 3: Use Intel DevCloud (free access to Intel hardware)
+    Option 2: Use Intel DevCloud (free access to Intel hardware)
               https://devcloud.intel.com
         """)
         return
@@ -218,7 +207,7 @@ def print_summary(sgx, tdx, is_intel):
     if not sgx and not tdx:
         print("""
     ╔════════════════════════════════════════════════════════════════╗
-    ║  🔶 SIMULATION MODE: TDX/SGX NOT ENABLED                       ║
+    ║  🔶 TDX/SGX NOT ENABLED                                        ║
     ╚════════════════════════════════════════════════════════════════╝
 
     RECOMMENDATIONS:
@@ -232,10 +221,6 @@ def print_summary(sgx, tdx, is_intel):
        https://github.com/intel/linux-sgx
        
     3. For TDX: Use kernel 6.2+ and enable TDX in BIOS
-    
-    4. Alternative: Run lab in SIMULATION MODE
-       The scripts will simulate confidential computing behavior
-       All lab scripts will clearly indicate SIMULATION MODE
         """)
     else:
         print("""
@@ -266,13 +251,13 @@ def main():
     if sgx or tdx:
         print("""
     ╔════════════════════════════════════════════════════════════════╗
-    ║  🟢 Set SIMULATION_MODE=false in .env for HARDWARE MODE        ║
+    ║  🟢 Intel Confidential Computing AVAILABLE                     ║
     ╚════════════════════════════════════════════════════════════════╝
         """)
     else:
         print("""
     ╔════════════════════════════════════════════════════════════════╗
-    ║  🔶 Lab will run in SIMULATION_MODE (set in .env)              ║
+    ║  🔶 TDX/SGX not available - see recommendations above          ║
     ╚════════════════════════════════════════════════════════════════╝
         """)
 

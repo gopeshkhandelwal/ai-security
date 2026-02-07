@@ -118,14 +118,15 @@ python 0_check_hardware.py
 ### Part A: Attack Demo (Without Protection)
 
 ```bash
-# Step 1: Train a simple model (simulates proprietary AI)
+# Step 1: Train a proprietary model
 python 1_train_proprietary_model.py
 
-# Step 2: Run inference normally (memory is exposed)
-python 2_run_inference.py
+# Step 2: Terminal 1 - Run unprotected inference server
+python 2_victim_inference_server.py
 
-# Step 3: Simulate hypervisor-level attack (extract model from memory)
-python 3_memory_attack_demo.py
+# Step 3: Terminal 2 - Attack: Extract model weights from memory
+sudo .venv/bin/python 3_attacker_memory_reader.py
+# Result: Attack SUCCEEDS - weights stolen!
 ```
 
 ### Part B: Defense Demo (With Intel TDX/SGX)
@@ -134,14 +135,12 @@ python 3_memory_attack_demo.py
 # Step 4: Check hardware support for TDX/SGX
 python 0_check_hardware.py
 
-# Step 5: Run inference in confidential environment
-python 4_confidential_inference.py
+# Step 5: Terminal 1 - Run inference in SGX enclave
+./4a_run_sgx_enclave.sh
 
-# Step 6: Verify attestation (prove secure execution)
-python 5_verify_attestation.py
-
-# Step 7: Demonstrate memory protection (attack fails!)
-python 6_protected_memory_demo.py
+# Step 6: Terminal 2 - Try the same attack
+sudo .venv/bin/python 3_attacker_memory_reader.py
+# Result: Attack FAILS - memory is hardware-encrypted!
 ```
 
 ### Clean Up
@@ -224,12 +223,12 @@ This lab includes scripts to run Python + TensorFlow inference inside a **real S
 
 Gramine is not a pip package—it's a system package that provides a Library OS for running unmodified applications inside SGX enclaves.
 
-#### Automatic Installation (via run_sgx_enclave.sh)
+#### Automatic Installation (via 4a_run_sgx_enclave.sh)
 
-The `run_sgx_enclave.sh` script will automatically install Gramine if not present:
+The `4a_run_sgx_enclave.sh` script will automatically install Gramine if not present:
 
 ```bash
-./run_sgx_enclave.sh
+./4a_run_sgx_enclave.sh
 ```
 
 #### Manual Installation (Ubuntu 22.04/24.04)
@@ -277,13 +276,9 @@ sudo env $SUDO_PROXY apt-get install -y gramine
 
 ```bash
 # Option 1: Use the helper script (recommended)
-./run_sgx_enclave.sh
+./4a_run_sgx_enclave.sh
 
-# Option 2: Run script directly (will prompt to launch enclave)
-python 4_confidential_inference.py
-# Select option [2] to launch inside SGX enclave
-
-# Option 3: Manual Gramine commands
+# Option 2: Manual Gramine commands
 gramine-manifest \
   -Dlog_level=error \
   -Darch_libdir=/lib/x86_64-linux-gnu \
@@ -291,7 +286,7 @@ gramine-manifest \
   gramine_manifest.template > python.manifest
 
 gramine-sgx-sign --manifest python.manifest --output python.manifest.sgx
-gramine-sgx python 4_confidential_inference.py
+gramine-sgx python 4b_confidential_inference.py
 ```
 
 ### Troubleshooting

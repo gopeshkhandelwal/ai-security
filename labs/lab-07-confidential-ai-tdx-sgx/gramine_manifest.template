@@ -7,7 +7,6 @@ loader.log_level = "{{ log_level }}"
 
 loader.env.LD_LIBRARY_PATH = "/lib:{{ arch_libdir }}:/usr/{{ arch_libdir }}"
 loader.env.HOME = "{{ env.HOME }}"
-loader.env.SIMULATION_MODE = "false"
 loader.env.SGX_ENCLAVE = "true"
 loader.env.TF_CPP_MIN_LOG_LEVEL = "3"
 loader.env.OMP_NUM_THREADS = "1"
@@ -49,8 +48,7 @@ sgx.trusted_files = [
   "file:/usr/lib/python3/",
   "file:/usr/lib/python3.13/",
   "file:{{ env.HOME }}/Code/ai-security/labs/lab-07-confidential-ai-tdx-sgx/.venv/",
-  "file:4_confidential_inference.py",
-  "file:.env",
+  "file:4b_confidential_inference.py",
 ]
 
 sgx.allowed_files = [

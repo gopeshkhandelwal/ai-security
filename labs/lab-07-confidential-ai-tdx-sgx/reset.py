@@ -21,7 +21,9 @@ FILES_TO_REMOVE = [
     
     # Attack artifacts
     "stolen_model_weights.npz",
+    "blind_stolen_weights.npz",
     "inference_memory_dump.json",
+    "victim_process.json",
     
     # Attestation files
     "attestation_report_tdx.json",
@@ -70,11 +72,9 @@ def main():
     print("\nTo run the lab:")
     print("  python 0_check_hardware.py   # Check TDX/SGX support")
     print("  python 1_train_proprietary_model.py")
-    print("  python 2_run_inference.py")
-    print("  python 3_memory_attack_demo.py")
-    print("  python 4_confidential_inference.py")
-    print("  python 5_verify_attestation.py")
-    print("  python 6_protected_memory_demo.py")
+    print("  python 2_victim_inference_server.py  # Terminal 1")
+    print("  sudo .venv/bin/python 3_attacker_memory_reader.py  # Terminal 2")
+    print("  ./4a_run_sgx_enclave.sh  # Protected inference (SGX)")
 
 if __name__ == "__main__":
     main()
