@@ -27,7 +27,6 @@ Hands-on security labs demonstrating common AI/ML attack vectors and defense mec
 | 05 | Supply Chain | Malicious Lambda Injection | ModelScan + Safe Loading | [📖 README](lab-05-malicious-code-injection/README.md) |
 | 06 | Integrity | Model Tampering | ECDSA Signing | [📖 README](lab-06-model-signing/README.md) |
 | 07 | Confidential AI | Hypervisor Memory Extraction | Intel TDX/SGX Encrypted Memory | [📖 README](lab-07-confidential-ai-tdx-sgx/README.md) |
-| 08 | Security Scanning | Slow Blocking Scans | Intel AMX Parallel Scanning + MLBOM | [📖 README](lab-08-amx-accelerated-scanning/README.md) |
 
 ---
 
@@ -41,8 +40,6 @@ Hands-on security labs demonstrating common AI/ML attack vectors and defense mec
 | Presidio | Microsoft | Lab 04 |
 | Custom AST Scanner | - | Lab 01 |
 | Intel TDX/SGX | Intel | Lab 07 |
-| Intel AMX | Intel | Lab 08 |
-| MLBOM/SBOM | CycloneDX | Lab 08 |
 
 ---
 
