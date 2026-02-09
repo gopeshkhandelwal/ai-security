@@ -164,8 +164,9 @@ def save_model_and_metadata(model, X_train):
        
     3. COLD BOOT ATTACK
        Physical access allows DRAM extraction
-       
-    Run 3_memory_attack_demo.py to see the attack in action.
+    
+    Run 2_victim_inference_server.py in one terminal.
+    Run 3_memory_attack_demo.py in another terminal to see the attack in action.
     """)
 
 def main():

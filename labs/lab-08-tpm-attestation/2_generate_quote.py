@@ -170,6 +170,24 @@ def generate_tpm_quote(aik_ctx: str, nonce: bytes, pcr_selection: str) -> dict:
     with open(nonce_file, 'wb') as f:
         f.write(nonce)
     
+    # Output files from tpm2_quote command:
+    #
+    # - quote.msg: The attestation structure containing PCR digest + nonce + metadata
+    #              This is what gets signed - proves "these PCRs had these values at this time"
+    #              Example content (binary, base64 encoded for transport):
+    #              {"pcr_digest": "a3f2...89bc", "nonce": "user_provided_random", "clock": 12345}
+    #
+    # - quote.sig: TPM's RSA signature over quote.msg using the AIK private key
+    #              Only real TPM hardware can produce this - proves authenticity
+    #              Example: 256-byte RSA-2048 signature (base64: "MEUCIQD3x7...")
+    #              Verifier uses AIK public key to validate: verify(quote.msg, quote.sig, aik.pub)
+    #
+    # - quote.pcrs: Raw PCR values that were included in the quote
+    #              Verifier compares these against expected "golden" values
+    #              Example for PCR 14:
+    #              PCR[14] = sha256("previous_value" || sha256(model_weights.h5))
+    #                      = 0x8a3b4c5d...  (expected hash if model is untampered)
+    #
     quote_msg = "quote.msg"
     quote_sig = "quote.sig"
     quote_pcrs = "quote.pcrs"
@@ -205,6 +223,7 @@ def generate_tpm_quote(aik_ctx: str, nonce: bytes, pcr_selection: str) -> dict:
             quote_data["pcrs"] = base64.b64encode(f.read()).decode()
     
     print("    [HARDWARE] ✓ Quote generated and signed by TPM")
+    print(f"    [DEBUG] quote_data: {json.dumps(quote_data, indent=2)}")
     
     return quote_data
 
@@ -235,6 +254,8 @@ def save_quote_package(nonce: bytes, quote_data: dict, measurement: dict):
         json.dump(package, f, indent=2)
     
     print(f"    [✓] Saved to {package_path}")
+    print(f"    [LOG] attestation_package.json contents:")
+    print(json.dumps(package, indent=2))
     
     return package
 

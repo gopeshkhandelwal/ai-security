@@ -81,10 +81,13 @@ def compute_model_hash(model_path: str) -> str:
 def verify_attestation(token: str, model_path: str) -> dict:
     """Verify attestation token and model integrity."""
     print("\n[1/4] Decoding attestation token...")
+    print(f"    [LOG] token: {token[:80]}..." if len(token) > 80 else f"    [LOG] token: {token}")
     
     payload = decode_jwt_payload(token)
     if not payload:
         return {"valid": False, "error": "Invalid token format"}
+    
+    print(f"    [LOG] payload: {json.dumps(payload, indent=2)}")
     
     result = {
         "valid": True,

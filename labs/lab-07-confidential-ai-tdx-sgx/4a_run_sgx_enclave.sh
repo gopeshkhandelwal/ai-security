@@ -9,6 +9,13 @@
 # Author: GopeshK
 # License: MIT
 
+# Ensure script is run with bash, not sh
+if [ -z "$BASH_VERSION" ]; then
+    echo "Error: This script must be run with bash, not sh."
+    echo "Usage: bash $0 or ./$0"
+    exit 1
+fi
+
 set -e
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -68,14 +75,23 @@ if ! command -v gramine-sgx &> /dev/null; then
     # Try to install from Gramine repo (with proxy support)
     echo "[*] Attempting to install Gramine from official repo..."
     
-    # Download keyring with proxy
-    echo "[*] Downloading Gramine keyring..."
+    # Download and import keyring properly (handle both armored and binary formats)
+    echo "[*] Downloading and importing Gramine GPG key..."
+    KEYRING_FILE="/usr/share/keyrings/gramine-keyring.gpg"
     if [ -n "$SUDO_PROXY" ]; then
-        sudo env $SUDO_PROXY curl -fsSLo /usr/share/keyrings/gramine-keyring.gpg \
-            https://packages.gramineproject.io/gramine-keyring.gpg
+        sudo env $SUDO_PROXY curl -fsSL https://packages.gramineproject.io/gramine-keyring.gpg \
+            | sudo gpg --dearmor -o "$KEYRING_FILE" 2>/dev/null \
+            || sudo env $SUDO_PROXY curl -fsSLo "$KEYRING_FILE" https://packages.gramineproject.io/gramine-keyring.gpg
     else
-        sudo curl -fsSLo /usr/share/keyrings/gramine-keyring.gpg \
-            https://packages.gramineproject.io/gramine-keyring.gpg
+        sudo curl -fsSL https://packages.gramineproject.io/gramine-keyring.gpg \
+            | sudo gpg --dearmor -o "$KEYRING_FILE" 2>/dev/null \
+            || sudo curl -fsSLo "$KEYRING_FILE" https://packages.gramineproject.io/gramine-keyring.gpg
+    fi
+    
+    # Verify key was imported
+    if [ ! -s "$KEYRING_FILE" ]; then
+        echo "❌ Failed to download Gramine GPG key"
+        exit 1
     fi
     
     # Add repo - Use noble (24.04) if current distro not supported
