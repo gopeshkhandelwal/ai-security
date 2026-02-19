@@ -43,8 +43,8 @@ gcloud auth list
 ### 2.1 Create Project
 
 ```bash
-# Create new project (use your own project name)
-gcloud projects create YOUR_PROJECT_ID --name="AI Security TDX"
+# Create new project (replace YOUR_PROJECT_ID with your project ID)
+gcloud projects create YOUR_PROJECT_ID --name="Confidential AI TDX"
 
 # Set as active project
 gcloud config set project YOUR_PROJECT_ID
@@ -295,8 +295,8 @@ gcloud compute instances delete standard-vm --zone=us-central1-a --quiet
 gcloud compute firewall-rules delete allow-ssh-iap --quiet
 gcloud compute firewall-rules delete allow-ssh --quiet
 
-# Delete project (removes all resources)
-gcloud projects delete YOUR_PROJECT_ID
+# Delete project (removes all resources) - optional
+# gcloud projects delete YOUR_PROJECT_ID
 ```
 
 ---
