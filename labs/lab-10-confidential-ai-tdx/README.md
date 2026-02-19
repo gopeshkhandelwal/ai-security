@@ -166,17 +166,45 @@ python 1_train_proprietary_model.py
 # Terminal 1: Run inference server
 python 2_victim_inference_server.py
 
-# Terminal 2: Attempt memory attack
+# Terminal 2: Attempt memory attack (from INSIDE VM)
 sudo .venv/bin/python 3_attacker_memory_reader.py
-# Result: Attack FAILS - memory is hardware-encrypted!
+# Result: Attack SUCCEEDS (intra-VM attack - expected!)
 ```
 
-### Step 4: Verify Protection
+> ⚠️ **Important:** This attack succeeds because it's process-to-process WITHIN the VM.
+> TDX protects against HYPERVISOR-level attacks (external to the VM).
+> For intra-VM protection, use SGX (Lab 07).
+
+### Step 4: Understand What TDX Protects
 
 ```bash
-# Run verification script
+# Verify TDX is active
+python 0_check_tdx.py
+
+# Run verification script to understand protection scope
 python 4_verify_tdx_protection.py
 ```
+
+---
+
+## Understanding TDX Protection Scope
+
+### What TDX PROTECTS Against:
+| Threat | Protection |
+|--------|------------|
+| Malicious cloud operator | ✅ VM memory encrypted |
+| Hypervisor memory dump | ✅ Returns encrypted garbage |
+| Cold boot attack on host | ✅ Keys in CPU, not memory |
+| Other VMs on same host | ✅ Hardware isolation |
+| Host OS kernel exploit | ✅ Trust Domain isolation |
+
+### What TDX DOES NOT Protect Against:
+| Threat | Solution |
+|--------|----------|
+| Process-to-process attack (same VM) | Use SGX enclaves (Lab 07) |
+| Software bugs in your application | Secure coding practices |
+| Network-based attacks | Network security |
+| Authorized user with VM access | Access control |
 
 ---
 
