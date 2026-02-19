@@ -1,20 +1,20 @@
-# TDX on GCP: Step-by-Step Setup Guide
+# TDX on GCP: Setup Guide
 
-**Purpose:** Set up Intel TDX Confidential VM on Google Cloud Platform to demonstrate AI model protection.
+**Purpose:** Deploy Intel TDX Confidential VMs on Google Cloud Platform for AI model protection.
 
-**Timeline:** Thursday PM → Tuesday meeting
-
----
-
-## Prerequisites Checklist
-
-- [ ] Google Cloud account (create at https://cloud.google.com if needed)
-- [ ] Billing enabled (credit card required)
-- [ ] gcloud CLI installed locally
+**Estimated Time:** 30-45 minutes
 
 ---
 
-## Part 1: Local Setup (Your Machine)
+## Prerequisites
+
+- [ ] Google Cloud account with billing enabled
+- [ ] `gcloud` CLI installed locally
+- [ ] Basic familiarity with Linux command line
+
+---
+
+## Part 1: Local Setup
 
 ### 1.1 Install Google Cloud CLI
 
@@ -32,10 +32,7 @@ gcloud --version
 ### 1.2 Authenticate with GCP
 
 ```bash
-# This opens a browser for authentication
 gcloud auth login
-
-# Verify you're logged in
 gcloud auth list
 ```
 
@@ -46,35 +43,29 @@ gcloud auth list
 ### 2.1 Create Project
 
 ```bash
-# Create new project
-gcloud projects create ai-security-tdx-demo --name="AI Security TDX Demo"
+# Create new project (use your own project name)
+gcloud projects create YOUR_PROJECT_ID --name="AI Security TDX"
 
 # Set as active project
-gcloud config set project ai-security-tdx-demo
+gcloud config set project YOUR_PROJECT_ID
 
 # Verify
 gcloud config get-value project
-# Expected output: ai-security-tdx-demo
 ```
 
 ### 2.2 Enable Billing
 
-**MANUAL STEP - Do in browser:**
-
 1. Go to: https://console.cloud.google.com/billing
-2. Click "Link a billing account"
-3. Select your billing account (or create one with credit card)
-4. Link to project "ai-security-tdx-demo"
+2. Link a billing account to your project
 
 ### 2.3 Enable Required APIs
 
 ```bash
-# Enable Compute Engine API
 gcloud services enable compute.googleapis.com
+gcloud services enable iap.googleapis.com
 
-# Verify it's enabled
-gcloud services list --enabled | grep compute
-# Expected: compute.googleapis.com
+# Verify
+gcloud services list --enabled | grep -E "compute|iap"
 ```
 
 ---
@@ -84,16 +75,15 @@ gcloud services list --enabled | grep compute
 ### 3.1 Check Available Zones
 
 ```bash
-# List zones that support C3 machines
+# List zones that support C3 machines with TDX
 gcloud compute machine-types list --filter="name=c3-standard-4" --format="value(zone)" | head -10
 ```
 
 ### 3.2 Create the TDX VM
 
 ```bash
-# Create Confidential VM with TDX
-gcloud compute instances create tdx-ai-demo \
-  --project=ai-security-tdx-demo \
+gcloud compute instances create tdx-ai-security \
+  --project=YOUR_PROJECT_ID \
   --zone=us-central1-a \
   --machine-type=c3-standard-4 \
   --confidential-compute-type=TDX \
@@ -102,174 +92,156 @@ gcloud compute instances create tdx-ai-demo \
   --image-project=ubuntu-os-cloud \
   --boot-disk-size=50GB \
   --boot-disk-type=pd-ssd \
-  --tags=tdx-demo \
-  --metadata=enable-oslogin=true
-
-# Expected output:
-# Created [https://www.googleapis.com/compute/v1/projects/ai-security-tdx-demo/zones/us-central1-a/instances/tdx-ai-demo].
-# NAME          ZONE           MACHINE_TYPE   PREEMPTIBLE  INTERNAL_IP  EXTERNAL_IP    STATUS
-# tdx-ai-demo   us-central1-a  c3-standard-4               10.x.x.x     34.x.x.x       RUNNING
+  --maintenance-policy=TERMINATE
 ```
 
-### 3.3 SSH into the VM
+### 3.3 Configure Firewall for SSH
 
 ```bash
-# SSH into the VM
-gcloud compute ssh tdx-ai-demo --zone=us-central1-a
+# Allow SSH via IAP (recommended for corporate networks)
+gcloud compute firewall-rules create allow-ssh-iap \
+  --project=YOUR_PROJECT_ID \
+  --direction=INGRESS \
+  --action=allow \
+  --rules=tcp:22 \
+  --source-ranges=35.235.240.0/20
 
-# You should now be inside the VM
-# Prompt changes to: username@tdx-ai-demo:~$
+# Allow direct SSH (optional)
+gcloud compute firewall-rules create allow-ssh \
+  --project=YOUR_PROJECT_ID \
+  --allow=tcp:22 \
+  --source-ranges=0.0.0.0/0
+```
+
+### 3.4 SSH into the VM
+
+```bash
+# Via IAP tunnel (recommended)
+gcloud compute ssh tdx-ai-security --zone=us-central1-a --tunnel-through-iap
+
+# Direct SSH (if firewall allows)
+gcloud compute ssh tdx-ai-security --zone=us-central1-a
 ```
 
 ---
 
-## Part 4: Verify TDX is Active (Inside VM)
+## Part 4: Verify TDX is Active
 
-### 4.1 Check TDX Status
+Run these commands inside the VM:
+
+### 4.1 Check Kernel Messages
 
 ```bash
-# Check kernel messages for TDX
 sudo dmesg | grep -i tdx
-
-# Expected output (one of these):
-# [    0.000000] tdx: Guest detected
-# OR
-# [    0.000000] x86/tdx: Guest detected
-
-# Check CPU flags
-grep -o 'tdx[^ ]*' /proc/cpuinfo | head -1
-# May show: tdx_guest
-
-# Check /sys for TDX
-ls /sys/firmware/ | grep -i tdx
 ```
 
-### 4.2 Capture Screenshot/Output
+**Expected output:**
+```
+[    0.000000] tdx: Guest detected
+[    1.452862] process: using TDX aware idle routine
+[    1.452862] Memory Encryption Features active: Intel TDX
+```
 
-**IMPORTANT:** Save this output for your demo!
+### 4.2 Check CPU Flags
 
 ```bash
-# Save TDX verification to file
+grep -o 'tdx[^ ]*' /proc/cpuinfo | head -1
+# Expected: tdx_guest
+```
+
+### 4.3 Check Attestation Device
+
+```bash
+ls -la /dev/tdx_guest
+# Should show the TDX attestation device
+```
+
+### 4.4 Save Verification Output
+
+```bash
 sudo dmesg | grep -i tdx > ~/tdx_verification.txt
 cat /proc/cpuinfo | head -30 >> ~/tdx_verification.txt
-echo "---TDX CONFIRMED---" >> ~/tdx_verification.txt
-cat ~/tdx_verification.txt
+echo "=== TDX VERIFIED ===" >> ~/tdx_verification.txt
 ```
 
 ---
 
-## Part 5: Set Up Python Environment (Inside VM)
+## Part 5: Set Up Lab Environment
 
 ### 5.1 Install Dependencies
 
 ```bash
-# Update system
-sudo apt update && sudo apt upgrade -y
-
-# Install Python and git
-sudo apt install -y python3-pip python3-venv git build-essential
-
-# Verify Python
-python3 --version
-# Expected: Python 3.10.x or higher
+sudo apt update && sudo apt install -y python3-pip python3-venv git build-essential
 ```
 
-### 5.2 Clone Your Repository
+### 5.2 Clone Repository
 
 ```bash
-# Clone your repo (replace with your actual repo URL)
 cd ~
-git clone https://github.com/YOUR_USERNAME/ai-security.git
-# OR if private repo, use HTTPS with token
-
-# Navigate to lab
-cd ai-security/labs/lab-07-confidential-ai-tdx-sgx
+git clone https://github.com/YOUR_ORG/ai-security.git
+cd ai-security/labs/lab-10-confidential-ai-tdx
 ```
 
 ### 5.3 Create Virtual Environment
 
 ```bash
-# Create venv
 python3 -m venv .venv
 source .venv/bin/activate
-
-# Verify venv is active
-which python
-# Expected: /home/username/ai-security/labs/lab-07-confidential-ai-tdx-sgx/.venv/bin/python
-
-# Install dependencies
 pip install --upgrade pip
 pip install -r requirements.txt
 ```
 
 ---
 
-## Part 6: Run the Demo
+## Part 6: Run the Lab
 
-### 6.1 Train the Model
+### 6.1 Verify TDX Status
 
 ```bash
-# Make sure venv is active
-source .venv/bin/activate
+python 0_check_tdx.py
+```
 
-# Train proprietary model
+### 6.2 Train the Model
+
+```bash
 python 1_train_proprietary_model.py
-
-# Expected output:
-# Training proprietary model...
-# Model saved to: proprietary_model.h5
 ```
 
-### 6.2 Run Attack Demo (Two Terminals)
+### 6.3 Run Inference Server
 
-**Terminal 1 - Inference Server:**
+**Terminal 1:**
 ```bash
-cd ~/ai-security/labs/lab-07-confidential-ai-tdx-sgx
-source .venv/bin/activate
 python 2_victim_inference_server.py
-
-# Keep this running - shows inference server is active
 ```
 
-**Terminal 2 - Attack (new SSH session):**
-```bash
-# Open new terminal, SSH again
-gcloud compute ssh tdx-ai-demo --zone=us-central1-a
+### 6.4 Attempt Memory Attack
 
-cd ~/ai-security/labs/lab-07-confidential-ai-tdx-sgx
+**Terminal 2 (new SSH session):**
+```bash
+cd ~/ai-security/labs/lab-10-confidential-ai-tdx
 source .venv/bin/activate
-
-# Run the memory attack
 sudo .venv/bin/python 3_attacker_memory_reader.py
-
-# EXPECTED RESULT ON TDX:
-# Attack should FAIL or return encrypted/unreadable data
-# Memory is hardware-encrypted by TDX
 ```
 
-### 6.3 Capture Demo Output
+> **Note:** This intra-VM attack will succeed because TDX protects against hypervisor-level attacks, not process-to-process attacks within the same VM. For intra-VM protection, see Lab 07 (SGX).
+
+### 6.5 Verify TDX Protection Scope
 
 ```bash
-# Save attack output to file for demo
-sudo .venv/bin/python 3_attacker_memory_reader.py 2>&1 | tee ~/tdx_attack_result.txt
-
-# Download files to your local machine (from your local terminal)
-gcloud compute scp tdx-ai-demo:~/tdx_verification.txt . --zone=us-central1-a
-gcloud compute scp tdx-ai-demo:~/tdx_attack_result.txt . --zone=us-central1-a
+python 4_verify_tdx_protection.py
 ```
 
 ---
 
-## Part 7: Create Comparison (Non-TDX VM)
+## Part 7: Compare with Standard VM (Optional)
 
-To show the attack WORKS without TDX protection:
+To demonstrate that TDX provides protection against hypervisor-level attacks:
 
-### 7.1 Create Standard VM (No TDX)
+### 7.1 Create Standard VM
 
 ```bash
-# From your local machine
-gcloud compute instances create standard-vm-demo \
-  --project=ai-security-tdx-demo \
+gcloud compute instances create standard-vm \
+  --project=YOUR_PROJECT_ID \
   --zone=us-central1-a \
   --machine-type=e2-standard-4 \
   --image-family=ubuntu-2204-lts \
@@ -277,148 +249,98 @@ gcloud compute instances create standard-vm-demo \
   --boot-disk-size=50GB
 ```
 
-### 7.2 Run Same Attack on Standard VM
+### 7.2 Run Same Lab on Standard VM
 
 ```bash
-# SSH into standard VM
-gcloud compute ssh standard-vm-demo --zone=us-central1-a
+gcloud compute ssh standard-vm --zone=us-central1-a
 
-# Set up environment (same steps as above)
-sudo apt update && sudo apt install -y python3-pip python3-venv git
-git clone <your-repo>
-cd ai-security/labs/lab-07-confidential-ai-tdx-sgx
-python3 -m venv .venv && source .venv/bin/activate
-pip install -r requirements.txt
-
-# Run attack
-python 1_train_proprietary_model.py
-python 2_victim_inference_server.py &
-sudo .venv/bin/python 3_attacker_memory_reader.py
-
-# EXPECTED: Attack SUCCEEDS - model weights extracted!
+# Setup environment (same steps as Part 5)
+# Run lab (same steps as Part 6)
+# Compare results
 ```
 
 ---
 
-## Part 8: Cost Management
+## Part 8: Resource Management
 
-### 8.1 Stop VMs When Not Using
+### 8.1 Stop VMs (Cost Savings)
 
 ```bash
-# Stop VMs to save money
-gcloud compute instances stop tdx-ai-demo --zone=us-central1-a
-gcloud compute instances stop standard-vm-demo --zone=us-central1-a
-
-# Start when ready to work
-gcloud compute instances start tdx-ai-demo --zone=us-central1-a
+gcloud compute instances stop tdx-ai-security --zone=us-central1-a
+gcloud compute instances stop standard-vm --zone=us-central1-a
 ```
 
-### 8.2 Cost Estimates
+### 8.2 Start VMs
 
-| Resource | Hourly Cost | 60hr Weekend |
-|----------|-------------|--------------|
-| c3-standard-4 (TDX) | ~$0.25 | ~$15 |
-| e2-standard-4 (standard) | ~$0.13 | ~$8 |
-| 100GB SSD total | ~$0.02 | ~$1 |
-| **Total** | | **~$25** |
+```bash
+gcloud compute instances start tdx-ai-security --zone=us-central1-a
+```
 
-### 8.3 Delete Everything After Meeting
+### 8.3 Cost Estimates
+
+| Resource | Hourly Cost |
+|----------|-------------|
+| c3-standard-4 (TDX) | ~$0.25 |
+| e2-standard-4 (standard) | ~$0.13 |
+| 50GB SSD | ~$0.01 |
+
+### 8.4 Cleanup
 
 ```bash
 # Delete VMs
-gcloud compute instances delete tdx-ai-demo --zone=us-central1-a --quiet
-gcloud compute instances delete standard-vm-demo --zone=us-central1-a --quiet
+gcloud compute instances delete tdx-ai-security --zone=us-central1-a --quiet
+gcloud compute instances delete standard-vm --zone=us-central1-a --quiet
+
+# Delete firewall rules
+gcloud compute firewall-rules delete allow-ssh-iap --quiet
+gcloud compute firewall-rules delete allow-ssh --quiet
 
 # Delete project (removes all resources)
-gcloud projects delete ai-security-tdx-demo
+gcloud projects delete YOUR_PROJECT_ID
 ```
-
----
-
-## Part 9: Demo Script for Meeting
-
-### What to Show Dhinesh
-
-1. **Open with TDX verification:**
-   ```
-   "Running on GCP C3 Confidential VM with TDX enabled"
-   Show: dmesg | grep tdx output
-   ```
-
-2. **Show the attack on standard VM:**
-   ```
-   "First, let me show the attack on a standard VM"
-   Run: 3_attacker_memory_reader.py
-   Result: Model weights extracted - attack succeeds
-   ```
-
-3. **Show the same attack on TDX VM:**
-   ```
-   "Now the same attack inside a TDX Trust Domain"
-   Run: 3_attacker_memory_reader.py
-   Result: Memory encrypted - attack fails
-   ```
-
-4. **The message:**
-   ```
-   "This is why Intel's TDX is essential for protecting 
-   AI models in cloud environments"
-   ```
 
 ---
 
 ## Troubleshooting
 
-### Issue: "Quota exceeded" error
+### SSH Connection Timeout
+
 ```bash
-# Request quota increase for C3 CPUs
-# Go to: https://console.cloud.google.com/iam-admin/quotas
-# Filter: "C3 CPUs"
-# Request increase to 8
+# Use IAP tunnel instead of direct SSH
+gcloud compute ssh tdx-ai-security --zone=us-central1-a --tunnel-through-iap
 ```
 
-### Issue: "Confidential computing not available"
+### Quota Exceeded Error
+
+1. Go to: https://console.cloud.google.com/iam-admin/quotas
+2. Filter: "C3 CPUs"
+3. Request quota increase
+
+### TDX Not Detected
+
 ```bash
-# Try different zone
-gcloud compute instances create tdx-ai-demo \
-  --zone=us-east4-a \  # Different zone
-  ... (rest of command)
+# Verify VM configuration
+gcloud compute instances describe tdx-ai-security \
+  --zone=us-central1-a \
+  --format="yaml(confidentialInstanceConfig)"
+
+# Should show: confidentialInstanceType: TDX
 ```
 
-### Issue: SSH connection refused
-```bash
-# Wait 1-2 minutes for VM to boot fully
-# Check VM status
-gcloud compute instances describe tdx-ai-demo --zone=us-central1-a --format="value(status)"
-```
+### Confidential Computing Unavailable
 
-### Issue: TDX not showing in dmesg
+Try a different zone:
 ```bash
-# Verify VM was created with TDX
-gcloud compute instances describe tdx-ai-demo --zone=us-central1-a --format="value(confidentialInstanceConfig)"
-# Should show: enableConfidentialCompute: true
+# Available zones: us-central1-a, us-east4-a, europe-west1-b
+gcloud compute instances create tdx-ai-security \
+  --zone=us-east4-a \
+  # ... rest of options
 ```
 
 ---
 
-## Friday Cutoff Decision
+## Additional Resources
 
-**By Friday 6pm, you should have:**
-- [ ] TDX VM running
-- [ ] `dmesg | grep tdx` shows "Guest detected"
-- [ ] Attack script runs (even if you're still debugging output)
-
-**If any of these are missing by Friday 6pm → Abandon TDX, focus on SGX demo**
-
----
-
-## Files to Have Ready for Demo
-
-1. `~/tdx_verification.txt` - Proof TDX is active
-2. `~/tdx_attack_result.txt` - Attack output on TDX (fails)
-3. `~/standard_attack_result.txt` - Attack output on standard VM (succeeds)
-4. Live SSH sessions to both VMs (as backup)
-
----
-
-**Good luck! Let me know if you hit any issues during setup.**
+- [Intel TDX Documentation](https://www.intel.com/content/www/us/en/developer/tools/trust-domain-extensions/overview.html)
+- [GCP Confidential Computing](https://cloud.google.com/confidential-computing)
+- [Lab 07: SGX Protection](../lab-07-confidential-ai-sgx/README.md) - For intra-VM protection
