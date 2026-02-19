@@ -1,0 +1,185 @@
+{
+  "scan_type": "AMX_PARALLEL",
+  "workers": 8,
+  "amx_hardware": false,
+  "total_models": 15,
+  "clean": 12,
+  "suspicious": 3,
+  "total_time_seconds": 0.248,
+  "avg_time_per_model": 0.0165,
+  "results": [
+    {
+      "file": "test_models/keras_model_2.h5",
+      "filename": "keras_model_2.h5",
+      "size_bytes": 42080,
+      "scan_start": "2026-02-04T22:05:28.634628",
+      "findings": {},
+      "status": "CLEAN",
+      "scan_time_seconds": 0.0007,
+      "hash": "01203afe199ea2e2ed72150bc2337fb5e0967e3856b729b61d5922a044b79ff1"
+    },
+    {
+      "file": "test_models/keras_model_1.h5",
+      "filename": "keras_model_1.h5",
+      "size_bytes": 29536,
+      "scan_start": "2026-02-04T22:05:28.634423",
+      "findings": {},
+      "status": "CLEAN",
+      "scan_time_seconds": 0.0006,
+      "hash": "1dd4e7285c15954b36ee17c74cb4a4170b2aeaf5b2b502951600a2c45a4b02c3"
+    },
+    {
+      "file": "test_models/keras_model_4.h5",
+      "filename": "keras_model_4.h5",
+      "size_bytes": 208480,
+      "scan_start": "2026-02-04T22:05:28.635381",
+      "findings": {},
+      "status": "CLEAN",
+      "scan_time_seconds": 0.0045,
+      "hash": "57ba253e021ac229a74d037d18db548eec04c88bd3cba885c9f4f80c2f15f1a2"
+    },
+    {
+      "file": "test_models/keras_model_5.h5",
+      "filename": "keras_model_5.h5",
+      "size_bytes": 660304,
+      "scan_start": "2026-02-04T22:05:28.635533",
+      "findings": {},
+      "status": "CLEAN",
+      "scan_time_seconds": 0.0031,
+      "hash": "a1ddc57607a6d1e264b9557b76178b250a1869543b1aba79cf71026c02198037"
+    },
+    {
+      "file": "test_models/sklearn_logistic_regression.pkl",
+      "filename": "sklearn_logistic_regression.pkl",
+      "size_bytes": 1375,
+      "scan_start": "2026-02-04T22:05:28.636160",
+      "findings": {},
+      "status": "CLEAN",
+      "scan_time_seconds": 0.0042,
+      "hash": "09d10d8567ac82d7683f669ed3fb02790cbdfa107c23ebdd4de11a1f746fc73f"
+    },
+    {
+      "file": "test_models/keras_model_3.h5",
+      "filename": "keras_model_3.h5",
+      "size_bytes": 82016,
+      "scan_start": "2026-02-04T22:05:28.635051",
+      "findings": {},
+      "status": "CLEAN",
+      "scan_time_seconds": 0.0062,
+      "hash": "46f458c1ff61e99d97c9d17ec039c6f97c813c7c165ec9b42dc6c8fb28269bdd"
+    },
+    {
+      "file": "test_models/sklearn_logistic_multiclass.pkl",
+      "filename": "sklearn_logistic_multiclass.pkl",
+      "size_bytes": 1375,
+      "scan_start": "2026-02-04T22:05:28.635984",
+      "findings": {},
+      "status": "CLEAN",
+      "scan_time_seconds": 0.0055,
+      "hash": "9907dc599e26239d0325d5d92c1bc4bd8fead209aa4126decc5918cef541ad31"
+    },
+    {
+      "file": "test_models/sklearn_svm.pkl",
+      "filename": "sklearn_svm.pkl",
+      "size_bytes": 21315,
+      "scan_start": "2026-02-04T22:05:28.640490",
+      "findings": {},
+      "status": "CLEAN",
+      "scan_time_seconds": 0.0012,
+      "hash": "c9107717f1a2d7f6a48329fd7faa42f3f4132074ac1ba57a65c18a13f72472d9"
+    },
+    {
+      "file": "test_models/sklearn_random_forest.pkl",
+      "filename": "sklearn_random_forest.pkl",
+      "size_bytes": 477857,
+      "scan_start": "2026-02-04T22:05:28.638728",
+      "findings": {},
+      "status": "CLEAN",
+      "scan_time_seconds": 0.0043,
+      "hash": "243f41c765f8fa57b0f30f786b2decd70d7647ae5a536db1a9b1296d051b4850"
+    },
+    {
+      "file": "test_models/suspicious_reduce_model.pkl",
+      "filename": "suspicious_reduce_model.pkl",
+      "size_bytes": 8307,
+      "scan_start": "2026-02-04T22:05:28.641283",
+      "findings": {
+        "os_system": {
+          "count": 1,
+          "pattern": "os.system",
+          "severity": "MEDIUM"
+        },
+        "reduce": {
+          "count": 1,
+          "pattern": "__reduce__",
+          "severity": "HIGH"
+        }
+      },
+      "status": "SUSPICIOUS",
+      "scan_time_seconds": 0.0019,
+      "hash": "a2fc14a9c31b02bd152700a016ee2657d9c61d5988d0dd8601b324ab37d6e108"
+    },
+    {
+      "file": "test_models/suspicious_eval_model.pkl",
+      "filename": "suspicious_eval_model.pkl",
+      "size_bytes": 45534,
+      "scan_start": "2026-02-04T22:05:28.641118",
+      "findings": {
+        "eval": {
+          "count": 1,
+          "pattern": "eval(",
+          "severity": "MEDIUM"
+        }
+      },
+      "status": "SUSPICIOUS",
+      "scan_time_seconds": 0.0024,
+      "hash": "f6bb6da2fd05e4a6836f49f53e43a21fb04cd58fc1542e371798c43b86b8fdce"
+    },
+    {
+      "file": "test_models/suspicious_subprocess_model.pkl",
+      "filename": "suspicious_subprocess_model.pkl",
+      "size_bytes": 11614,
+      "scan_start": "2026-02-04T22:05:28.641478",
+      "findings": {
+        "subprocess": {
+          "count": 2,
+          "pattern": "subprocess",
+          "severity": "MEDIUM"
+        }
+      },
+      "status": "SUSPICIOUS",
+      "scan_time_seconds": 0.0022,
+      "hash": "59da646f856db9aa431f42667a1143115ca479e59e9b99c19aec6c0e17e72b5a"
+    },
+    {
+      "file": "test_models/sklearn_random_forest_large.pkl",
+      "filename": "sklearn_random_forest_large.pkl",
+      "size_bytes": 2353713,
+      "scan_start": "2026-02-04T22:05:28.640420",
+      "findings": {},
+      "status": "CLEAN",
+      "scan_time_seconds": 0.0254,
+      "hash": "953174510f1ee5ff6d28089bea3ee15318836ff08c269bce9850c7618efe47de"
+    },
+    {
+      "file": "test_models/large_model_1.h5",
+      "filename": "large_model_1.h5",
+      "size_bytes": 7579344,
+      "scan_start": "2026-02-04T22:05:28.635632",
+      "findings": {},
+      "status": "CLEAN",
+      "scan_time_seconds": 0.0659,
+      "hash": "cad225e8278f9a724ded06b8996f1756d65ebb7957c6b39154a5e343827b44a6"
+    },
+    {
+      "file": "test_models/large_model_2.h5",
+      "filename": "large_model_2.h5",
+      "size_bytes": 27717328,
+      "scan_start": "2026-02-04T22:05:28.635802",
+      "findings": {},
+      "status": "CLEAN",
+      "scan_time_seconds": 0.1574,
+      "hash": "0fdb48acf7d296ef173e369a5dc66fe4fef918598a683cbddba099598a5deb4a"
+    }
+  ]
+}

@@ -1,0 +1,123 @@
+{
+  "generated_at": "2026-02-04T22:04:47.892929",
+  "total_models": 15,
+  "benign_count": 12,
+  "suspicious_count": 3,
+  "models": [
+    {
+      "path": "test_models/keras_model_1.h5",
+      "format": "keras_h5",
+      "size_kb": 28.84,
+      "parameters": 2330,
+      "type": "benign",
+      "sha256": "1dd4e7285c15954b36ee17c74cb4a4170b2aeaf5b2b502951600a2c45a4b02c3"
+    },
+    {
+      "path": "test_models/keras_model_2.h5",
+      "format": "keras_h5",
+      "size_kb": 41.09,
+      "parameters": 5674,
+      "type": "benign",
+      "sha256": "01203afe199ea2e2ed72150bc2337fb5e0967e3856b729b61d5922a044b79ff1"
+    },
+    {
+      "path": "test_models/keras_model_3.h5",
+      "format": "keras_h5",
+      "size_kb": 80.09,
+      "parameters": 15434,
+      "type": "benign",
+      "sha256": "46f458c1ff61e99d97c9d17ec039c6f97c813c7c165ec9b42dc6c8fb28269bdd"
+    },
+    {
+      "path": "test_models/keras_model_4.h5",
+      "format": "keras_h5",
+      "size_kb": 203.59,
+      "parameters": 47242,
+      "type": "benign",
+      "sha256": "57ba253e021ac229a74d037d18db548eec04c88bd3cba885c9f4f80c2f15f1a2"
+    },
+    {
+      "path": "test_models/keras_model_5.h5",
+      "format": "keras_h5",
+      "size_kb": 644.83,
+      "parameters": 160010,
+      "type": "benign",
+      "sha256": "a1ddc57607a6d1e264b9557b76178b250a1869543b1aba79cf71026c02198037"
+    },
+    {
+      "path": "test_models/sklearn_random_forest.pkl",
+      "format": "pickle",
+      "size_kb": 466.66,
+      "type": "benign",
+      "sha256": "243f41c765f8fa57b0f30f786b2decd70d7647ae5a536db1a9b1296d051b4850"
+    },
+    {
+      "path": "test_models/sklearn_logistic_regression.pkl",
+      "format": "pickle",
+      "size_kb": 1.34,
+      "type": "benign",
+      "sha256": "09d10d8567ac82d7683f669ed3fb02790cbdfa107c23ebdd4de11a1f746fc73f"
+    },
+    {
+      "path": "test_models/sklearn_svm.pkl",
+      "format": "pickle",
+      "size_kb": 20.82,
+      "type": "benign",
+      "sha256": "c9107717f1a2d7f6a48329fd7faa42f3f4132074ac1ba57a65c18a13f72472d9"
+    },
+    {
+      "path": "test_models/sklearn_random_forest_large.pkl",
+      "format": "pickle",
+      "size_kb": 2298.55,
+      "type": "benign",
+      "sha256": "953174510f1ee5ff6d28089bea3ee15318836ff08c269bce9850c7618efe47de"
+    },
+    {
+      "path": "test_models/sklearn_logistic_multiclass.pkl",
+      "format": "pickle",
+      "size_kb": 1.34,
+      "type": "benign",
+      "sha256": "9907dc599e26239d0325d5d92c1bc4bd8fead209aa4126decc5918cef541ad31"
+    },
+    {
+      "path": "test_models/suspicious_eval_model.pkl",
+      "format": "pickle",
+      "size_kb": 44.47,
+      "type": "suspicious",
+      "pattern": "eval() in config",
+      "sha256": "f6bb6da2fd05e4a6836f49f53e43a21fb04cd58fc1542e371798c43b86b8fdce"
+    },
+    {
+      "path": "test_models/suspicious_subprocess_model.pkl",
+      "format": "pickle",
+      "size_kb": 11.34,
+      "type": "suspicious",
+      "pattern": "subprocess reference",
+      "sha256": "59da646f856db9aa431f42667a1143115ca479e59e9b99c19aec6c0e17e72b5a"
+    },
+    {
+      "path": "test_models/suspicious_reduce_model.pkl",
+      "format": "pickle",
+      "size_kb": 8.11,
+      "type": "suspicious",
+      "pattern": "__reduce__ pattern",
+      "sha256": "a2fc14a9c31b02bd152700a016ee2657d9c61d5988d0dd8601b324ab37d6e108"
+    },
+    {
+      "path": "test_models/large_model_1.h5",
+      "format": "keras_h5",
+      "size_mb": 7.23,
+      "parameters": 1888868,
+      "type": "benign",
+      "sha256": "cad225e8278f9a724ded06b8996f1756d65ebb7957c6b39154a5e343827b44a6"
+    },
+    {
+      "path": "test_models/large_model_2.h5",
+      "format": "keras_h5",
+      "size_mb": 26.43,
+      "parameters": 6923364,
+      "type": "benign",
+      "sha256": "0fdb48acf7d296ef173e369a5dc66fe4fef918598a683cbddba099598a5deb4a"
+    }
+  ]
+}

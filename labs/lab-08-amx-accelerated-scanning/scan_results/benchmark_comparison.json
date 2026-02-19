@@ -1,0 +1,18 @@
+{
+  "sequential": {
+    "time": 21.15,
+    "models": 15
+  },
+  "parallel": {
+    "time": 0.248,
+    "workers": 8,
+    "models": 15
+  },
+  "speedup": {
+    "sequential_time": 21.15,
+    "parallel_time": 0.248,
+    "speedup": 85.28,
+    "time_saved": 20.9,
+    "percent_faster": 98.8
+  }
+}

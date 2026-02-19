@@ -1,0 +1,64 @@
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.5",
+  "version": 1,
+  "metadata": {
+    "timestamp": "2026-02-04T22:05:51.840230Z",
+    "component": {
+      "type": "machine-learning-model",
+      "name": "suspicious_reduce_model",
+      "version": "1.0.0"
+    }
+  },
+  "model": {
+    "name": "suspicious_reduce_model.pkl",
+    "path": "/srv/gopeshkh/Code/ai-security/labs/lab-08-amx-accelerated-scanning/test_models/suspicious_reduce_model.pkl",
+    "format": "Pickle",
+    "framework": "scikit-learn/custom",
+    "size_bytes": 8307,
+    "hashes": [
+      {
+        "algorithm": "SHA-256",
+        "value": "a2fc14a9c31b02bd152700a016ee2657d9c61d5988d0dd8601b324ab37d6e108"
+      }
+    ]
+  },
+  "components": [
+    {
+      "name": "scikit-learn",
+      "version": ">=1.0.0"
+    },
+    {
+      "name": "numpy",
+      "version": ">=1.19.0"
+    },
+    {
+      "name": "joblib",
+      "version": ">=1.0.0"
+    }
+  ],
+  "security": {
+    "scanned": true,
+    "issues_found": 2,
+    "issues": [
+      {
+        "type": "suspicious_pattern",
+        "pattern": "__reduce__",
+        "description": "Pickle reduce method",
+        "severity": "HIGH"
+      },
+      {
+        "type": "suspicious_pattern",
+        "pattern": "os.system",
+        "description": "OS system call",
+        "severity": "HIGH"
+      }
+    ],
+    "status": "FAIL"
+  },
+  "provenance": {
+    "generated_by": "MLBOM Generator v1.0",
+    "generated_at": "2026-02-04T22:05:51.843261Z",
+    "tool": "Lab 08: AMX Accelerated Scanning"
+  }
+}

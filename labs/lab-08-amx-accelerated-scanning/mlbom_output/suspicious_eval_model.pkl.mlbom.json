@@ -1,0 +1,58 @@
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.5",
+  "version": 1,
+  "metadata": {
+    "timestamp": "2026-02-04T22:05:51.838885Z",
+    "component": {
+      "type": "machine-learning-model",
+      "name": "suspicious_eval_model",
+      "version": "1.0.0"
+    }
+  },
+  "model": {
+    "name": "suspicious_eval_model.pkl",
+    "path": "/srv/gopeshkh/Code/ai-security/labs/lab-08-amx-accelerated-scanning/test_models/suspicious_eval_model.pkl",
+    "format": "Pickle",
+    "framework": "scikit-learn/custom",
+    "size_bytes": 45534,
+    "hashes": [
+      {
+        "algorithm": "SHA-256",
+        "value": "f6bb6da2fd05e4a6836f49f53e43a21fb04cd58fc1542e371798c43b86b8fdce"
+      }
+    ]
+  },
+  "components": [
+    {
+      "name": "scikit-learn",
+      "version": ">=1.0.0"
+    },
+    {
+      "name": "numpy",
+      "version": ">=1.19.0"
+    },
+    {
+      "name": "joblib",
+      "version": ">=1.0.0"
+    }
+  ],
+  "security": {
+    "scanned": true,
+    "issues_found": 1,
+    "issues": [
+      {
+        "type": "suspicious_pattern",
+        "pattern": "eval(",
+        "description": "Dynamic code evaluation",
+        "severity": "HIGH"
+      }
+    ],
+    "status": "FAIL"
+  },
+  "provenance": {
+    "generated_by": "MLBOM Generator v1.0",
+    "generated_at": "2026-02-04T22:05:51.844447Z",
+    "tool": "Lab 08: AMX Accelerated Scanning"
+  }
+}

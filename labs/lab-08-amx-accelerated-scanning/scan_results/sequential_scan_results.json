@@ -1,0 +1,262 @@
+{
+  "scan_type": "SEQUENTIAL",
+  "total_models": 15,
+  "clean": 12,
+  "suspicious": 3,
+  "total_time_seconds": 21.15,
+  "avg_time_per_model": 1.41,
+  "results": [
+    {
+      "file": "test_models/keras_model_1.h5",
+      "filename": "keras_model_1.h5",
+      "size_bytes": 29536,
+      "scan_start": "2026-02-04T22:04:59.281540",
+      "findings": [],
+      "hash": "1dd4e7285c15954b36ee17c74cb4a4170b2aeaf5b2b502951600a2c45a4b02c3",
+      "pickle_analysis": {
+        "is_pickle": false,
+        "suspicious": false,
+        "details": []
+      },
+      "status": "CLEAN",
+      "scan_time_seconds": 0.865
+    },
+    {
+      "file": "test_models/keras_model_2.h5",
+      "filename": "keras_model_2.h5",
+      "size_bytes": 42080,
+      "scan_start": "2026-02-04T22:05:00.146195",
+      "findings": [],
+      "hash": "01203afe199ea2e2ed72150bc2337fb5e0967e3856b729b61d5922a044b79ff1",
+      "pickle_analysis": {
+        "is_pickle": false,
+        "suspicious": false,
+        "details": []
+      },
+      "status": "CLEAN",
+      "scan_time_seconds": 0.863
+    },
+    {
+      "file": "test_models/keras_model_3.h5",
+      "filename": "keras_model_3.h5",
+      "size_bytes": 82016,
+      "scan_start": "2026-02-04T22:05:01.008798",
+      "findings": [],
+      "hash": "46f458c1ff61e99d97c9d17ec039c6f97c813c7c165ec9b42dc6c8fb28269bdd",
+      "pickle_analysis": {
+        "is_pickle": false,
+        "suspicious": false,
+        "details": []
+      },
+      "status": "CLEAN",
+      "scan_time_seconds": 0.871
+    },
+    {
+      "file": "test_models/keras_model_4.h5",
+      "filename": "keras_model_4.h5",
+      "size_bytes": 208480,
+      "scan_start": "2026-02-04T22:05:01.879857",
+      "findings": [],
+      "hash": "57ba253e021ac229a74d037d18db548eec04c88bd3cba885c9f4f80c2f15f1a2",
+      "pickle_analysis": {
+        "is_pickle": false,
+        "suspicious": false,
+        "details": []
+      },
+      "status": "CLEAN",
+      "scan_time_seconds": 0.897
+    },
+    {
+      "file": "test_models/keras_model_5.h5",
+      "filename": "keras_model_5.h5",
+      "size_bytes": 660304,
+      "scan_start": "2026-02-04T22:05:02.776756",
+      "findings": [],
+      "hash": "a1ddc57607a6d1e264b9557b76178b250a1869543b1aba79cf71026c02198037",
+      "pickle_analysis": {
+        "is_pickle": false,
+        "suspicious": false,
+        "details": []
+      },
+      "status": "CLEAN",
+      "scan_time_seconds": 0.997
+    },
+    {
+      "file": "test_models/large_model_1.h5",
+      "filename": "large_model_1.h5",
+      "size_bytes": 7579344,
+      "scan_start": "2026-02-04T22:05:03.773434",
+      "findings": [],
+      "hash": "cad225e8278f9a724ded06b8996f1756d65ebb7957c6b39154a5e343827b44a6",
+      "pickle_analysis": {
+        "is_pickle": false,
+        "suspicious": false,
+        "details": []
+      },
+      "status": "CLEAN",
+      "scan_time_seconds": 2.487
+    },
+    {
+      "file": "test_models/large_model_2.h5",
+      "filename": "large_model_2.h5",
+      "size_bytes": 27717328,
+      "scan_start": "2026-02-04T22:05:06.260581",
+      "findings": [],
+      "hash": "0fdb48acf7d296ef173e369a5dc66fe4fef918598a683cbddba099598a5deb4a",
+      "pickle_analysis": {
+        "is_pickle": false,
+        "suspicious": false,
+        "details": []
+      },
+      "status": "CLEAN",
+      "scan_time_seconds": 6.588
+    },
+    {
+      "file": "test_models/sklearn_logistic_multiclass.pkl",
+      "filename": "sklearn_logistic_multiclass.pkl",
+      "size_bytes": 1375,
+      "scan_start": "2026-02-04T22:05:12.848734",
+      "findings": [],
+      "hash": "9907dc599e26239d0325d5d92c1bc4bd8fead209aa4126decc5918cef541ad31",
+      "pickle_analysis": {
+        "is_pickle": true,
+        "suspicious": false,
+        "details": []
+      },
+      "status": "CLEAN",
+      "scan_time_seconds": 0.852
+    },
+    {
+      "file": "test_models/sklearn_logistic_regression.pkl",
+      "filename": "sklearn_logistic_regression.pkl",
+      "size_bytes": 1375,
+      "scan_start": "2026-02-04T22:05:13.701122",
+      "findings": [],
+      "hash": "09d10d8567ac82d7683f669ed3fb02790cbdfa107c23ebdd4de11a1f746fc73f",
+      "pickle_analysis": {
+        "is_pickle": true,
+        "suspicious": false,
+        "details": []
+      },
+      "status": "CLEAN",
+      "scan_time_seconds": 0.852
+    },
+    {
+      "file": "test_models/sklearn_random_forest.pkl",
+      "filename": "sklearn_random_forest.pkl",
+      "size_bytes": 477857,
+      "scan_start": "2026-02-04T22:05:14.553371",
+      "findings": [],
+      "hash": "243f41c765f8fa57b0f30f786b2decd70d7647ae5a536db1a9b1296d051b4850",
+      "pickle_analysis": {
+        "is_pickle": true,
+        "suspicious": false,
+        "details": []
+      },
+      "status": "CLEAN",
+      "scan_time_seconds": 0.978
+    },
+    {
+      "file": "test_models/sklearn_random_forest_large.pkl",
+      "filename": "sklearn_random_forest_large.pkl",
+      "size_bytes": 2353713,
+      "scan_start": "2026-02-04T22:05:15.531403",
+      "findings": [],
+      "hash": "953174510f1ee5ff6d28089bea3ee15318836ff08c269bce9850c7618efe47de",
+      "pickle_analysis": {
+        "is_pickle": true,
+        "suspicious": false,
+        "details": []
+      },
+      "status": "CLEAN",
+      "scan_time_seconds": 1.472
+    },
+    {
+      "file": "test_models/sklearn_svm.pkl",
+      "filename": "sklearn_svm.pkl",
+      "size_bytes": 21315,
+      "scan_start": "2026-02-04T22:05:17.003788",
+      "findings": [],
+      "hash": "c9107717f1a2d7f6a48329fd7faa42f3f4132074ac1ba57a65c18a13f72472d9",
+      "pickle_analysis": {
+        "is_pickle": true,
+        "suspicious": false,
+        "details": []
+      },
+      "status": "CLEAN",
+      "scan_time_seconds": 0.857
+    },
+    {
+      "file": "test_models/suspicious_eval_model.pkl",
+      "filename": "suspicious_eval_model.pkl",
+      "size_bytes": 45534,
+      "scan_start": "2026-02-04T22:05:17.860815",
+      "findings": [
+        {
+          "pattern": "\\beval\\s*\\(",
+          "description": "Dynamic code evaluation (eval)",
+          "matches": 1,
+          "severity": "MEDIUM"
+        }
+      ],
+      "hash": "f6bb6da2fd05e4a6836f49f53e43a21fb04cd58fc1542e371798c43b86b8fdce",
+      "pickle_analysis": {
+        "is_pickle": true,
+        "suspicious": false,
+        "details": []
+      },
+      "status": "SUSPICIOUS",
+      "scan_time_seconds": 0.862
+    },
+    {
+      "file": "test_models/suspicious_reduce_model.pkl",
+      "filename": "suspicious_reduce_model.pkl",
+      "size_bytes": 8307,
+      "scan_start": "2026-02-04T22:05:18.722740",
+      "findings": [
+        {
+          "pattern": "\\bos\\.system\\b",
+          "description": "OS system call",
+          "matches": 1,
+          "severity": "MEDIUM"
+        },
+        {
+          "pattern": "__reduce__",
+          "description": "Pickle reduce method (RCE vector)",
+          "matches": 1,
+          "severity": "HIGH"
+        }
+      ],
+      "hash": "a2fc14a9c31b02bd152700a016ee2657d9c61d5988d0dd8601b324ab37d6e108",
+      "pickle_analysis": {
+        "is_pickle": true,
+        "suspicious": false,
+        "details": []
+      },
+      "status": "SUSPICIOUS",
+      "scan_time_seconds": 0.854
+    },
+    {
+      "file": "test_models/suspicious_subprocess_model.pkl",
+      "filename": "suspicious_subprocess_model.pkl",
+      "size_bytes": 11614,
+      "scan_start": "2026-02-04T22:05:19.576837",
+      "findings": [
+        {
+          "pattern": "\\bsubprocess\\b",
+          "description": "Subprocess module reference",
+          "matches": 2,
+          "severity": "MEDIUM"
+        }
+      ],
+      "hash": "59da646f856db9aa431f42667a1143115ca479e59e9b99c19aec6c0e17e72b5a",
+      "pickle_analysis": {
+        "is_pickle": true,
+        "suspicious": false,
+        "details": []
+      },
+      "status": "SUSPICIOUS",
+      "scan_time_seconds": 0.854
+    }
+  ]
+}

@@ -1,0 +1,28 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+*.egg-info/
+
+# Model files (generated)
+proprietary_model.h5
+*.h5
+*.npz
+vectorizer.joblib
+
+# Runtime files
+victim_process.json
+inference_memory_dump.json
+stolen_model_weights.npz
+model_metadata.json
+tdx_verification_report.json
+
+# Environment
+.env
+*.log
+
+# OS
+.DS_Store
+Thumbs.db

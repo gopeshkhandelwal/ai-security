@@ -1,0 +1,51 @@
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.5",
+  "version": 1,
+  "metadata": {
+    "timestamp": "2026-02-04T22:05:51.834855Z",
+    "component": {
+      "type": "machine-learning-model",
+      "name": "large_model_2",
+      "version": "1.0.0"
+    }
+  },
+  "model": {
+    "name": "large_model_2.h5",
+    "path": "/srv/gopeshkh/Code/ai-security/labs/lab-08-amx-accelerated-scanning/test_models/large_model_2.h5",
+    "format": "HDF5",
+    "framework": "TensorFlow/Keras",
+    "size_bytes": 27717328,
+    "hashes": [
+      {
+        "algorithm": "SHA-256",
+        "value": "0fdb48acf7d296ef173e369a5dc66fe4fef918598a683cbddba099598a5deb4a"
+      }
+    ]
+  },
+  "components": [
+    {
+      "name": "tensorflow",
+      "version": ">=2.0.0"
+    },
+    {
+      "name": "numpy",
+      "version": ">=1.19.0"
+    },
+    {
+      "name": "h5py",
+      "version": ">=3.0.0"
+    }
+  ],
+  "security": {
+    "scanned": true,
+    "issues_found": 0,
+    "issues": [],
+    "status": "PASS"
+  },
+  "provenance": {
+    "generated_by": "MLBOM Generator v1.0",
+    "generated_at": "2026-02-04T22:05:52.017931Z",
+    "tool": "Lab 08: AMX Accelerated Scanning"
+  }
+}
