@@ -1,12 +1,11 @@
 #!/usr/bin/env python3
 """
-Reset Lab 07 - Remove generated files
+Reset Lab 10 - Remove generated files
 
 Author: GopeshK
 License: MIT License
-Disclaimer: This code is for educational and demonstration purposes only.
-            Do not use for malicious purposes. The author is not responsible
-            for any misuse of this code.
+Disclaimer: This code is for educational purposes only.
+            Do not use for malicious purposes.
 """
 
 import os
@@ -27,8 +26,10 @@ FILES_TO_REMOVE = [
     
     # Attestation files
     "attestation_report_tdx.json",
-    "attestation_report_sgx.json",
     "verification_certificate.json",
+    
+    # Verification output
+    "tdx_verification.txt",
     
     # Environment
     ".env",
@@ -37,11 +38,10 @@ FILES_TO_REMOVE = [
 PATTERNS_TO_REMOVE = [
     "*.dump",
     "*.bin",
-    "*.sig",
 ]
 
 def main():
-    print("[Reset] Cleaning up Lab 07: Confidential AI...")
+    print("[Reset] Cleaning up Lab 10: Confidential AI with TDX...")
     
     lab_dir = os.path.dirname(os.path.abspath(__file__))
     
@@ -68,13 +68,18 @@ def main():
         shutil.rmtree(pycache)
         print(f"  [✓] Removed: __pycache__/")
     
-    print("\n[✓] Lab 07 reset complete!")
+    # Remove .venv if exists
+    venv = os.path.join(lab_dir, ".venv")
+    if os.path.isdir(venv):
+        print(f"  [!] Virtual environment found at .venv/ - skipping (remove manually if needed)")
+    
+    print("\n[✓] Lab 10 reset complete!")
     print("\nTo run the lab:")
-    print("  python 0_check_hardware.py   # Check TDX/SGX support")
-    print("  python 1_train_proprietary_model.py")
-    print("  python 2_victim_inference_server.py  # Terminal 1")
-    print("  sudo .venv/bin/python 3_attacker_memory_reader.py  # Terminal 2")
-    print("  ./4a_run_sgx_enclave.sh  # Protected inference (SGX)")
+    print("  python 0_check_tdx.py               # Verify TDX is active")
+    print("  python 1_train_proprietary_model.py # Train model")
+    print("  python 2_victim_inference_server.py # Terminal 1: Start server")
+    print("  sudo .venv/bin/python 3_attacker_memory_reader.py  # Terminal 2: Attack")
+    print("  python 4_verify_tdx_protection.py   # Verify protection scope")
 
 if __name__ == "__main__":
     main()

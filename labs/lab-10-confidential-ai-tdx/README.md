@@ -127,7 +127,7 @@ lab-10-confidential-ai-tdx/
 
 ```bash
 # Create Confidential VM with TDX
-gcloud compute instances create tdx-ai-demo \
+gcloud compute instances create tdx-ai-security \
   --project=YOUR_PROJECT \
   --zone=us-central1-a \
   --machine-type=c3-standard-4 \
@@ -136,9 +136,10 @@ gcloud compute instances create tdx-ai-demo \
   --image-family=ubuntu-2204-lts \
   --image-project=ubuntu-os-cloud \
   --boot-disk-size=50GB
+  --maintenance-policy=TERMINATE
 
-# SSH into the VM
-gcloud compute ssh tdx-ai-demo --zone=us-central1-a
+# SSH into the VM (use IAP tunnel if direct SSH times out)
+gcloud compute ssh tdx-ai-security --zone=us-central1-a --tunnel-through-iap
 ```
 
 ### Step 2: Setup Environment (Inside VM)
@@ -148,7 +149,7 @@ gcloud compute ssh tdx-ai-demo --zone=us-central1-a
 sudo apt update && sudo apt install -y python3-pip python3-venv git
 
 # Clone repo and setup
-git clone <your-repo-url>
+git clone https://github.com/YOUR_ORG/ai-security.git
 cd ai-security/labs/lab-10-confidential-ai-tdx
 python3 -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
@@ -208,9 +209,9 @@ python 4_verify_tdx_protection.py
 
 ---
 
-## Comparison Demo
+## Comparison Test
 
-For maximum impact, run the attack on both:
+To demonstrate TDX protection, run the attack on both environments:
 
 | Environment | Command | Result |
 |-------------|---------|--------|
@@ -267,21 +268,20 @@ The collaboration validated:
 ## Cost Management
 
 ```bash
-# Stop VM when not using
-gcloud compute instances stop tdx-ai-demo --zone=us-central1-a
+# Stop VM when not in use
+gcloud compute instances stop tdx-ai-security --zone=us-central1-a
 
 # Start when ready
-gcloud compute instances start tdx-ai-demo --zone=us-central1-a
+gcloud compute instances start tdx-ai-security --zone=us-central1-a
 
-# Delete after demo
-gcloud compute instances delete tdx-ai-demo --zone=us-central1-a --quiet
+# Delete when finished
+gcloud compute instances delete tdx-ai-security --zone=us-central1-a --quiet
 ```
 
-| Resource | Cost |
-|----------|------|
-| c3-standard-4 (TDX) | ~$0.25/hr |
-| 50GB SSD | ~$0.01/hr |
-| **Weekend total** | ~$15-20 |
+| Resource | Hourly Cost |
+|----------|-------------|
+| c3-standard-4 (TDX) | ~$0.25 |
+| 50GB SSD | ~$0.01 |
 
 ---
 
