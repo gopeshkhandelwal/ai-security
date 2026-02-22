@@ -1,19 +1,6 @@
-# Core ML Dependencies
-tensorflow
-scikit-learn
-numpy
-joblib
+# Lab 10: TDX Confidential AI
+# All scripts use Python standard library only - no pip packages required.
 
-# Cryptography for attestation simulation
-cryptography
-
-# System info for hardware detection
-psutil
-py-cpuinfo
-
-# For memory analysis simulation
-pympler
-
-# NOTE: Gramine (for real SGX enclaves) is a SYSTEM package, not pip:
-#   sudo apt install gramine
-# The 4a_run_sgx_enclave.sh script will install it automatically if needed.
+# The following are optional for extended demos:
+# psutil          # System info (optional)
+# py-cpuinfo      # CPU detection (optional)

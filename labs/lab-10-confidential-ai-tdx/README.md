@@ -110,11 +110,10 @@ Traditional cloud deployments expose AI models and inference data to:
 lab-10-confidential-ai-tdx/
 ├── README.md                     # This file
 ├── SETUP_GUIDE.md                # Detailed GCP setup instructions
-├── 0_check_tdx.py                # Verify TDX is active
-├── 1_train_proprietary_model.py  # Train model (same as lab-07)
-├── 2_victim_inference_server.py  # Run inference server
-├── 3_attacker_memory_reader.py   # Memory extraction attack
-├── 4_verify_tdx_protection.py    # Verify TDX blocks attack
+├── deploy_vms.sh                 # Deploy TDX + Standard VM for comparison
+├── 1_check_tdx.py                # Verify TDX is active
+├── 2_memory_comparison_demo.py   # Main demo: TDX vs Standard VM
+├── 3_tdx_attestation_demo.py     # Remote attestation demo (optional)
 ├── requirements.txt              # Python dependencies
 └── reset.py                      # Cleanup script
 ```
@@ -123,11 +122,24 @@ lab-10-confidential-ai-tdx/
 
 ## Quick Start
 
-### Step 1: Create GCP TDX VM
+### Option A: Deploy Both VMs (Recommended for Demo)
+
+```bash
+# Set your GCP project and deploy both VMs
+export GCP_PROJECT_ID=your-project-id
+chmod +x deploy_vms.sh
+./deploy_vms.sh
+```
+
+This creates:
+- **tdx-vm**: C3 machine with TDX (memory encrypted)
+- **standard-vm**: E2 machine without TDX (memory plaintext)
+
+### Option B: Create Single TDX VM
 
 ```bash
 # Create Confidential VM with TDX
-gcloud compute instances create tdx-ai-security \
+gcloud compute instances create tdx-vm \
   --project=YOUR_PROJECT \
   --zone=us-central1-a \
   --machine-type=c3-standard-4 \
@@ -135,14 +147,14 @@ gcloud compute instances create tdx-ai-security \
   --min-cpu-platform="Intel Sapphire Rapids" \
   --image-family=ubuntu-2204-lts \
   --image-project=ubuntu-os-cloud \
-  --boot-disk-size=50GB
+  --boot-disk-size=50GB \
   --maintenance-policy=TERMINATE
 
-# SSH into the VM (use IAP tunnel if direct SSH times out)
-gcloud compute ssh tdx-ai-security --zone=us-central1-a --tunnel-through-iap
+# SSH into the VM
+gcloud compute ssh tdx-vm --zone=us-central1-a --tunnel-through-iap
 ```
 
-### Step 2: Setup Environment (Inside VM)
+### Setup Environment (Inside VM)
 
 ```bash
 # Install dependencies
@@ -153,38 +165,23 @@ git clone https://github.com/YOUR_ORG/ai-security.git
 cd ai-security/labs/lab-10-confidential-ai-tdx
 python3 -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
-
-# Verify TDX is active
-python 0_check_tdx.py
 ```
 
-### Step 3: Run Attack Demo
+### Run the Demo
 
 ```bash
-# Train model
-python 1_train_proprietary_model.py
+# 1. Verify TDX is active
+python3 1_check_tdx.py
 
-# Terminal 1: Run inference server
-python 2_victim_inference_server.py
+# 2. Run main demo: TDX vs Standard VM comparison
+python3 2_memory_comparison_demo.py
 
-# Terminal 2: Attempt memory attack (from INSIDE VM)
-sudo .venv/bin/python 3_attacker_memory_reader.py
-# Result: Attack SUCCEEDS (intra-VM attack - expected!)
+# 3. Optional: Remote attestation demo
+python3 3_tdx_attestation_demo.py
 ```
 
-> ⚠️ **Important:** This attack succeeds because it's process-to-process WITHIN the VM.
-> TDX protects against HYPERVISOR-level attacks (external to the VM).
-> For intra-VM protection, use SGX (Lab 07).
-
-### Step 4: Understand What TDX Protects
-
-```bash
-# Verify TDX is active
-python 0_check_tdx.py
-
-# Run verification script to understand protection scope
-python 4_verify_tdx_protection.py
-```
+> **Note:** TDX protects against HYPERVISOR-level attacks (malicious cloud provider).
+> For intra-VM process isolation, use SGX (Lab 07).
 
 ---
 
@@ -209,14 +206,32 @@ python 4_verify_tdx_protection.py
 
 ---
 
-## Comparison Test
+## Comparison Demo: TDX vs Standard VM
 
-To demonstrate TDX protection, run the attack on both environments:
+To see the difference between encrypted and plaintext memory:
 
-| Environment | Command | Result |
-|-------------|---------|--------|
-| Standard VM (e2-standard-4) | `sudo python 3_attacker_memory_reader.py` | ❌ **ATTACK SUCCEEDS** - Weights extracted |
-| TDX VM (c3-standard-4 + TDX) | `sudo python 3_attacker_memory_reader.py` | ✅ **ATTACK FAILS** - Memory encrypted |
+### Option 1: Deploy Both VMs (Recommended)
+
+```bash
+# Set project ID and deploy
+export GCP_PROJECT_ID=your-project-id
+chmod +x deploy_vms.sh
+./deploy_vms.sh
+```
+
+This creates:
+- **tdx-vm**: Memory encrypted by Intel TDX
+- **standard-vm**: Memory in plaintext (vulnerable)
+
+### Option 2: Run Demo on Current VM
+
+```bash
+python3 2_memory_comparison_demo.py
+```
+
+This shows what a hypervisor would see when reading memory:
+- **TDX VM**: Encrypted garbage (PROTECTED)
+- **Standard VM**: Clear-text model weights (VULNERABLE)
 
 ---
 

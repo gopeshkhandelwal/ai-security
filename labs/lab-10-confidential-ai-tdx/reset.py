@@ -22,11 +22,12 @@ FILES_TO_REMOVE = [
     "stolen_model_weights.npz",
     "blind_stolen_weights.npz",
     "inference_memory_dump.json",
-    "victim_process.json",
+    "server_process.json",
     
     # Attestation files
     "attestation_report_tdx.json",
     "verification_certificate.json",
+    "tdx_attestation_report.json",
     
     # Verification output
     "tdx_verification.txt",
@@ -77,9 +78,8 @@ def main():
     print("\nTo run the lab:")
     print("  python 0_check_tdx.py               # Verify TDX is active")
     print("  python 1_train_proprietary_model.py # Train model")
-    print("  python 2_victim_inference_server.py # Terminal 1: Start server")
-    print("  sudo .venv/bin/python 3_attacker_memory_reader.py  # Terminal 2: Attack")
-    print("  python 4_verify_tdx_protection.py   # Verify protection scope")
+    print("  python 5_simulated_attack_demo.py   # Run attack demo")
+    print("  python 6_secure_ai_inference.py     # Secure inference demo")
 
 if __name__ == "__main__":
     main()

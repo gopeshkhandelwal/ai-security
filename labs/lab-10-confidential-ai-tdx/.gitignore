@@ -13,7 +13,7 @@ proprietary_model.h5
 vectorizer.joblib
 
 # Runtime files
-victim_process.json
+server_process.json
 inference_memory_dump.json
 stolen_model_weights.npz
 model_metadata.json

@@ -1,8 +1,19 @@
 # TDX on GCP: Setup Guide
 
-**Purpose:** Deploy Intel TDX Confidential VMs on Google Cloud Platform for AI model protection.
+**Purpose:** Deploy Intel TDX Confidential VMs on Google Cloud Platform to demonstrate memory encryption vs plaintext.
 
 **Estimated Time:** 30-45 minutes
+
+---
+
+## Lab Files (Simplified)
+
+| File | Purpose |
+|------|---------|
+| `deploy_vms.sh` | Deploy both TDX + Standard VM automatically |
+| `1_check_tdx.py` | Verify TDX is active on the VM |
+| `2_memory_comparison_demo.py` | **Main demo**: TDX (encrypted) vs Standard (plaintext) |
+| `3_tdx_attestation_demo.py` | Remote attestation (optional) |
 
 ---
 
@@ -72,12 +83,24 @@ gcloud services list --enabled | grep -E "compute|iap"
 
 ## Part 3: Create TDX Confidential VM
 
-### 3.1 Check Available Zones
+### 3.1 Understanding TDX Machine Requirements
+
+**Which machines support TDX?**
+- **C3 series** (Intel Sapphire Rapids / 4th Gen Xeon) → **Supports TDX**
+- N2D series (AMD EPYC) → Supports AMD SEV-SNP (not TDX)
+- C2 series (Intel Cascade Lake) → No confidential computing
+
+**TDX-enabled zones** (not all zones have TDX hardware):
+- `us-central1-a`, `us-central1-b`, `us-central1-c`
+- `us-east4-a`, `us-east4-b`, `us-east4-c`  
+- `europe-west1-b`, `europe-west1-c`, `europe-west1-d`
 
 ```bash
-# List zones that support C3 machines with TDX
+# List zones where C3 machines are available
 gcloud compute machine-types list --filter="name=c3-standard-4" --format="value(zone)" | head -10
 ```
+
+**Verify TDX support:** GCP will reject the VM creation if TDX is not supported in the chosen zone/machine combination. The `--confidential-compute-type=TDX` flag is validated at creation time.
 
 ### 3.2 Create the TDX VM
 
@@ -198,46 +221,68 @@ pip install -r requirements.txt
 ### 6.1 Verify TDX Status
 
 ```bash
-python 0_check_tdx.py
+python3 1_check_tdx.py
 ```
 
-### 6.2 Train the Model
+### 6.2 Run Memory Comparison Demo
 
 ```bash
-python 1_train_proprietary_model.py
+python3 2_memory_comparison_demo.py
 ```
 
-### 6.3 Run Inference Server
-
-**Terminal 1:**
-```bash
-python 2_victim_inference_server.py
-```
-
-### 6.4 Attempt Memory Attack
-
-**Terminal 2 (new SSH session):**
-```bash
-cd ~/ai-security/labs/lab-10-confidential-ai-tdx
-source .venv/bin/activate
-sudo .venv/bin/python 3_attacker_memory_reader.py
-```
-
-> **Note:** This intra-VM attack will succeed because TDX protects against hypervisor-level attacks, not process-to-process attacks within the same VM. For intra-VM protection, see Lab 07 (SGX).
-
-### 6.5 Verify TDX Protection Scope
+### 6.3 Optional: Remote Attestation Demo
 
 ```bash
-python 4_verify_tdx_protection.py
+python3 3_tdx_attestation_demo.py
 ```
+
+> **Note:** TDX protects against hypervisor-level attacks (malicious cloud provider), not process-to-process attacks within the same VM. For intra-VM protection, see Lab 07 (SGX).
 
 ---
 
-## Part 7: Compare with Standard VM (Optional)
+## Part 7: Compare TDX VM vs Standard VM (Encrypted vs Plaintext)
 
-To demonstrate that TDX provides protection against hypervisor-level attacks:
+This section demonstrates the security difference between a TDX-protected VM (encrypted memory) and a standard VM (plaintext memory).
 
-### 7.1 Create Standard VM
+### 7.1 Quick Deployment (Automated)
+
+Use the deployment script to create both VMs automatically:
+
+```bash
+# Set your GCP project ID
+export GCP_PROJECT_ID=your-project-id
+export GCP_ZONE=us-central1-a
+
+# Make script executable
+chmod +x deploy_vms.sh
+
+# Deploy both VMs
+./deploy_vms.sh
+```
+
+This creates:
+- **tdx-vm**: C3 machine with Intel TDX (memory encrypted)
+- **standard-vm**: E2 machine without TDX (memory plaintext)
+
+### 7.2 Manual Deployment
+
+#### Create TDX VM (Encrypted Memory)
+
+```bash
+gcloud compute instances create tdx-vm \
+  --project=YOUR_PROJECT_ID \
+  --zone=us-central1-a \
+  --machine-type=c3-standard-4 \
+  --confidential-compute-type=TDX \
+  --min-cpu-platform="Intel Sapphire Rapids" \
+  --image-family=ubuntu-2204-lts \
+  --image-project=ubuntu-os-cloud \
+  --boot-disk-size=50GB \
+  --boot-disk-type=pd-ssd \
+  --maintenance-policy=TERMINATE
+```
+
+#### Create Standard VM (Plaintext Memory)
 
 ```bash
 gcloud compute instances create standard-vm \
@@ -249,15 +294,81 @@ gcloud compute instances create standard-vm \
   --boot-disk-size=50GB
 ```
 
-### 7.2 Run Same Lab on Standard VM
+### 7.3 Run the Memory Encryption Demo
+
+**Step 1: SSH into TDX VM and run demo**
 
 ```bash
-gcloud compute ssh standard-vm --zone=us-central1-a
+# Connect to TDX VM
+gcloud compute ssh tdx-vm --zone=us-central1-a --tunnel-through-iap
 
-# Setup environment (same steps as Part 5)
-# Run lab (same steps as Part 6)
-# Compare results
+# Inside the VM:
+cd ~
+git clone <your-repo-url> ai-security
+cd ai-security/labs/lab-10-confidential-ai-tdx
+python3 -m venv .venv && source .venv/bin/activate
+pip install -r requirements.txt
+
+# Run the memory comparison demo
+python3 2_memory_comparison_demo.py
 ```
+
+**Expected Output (TDX VM):**
+```
+✅ TDX Guest Mode: ACTIVE
+✅ Memory: ENCRYPTED (AES-256)
+✅ Hypervisor Access: BLOCKED
+
+[HYPERVISOR] Attempting to read VM memory...
+MEMORY CONTENTS: a7 f3 2b 9c 4e 8d 1a b0... (encrypted garbage)
+
+🔒 ATTACK FAILED - Data is protected by hardware encryption
+```
+
+**Step 2: SSH into Standard VM and run the same demo**
+
+```bash
+# Connect to Standard VM
+gcloud compute ssh standard-vm --zone=us-central1-a --tunnel-through-iap
+
+# Run the same demo
+python3 2_memory_comparison_demo.py
+```
+
+**Expected Output (Standard VM):**
+```
+❌ TDX Guest Mode: NOT ACTIVE
+❌ Memory: PLAINTEXT
+❌ Hypervisor Access: FULL ACCESS
+
+[HYPERVISOR] Attempting to read VM memory...
+MEMORY CONTENTS:
+  [STOLEN] Model Name: ProprietaryLLM-v3.7
+  [STOLEN] API Key: sk-abc123...
+  [STOLEN] Customer SSN: 123-45-6789...
+
+⚠️ ATTACK SUCCESSFUL - All data exposed in plaintext!
+```
+
+### 7.4 Side-by-Side Comparison
+
+| Aspect | TDX VM (Encrypted) | Standard VM (Plaintext) |
+|--------|-------------------|------------------------|
+| Memory State | AES-256 encrypted | Plaintext |
+| Hypervisor Access | BLOCKED | FULL ACCESS |
+| Model Weights | Protected | Exposed |
+| API Keys | Protected | Exposed |
+| Customer Data | Protected | Exposed |
+| Attestation | Available | Not available |
+| Cost (c3/e2-standard-4) | ~$0.25/hr | ~$0.13/hr |
+
+### 7.5 What This Demonstrates
+
+1. **TDX VM**: The hypervisor sees only encrypted bytes. Even with root access to the host, the cloud provider cannot read your AI model or data.
+
+2. **Standard VM**: The hypervisor can read all memory contents in plaintext, including model weights, API keys, and customer data.
+
+> **Key Insight**: TDX provides hardware-enforced protection that cannot be bypassed by software - the encryption keys never leave the CPU.
 
 ---
 
