@@ -28,6 +28,7 @@ Hands-on security labs demonstrating common AI/ML attack vectors and defense mec
 | 06 | Integrity | Model Tampering | ECDSA Signing | [📖 README](lab-06-model-signing/README.md) |
 | 07 | Confidential AI (SGX) | Memory Extraction | Intel SGX Encrypted Enclaves | [📖 README](lab-07-confidential-ai-sgx/README.md) |
 | 08 | Model Attestation | Model Tampering/Replacement | Intel TPM 2.0 + Trust Authority | [📖 README](lab-08-tpm-attestation/README.md) |
+| 09 | Chatbot Vulnerability | Prompt Injection + Jailbreak | Security Scanner | [📖 README](lab-09-chatbot-vulnerability-testing/README.md) |
 | 10 | Confidential AI (TDX) | Hypervisor Memory Extraction | Intel TDX on Google Cloud | [📖 README](lab-10-confidential-ai-tdx/README.md) |
 
 ---
@@ -57,7 +58,7 @@ Hands-on security labs demonstrating common AI/ML attack vectors and defense mec
 | [AML.T0011](https://atlas.mitre.org/techniques/AML.T0011) | Backdoor ML Model | Lab 01, Lab 05 |
 | [AML.T0044](https://atlas.mitre.org/techniques/AML.T0044) | Full ML Model Access | Lab 02, Lab 07, Lab 10 |
 | [AML.T0024](https://atlas.mitre.org/techniques/AML.T0024) | Exfiltration via ML Inference API | Lab 02, Lab 07, Lab 10 |
-| [AML.T0051](https://atlas.mitre.org/techniques/AML.T0051) | LLM Prompt Injection | Lab 03, Lab 04 |
+| [AML.T0051](https://atlas.mitre.org/techniques/AML.T0051) | LLM Prompt Injection | Lab 03, Lab 04, Lab 09 |
 | [AML.T0047](https://atlas.mitre.org/techniques/AML.T0047) | ML Artifact Collection | Lab 08 |
 
 ---

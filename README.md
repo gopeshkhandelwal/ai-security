@@ -21,6 +21,7 @@ ai-security/
 │   ├── lab-06-model-signing/
 │   ├── lab-07-confidential-ai-sgx/    # Intel SGX enclaves
 │   ├── lab-08-tpm-attestation/
+│   ├── lab-09-chatbot-vulnerability-testing/
 │   └── lab-10-confidential-ai-tdx/    # Intel TDX on GCP
 └── README.md                      # This file
 ```
@@ -39,6 +40,7 @@ ai-security/
 | [Lab 06](labs/lab-06-model-signing/) | Model Signing & Integrity | AML.T0010, AML.T0011 |
 | [Lab 07](labs/lab-07-confidential-ai-sgx/) | Confidential AI with Intel SGX | AML.T0044, AML.T0024 |
 | [Lab 08](labs/lab-08-tpm-attestation/) | TPM Model Attestation | AML.T0047 |
+| [Lab 09](labs/lab-09-chatbot-vulnerability-testing/) | Chatbot Vulnerability Testing | AML.T0051 |
 | [Lab 10](labs/lab-10-confidential-ai-tdx/) | Confidential AI with Intel TDX | AML.T0044, AML.T0024 |
 
 ---
