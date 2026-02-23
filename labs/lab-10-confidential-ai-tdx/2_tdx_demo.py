@@ -94,31 +94,17 @@ def main():
             import fcntl
             import secrets
             
-            # TDX ioctl command (from Linux kernel: TDX_CMD_GET_REPORT0)
-            # _IOWR('T', 1, struct tdx_report_req) = 0xc0104001
-            TDX_CMD_GET_REPORT0 = 0xc0104001
+            # TDX ioctl: _IOWR('T', 1, struct tdx_report_req)
+            # struct tdx_report_req { u8 reportdata[64]; u8 tdreport[1024]; } = 1088 bytes
+            # ioctl = (3 << 30) | (1088 << 16) | (ord('T') << 8) | 1 = 0xC4405401
+            TDX_CMD_GET_REPORT0 = 0xC4405401
             
             # Generate 64-byte report_data (challenge nonce)
             report_data = secrets.token_bytes(64)
             
-            # TDX report request structure:
-            # - subtype: u8 (0 for REPORTTYPE0)
-            # - reportdata: [u8; 64]
-            # - rpd_len: u32
-            # - tdreport: [u8; 1024]
-            # - tdr_len: u32
-            
-            # Build request buffer
-            subtype = 0
-            rpd_len = 64
-            tdr_len = 1024
-            
-            # Pack: subtype(1) + padding(7) + reportdata(64) + rpd_len(4) + padding(4) + tdreport(1024) + tdr_len(4)
-            request = bytearray(1 + 7 + 64 + 4 + 4 + 1024 + 4)
-            request[0] = subtype
-            request[8:72] = report_data
-            struct.pack_into('<I', request, 72, rpd_len)
-            struct.pack_into('<I', request, 1104, tdr_len)
+            # Build request: reportdata[64] + tdreport[1024]
+            request = bytearray(1088)
+            request[0:64] = report_data
             
             # Open device and call ioctl
             fd = os.open("/dev/tdx_guest", os.O_RDWR)
@@ -127,23 +113,15 @@ def main():
             finally:
                 os.close(fd)
             
-            # Parse the TDX report (offset 80, 1024 bytes)
-            # TDX Report structure offsets:
-            # - REPORTMACSTRUCT: bytes 0-255
-            # - TEE_TCB_SVN: bytes 0-15
-            # - MRSEAM: bytes 16-63
-            # - MRSIGNERSEAM: bytes 64-111
-            # - SEAMATTRIBUTES: bytes 112-119
-            # - TDATTRIBUTES: bytes 120-127
-            # - XFAM: bytes 128-135
-            # - MRTD: bytes 136-183
-            # - MRCONFIGID: bytes 184-231
-            # - MROWNER: bytes 232-279
-            # - MROWNERCONFIG: bytes 280-327
-            # - RTMR0-3: bytes 328-519
-            # - REPORTDATA: bytes 520-583
+            # Parse the TDX report (bytes 64-1087)
+            # TDX Report structure offsets (within tdreport):
+            # - MRTD: bytes 136-183 (48 bytes)
+            # - MROWNER: bytes 232-279 (48 bytes)
+            # - RTMR0: bytes 328-375 (48 bytes)
+            # - RTMR1: bytes 376-423 (48 bytes)
+            # - REPORTDATA: bytes 520-583 (64 bytes)
             
-            tdreport = request[80:1104]
+            tdreport = request[64:]  # 1024 bytes
             
             # Extract real measurements from the report
             mrtd = tdreport[136:184].hex()
