@@ -32,10 +32,10 @@ def detect_tdx():
         pass
     return os.path.exists("/dev/tdx_guest")
 
-def read_memory(obj, size=48):
-    """Read raw bytes from memory"""
-    addr = id(obj)
-    return bytes((ctypes.c_char * size).from_address(addr))
+def read_bytearray_memory(ba):
+    """Read bytes directly from a bytearray's buffer"""
+    buf_addr = (ctypes.c_char * len(ba)).from_buffer(ba)
+    return bytes(buf_addr)
 
 def main():
     print(f"\n{BOLD}Memory Encryption Demo{RESET}")
@@ -44,9 +44,11 @@ def main():
     is_tdx = detect_tdx()
     print(f"\nVM Status: {GREEN}TDX PROTECTED{RESET}" if is_tdx else f"\nVM Status: {RED}UNPROTECTED{RESET}")
     
-    # Sensitive data in memory
-    ssn = "123-45-6789"
-    weights = [0.8234, -0.4521, 0.9182]
+    # Sensitive data in memory - use bytearray for direct memory access
+    ssn = bytearray(b"123-45-6789")
+    # Store weights as packed doubles in a buffer
+    weights_list = [0.8234, -0.4521, 0.9182]
+    weights_buf = bytearray(struct.pack('ddd', *weights_list))
     
     print(f"\n{BOLD}Hypervisor Memory Attack{RESET}")
     print("-" * 50)
@@ -67,14 +69,13 @@ def main():
     else:
         # Standard: Hypervisor reads plaintext
         print(f"\n{CYAN}1. Reading SSN:{RESET}")
-        raw = read_memory(ssn)
-        extracted = ''.join(chr(b) for b in raw if 32 <= b < 127)
-        print(f"   {RED}Extracted: {extracted}{RESET}")
+        raw = read_bytearray_memory(ssn)
+        print(f"   {RED}Extracted: {raw.decode()}{RESET}")
         
         print(f"\n{CYAN}2. Reading Model Weights:{RESET}")
-        for i, w in enumerate(weights):
-            raw = read_memory(w, 24)
-            val = struct.unpack('d', raw[16:24])[0]
+        raw = read_bytearray_memory(weights_buf)
+        extracted_weights = struct.unpack('ddd', raw)
+        for i, val in enumerate(extracted_weights):
             print(f"   {RED}[{i}]: {val:.4f}{RESET}")
         
         print(f"\n{RED}ATTACK SUCCESSFUL - All data exposed!{RESET}")
