@@ -12,7 +12,7 @@
 |------|---------|
 | `deploy_vms.sh` | Deploy both TDX + Standard VM automatically |
 | `1_check_tdx.py` | Verify TDX is active on the VM |
-| `2_memory_comparison_demo.py` | **Main demo**: TDX (encrypted) vs Standard (plaintext) |
+| `2_memory_comparison_demo.py` | **Main demo**: Use `--demo` to show both TDX and Standard scenarios |
 | `3_tdx_attestation_demo.py` | Remote attestation (optional) |
 
 ---
@@ -227,6 +227,10 @@ python3 1_check_tdx.py
 ### 6.2 Run Memory Comparison Demo
 
 ```bash
+# Demo mode: Shows BOTH TDX and Standard scenarios (recommended for presentations)
+python3 2_memory_comparison_demo.py --demo
+
+# Auto-detect mode: Shows result based on actual VM status
 python3 2_memory_comparison_demo.py
 ```
 

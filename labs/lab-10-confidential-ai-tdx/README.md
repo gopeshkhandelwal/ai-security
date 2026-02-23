@@ -112,7 +112,7 @@ lab-10-confidential-ai-tdx/
 ├── SETUP_GUIDE.md                # Detailed GCP setup instructions
 ├── deploy_vms.sh                 # Deploy TDX + Standard VM for comparison
 ├── 1_check_tdx.py                # Verify TDX is active
-├── 2_memory_comparison_demo.py   # Main demo: TDX vs Standard VM
+├── 2_memory_comparison_demo.py   # Main demo: TDX vs Standard VM (use --demo flag)
 ├── 3_tdx_attestation_demo.py     # Remote attestation demo (optional)
 ├── requirements.txt              # Python dependencies
 └── reset.py                      # Cleanup script
@@ -173,7 +173,10 @@ pip install -r requirements.txt
 # 1. Verify TDX is active
 python3 1_check_tdx.py
 
-# 2. Run main demo: TDX vs Standard VM comparison
+# 2. Run main demo (shows BOTH TDX and Standard scenarios)
+python3 2_memory_comparison_demo.py --demo
+
+# Or: Auto-detect mode (shows result based on actual VM)
 python3 2_memory_comparison_demo.py
 
 # 3. Optional: Remote attestation demo
