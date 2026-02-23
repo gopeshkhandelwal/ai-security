@@ -11,8 +11,7 @@
 | File | Purpose |
 |------|---------|
 | `1_check_tdx.py` | Verify TDX is active on the VM |
-| `2_memory_comparison_demo.py` | **Main demo**: TDX (encrypted) vs Standard (plaintext) |
-| `3_tdx_attestation_demo.py` | Remote attestation (optional) |
+| `2_tdx_demo.py` | **Main demo**: Memory attack + attestation |
 
 ---
 
@@ -108,7 +107,7 @@ git clone https://github.com/YOUR_REPO/ai-security.git
 cd ai-security/labs/lab-10-confidential-ai-tdx
 
 # Run demo - will show ATTACK SUCCESSFUL (data exposed)
-python3 2_memory_comparison_demo.py
+python3 2_tdx_demo.py
 ```
 
 ---
@@ -256,16 +255,10 @@ pip install -r requirements.txt
 python3 1_check_tdx.py
 ```
 
-### 6.2 Run Memory Comparison Demo
+### 6.2 Run TDX Demo
 
 ```bash
-python3 2_memory_comparison_demo.py
-```
-
-### 6.3 Optional: Remote Attestation Demo
-
-```bash
-python3 3_tdx_attestation_demo.py
+python3 2_tdx_demo.py
 ```
 
 > **Note:** TDX protects against hypervisor-level attacks (malicious cloud provider), not process-to-process attacks within the same VM. For intra-VM protection, see Lab 07 (SGX).

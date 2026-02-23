@@ -11,8 +11,7 @@ Intel Trust Domain Extensions (TDX) provides hardware-level memory encryption. A
 | Script | Description |
 |--------|-------------|
 | `1_check_tdx.py` | Check if TDX is enabled on the VM |
-| `2_memory_comparison_demo.py` | Show memory read attack (TDX vs Standard VM) |
-| `3_tdx_attestation_demo.py` | Demonstrate TDX remote attestation |
+| `2_tdx_demo.py` | **Main demo**: Memory attack + attestation |
 
 ## Quick Start
 
@@ -20,9 +19,19 @@ Intel Trust Domain Extensions (TDX) provides hardware-level memory encryption. A
 # Check TDX status
 python3 1_check_tdx.py
 
-# Run memory comparison demo
-python3 2_memory_comparison_demo.py
+# Run the demo
+python3 2_tdx_demo.py
 ```
+
+## What the Demo Shows
+
+**Part 1: Memory Attack**
+- Standard VM: Hypervisor extracts SSN and model weights (plaintext)
+- TDX VM: Hypervisor sees encrypted garbage
+
+**Part 2: Attestation**
+- TDX can cryptographically prove protection to third parties
+- Without TDX, you just have to trust the cloud provider
 
 ## Requirements
 
