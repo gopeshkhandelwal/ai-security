@@ -1,0 +1,24 @@
+# Lab 12 - AI Agent Security
+
+# Ignore environment files
+.env
+.env.local
+
+# Ignore test files created during demo
+test_*.txt
+output.txt
+
+# Ignore audit logs (generated during demos)
+audit_logs/
+
+# Ignore Python cache
+__pycache__/
+*.pyc
+*.pyo
+
+# Ignore virtual environment
+venv/
+.venv/
+
+# Ignore src directory (created during demo)
+src/

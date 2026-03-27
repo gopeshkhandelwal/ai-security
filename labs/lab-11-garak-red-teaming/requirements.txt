@@ -1,0 +1,24 @@
+# Core dependencies
+garak>=0.9.0
+python-dotenv>=1.0.0
+rich>=13.7.0
+requests>=2.31.0
+
+# LLM API clients
+openai>=1.12.0
+anthropic>=0.18.0
+transformers>=4.38.0
+torch>=2.2.0
+
+# Analysis and reporting
+pandas>=2.2.0
+matplotlib>=3.8.0
+seaborn>=0.13.0
+jinja2>=3.1.0
+
+# JSON/JSONL processing
+jsonlines>=4.0.0
+
+# Optional: Local model support
+# accelerate>=0.27.0
+# bitsandbytes>=0.42.0

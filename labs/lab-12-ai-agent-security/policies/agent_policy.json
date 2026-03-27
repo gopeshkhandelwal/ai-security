@@ -1,0 +1,183 @@
+{
+  "policy_version": "1.0.0",
+  "description": "AI Agent Security Policies - OPA Compatible",
+  "default_effect": "deny",
+  "agents": {
+    "code-assistant": {
+      "description": "Code assistant with workspace file access",
+      "max_session_duration_minutes": 60,
+      "rules": [
+        {
+          "id": "ca-001",
+          "name": "Allow reading workspace files",
+          "action": "file.read",
+          "conditions": {
+            "path_patterns": ["./**", "./src/**", "./tests/**", "./docs/**"],
+            "exclude_patterns": ["**/.env", "**/.env.*", "**/secrets/**", "**/*password*", "**/*credential*"]
+          },
+          "effect": "allow"
+        },
+        {
+          "id": "ca-002",
+          "name": "Allow writing to source files",
+          "action": "file.write",
+          "conditions": {
+            "path_patterns": ["./src/**", "./tests/**", "./*.py", "./*.js", "./*.ts"],
+            "max_file_size_kb": 1024,
+            "require_audit": true
+          },
+          "effect": "allow_with_audit"
+        },
+        {
+          "id": "ca-003",
+          "name": "Require approval for file deletion",
+          "action": "file.delete",
+          "conditions": {
+            "path_patterns": ["./**"],
+            "exclude_patterns": ["./node_modules/**", "./.git/**"]
+          },
+          "effect": "allow_with_approval"
+        },
+        {
+          "id": "ca-004",
+          "name": "Deny command execution",
+          "action": "execute.command",
+          "effect": "deny",
+          "reason": "Code assistants cannot execute arbitrary commands"
+        },
+        {
+          "id": "ca-005",
+          "name": "Deny external network access",
+          "action": "network.external",
+          "effect": "deny",
+          "reason": "Code assistants cannot make external network requests"
+        }
+      ]
+    },
+    "admin-agent": {
+      "description": "Administrative agent with elevated privileges",
+      "max_session_duration_minutes": 30,
+      "require_mfa": true,
+      "rules": [
+        {
+          "id": "aa-001",
+          "name": "Allow all file operations with audit",
+          "action": "file.*",
+          "conditions": {
+            "require_audit": true
+          },
+          "effect": "allow_with_audit"
+        },
+        {
+          "id": "aa-002",
+          "name": "Allow safe command execution",
+          "action": "execute.command",
+          "conditions": {
+            "allowed_commands": ["ls", "cat", "head", "tail", "grep", "find", "pwd", "whoami", "echo", "date"],
+            "denied_patterns": ["rm -rf", "dd if=", "mkfs", "> /dev/", "chmod 777", "sudo"]
+          },
+          "effect": "allow_with_approval"
+        },
+        {
+          "id": "aa-003",
+          "name": "Allow internal network only",
+          "action": "network.internal",
+          "conditions": {
+            "allowed_hosts": ["localhost", "127.0.0.1", "*.internal.company.com"]
+          },
+          "effect": "allow"
+        },
+        {
+          "id": "aa-004",
+          "name": "Deny external network",
+          "action": "network.external",
+          "effect": "deny"
+        }
+      ]
+    },
+    "readonly-agent": {
+      "description": "Read-only agent with minimal permissions",
+      "max_session_duration_minutes": 120,
+      "rules": [
+        {
+          "id": "ro-001",
+          "name": "Allow reading non-sensitive files",
+          "action": "file.read",
+          "conditions": {
+            "path_patterns": ["./**"],
+            "exclude_patterns": ["**/.env", "**/.env.*", "**/secrets/**", "**/credentials/**", "**/*.pem", "**/*.key"]
+          },
+          "effect": "allow"
+        },
+        {
+          "id": "ro-002",
+          "name": "Deny all writes",
+          "action": "file.write",
+          "effect": "deny"
+        },
+        {
+          "id": "ro-003",
+          "name": "Deny all deletes",
+          "action": "file.delete",
+          "effect": "deny"
+        },
+        {
+          "id": "ro-004",
+          "name": "Deny command execution",
+          "action": "execute.*",
+          "effect": "deny"
+        }
+      ]
+    },
+    "secure-agent": {
+      "description": "Secure agent with all 5 security principles",
+      "max_session_duration_minutes": 60,
+      "rules": [
+        {
+          "id": "sa-001",
+          "name": "Allow file reading in scope",
+          "action": "file.read",
+          "conditions": {
+            "path_patterns": ["./**"],
+            "exclude_patterns": ["**/.env", "**/secrets/**"]
+          },
+          "effect": "allow"
+        },
+        {
+          "id": "sa-002",
+          "name": "Allow file writing with audit",
+          "action": "file.write",
+          "conditions": {
+            "path_patterns": ["./**"],
+            "require_audit": true
+          },
+          "effect": "allow_with_audit"
+        },
+        {
+          "id": "sa-003",
+          "name": "Require approval for deletion",
+          "action": "file.delete",
+          "effect": "allow_with_approval"
+        },
+        {
+          "id": "sa-004",
+          "name": "Require approval for commands",
+          "action": "execute.command",
+          "effect": "allow_with_approval"
+        },
+        {
+          "id": "sa-005",
+          "name": "Require approval for financial",
+          "action": "financial.*",
+          "effect": "allow_with_approval"
+        },
+        {
+          "id": "sa-006",
+          "name": "Deny external network",
+          "action": "network.external",
+          "effect": "deny"
+        }
+      ]
+    }
+  }
+}

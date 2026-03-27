@@ -1,0 +1,40 @@
+# Environment variables
+.env
+
+# Generated outputs
+reports/
+results/
+garak_runs/
+.garak_cache/
+
+# Log files
+*.log
+*.jsonl
+*.json
+
+# Export files
+*.csv
+*.pdf
+*.html
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+.venv/
+env/
+.env/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+Thumbs.db

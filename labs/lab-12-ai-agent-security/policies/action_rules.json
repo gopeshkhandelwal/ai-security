@@ -1,0 +1,91 @@
+{
+  "version": "1.0.0",
+  "description": "Action risk classification rules",
+  "risk_levels": {
+    "low": {
+      "description": "Read-only operations with no side effects",
+      "approval_required": false,
+      "audit_required": false
+    },
+    "medium": {
+      "description": "Reversible modifications",
+      "approval_required": false,
+      "audit_required": true
+    },
+    "high": {
+      "description": "Potentially destructive or sensitive operations",
+      "approval_required": true,
+      "audit_required": true
+    },
+    "critical": {
+      "description": "Financial, infrastructure, or irreversible operations",
+      "approval_required": true,
+      "multi_party_approval": true,
+      "audit_required": true
+    }
+  },
+  "action_classifications": {
+    "file.read": {
+      "default_risk": "low",
+      "elevated_conditions": [
+        {"path_contains": ["secret", "password", "key", "credential"], "risk": "high"},
+        {"path_contains": ["/etc/", "/root/", "/home/"], "risk": "medium"}
+      ]
+    },
+    "file.write": {
+      "default_risk": "medium",
+      "elevated_conditions": [
+        {"path_contains": ["config", "settings", ".env"], "risk": "high"},
+        {"path_contains": ["/etc/", "/bin/", "/usr/"], "risk": "critical"}
+      ]
+    },
+    "file.delete": {
+      "default_risk": "high",
+      "elevated_conditions": [
+        {"recursive": true, "risk": "critical"},
+        {"path_contains": ["production", "prod", "live"], "risk": "critical"}
+      ]
+    },
+    "execute.command": {
+      "default_risk": "high",
+      "safe_commands": ["ls", "cat", "head", "tail", "grep", "find", "pwd", "whoami", "echo", "date"],
+      "dangerous_patterns": ["rm -rf", "dd ", "mkfs", "> /dev/", "curl | bash", "wget | sh"]
+    },
+    "network.request": {
+      "default_risk": "medium",
+      "elevated_conditions": [
+        {"destination": "external", "risk": "high"},
+        {"contains_credentials": true, "risk": "critical"}
+      ]
+    },
+    "database.query": {
+      "default_risk": "medium",
+      "elevated_conditions": [
+        {"query_type": "SELECT", "risk": "low"},
+        {"query_type": "INSERT", "risk": "medium"},
+        {"query_type": "UPDATE", "risk": "high"},
+        {"query_type": "DELETE", "risk": "high"},
+        {"query_type": "DROP", "risk": "critical"},
+        {"query_type": "TRUNCATE", "risk": "critical"}
+      ]
+    },
+    "financial.transfer": {
+      "default_risk": "critical",
+      "thresholds": [
+        {"amount_usd": 100, "risk": "high"},
+        {"amount_usd": 10000, "risk": "critical", "multi_party_required": true}
+      ]
+    }
+  },
+  "keyword_escalation": {
+    "keywords": [
+      "delete", "remove", "drop", "truncate", "destroy", "wipe",
+      "production", "prod", "live", "customer",
+      "password", "secret", "key", "credential", "token", "api_key",
+      "sudo", "root", "admin", "superuser",
+      "transfer", "payment", "money", "fund", "wire",
+      "deploy", "release", "rollback"
+    ],
+    "escalation_increment": 1
+  }
+}
