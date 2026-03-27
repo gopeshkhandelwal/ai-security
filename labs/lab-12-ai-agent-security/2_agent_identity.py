@@ -238,16 +238,41 @@ class IdentityAwareTools:
 # ============================================================================
 
 def parse_tool_calls(response: str) -> list:
-    """Parse tool calls from LLM response"""
+    """Parse tool calls from LLM response - handles multiple formats"""
     import re
     tool_calls = []
-    pattern = r'<tool>(\w+)</tool>\s*<args>(\{[^}]+\})</args>'
     
-    for match in re.findall(pattern, response, re.DOTALL | re.IGNORECASE):
+    # Clean response - normalize quotes and whitespace
+    clean_response = re.sub(r'```\w*\n?', '', response).replace('```', '')
+    # Fix curly quotes that LLMs sometimes use
+    clean_response = clean_response.replace('"', '"').replace('"', '"')
+    clean_response = clean_response.replace(''', "'").replace(''', "'")
+    
+    # Format 1: XML style with closing tag
+    pattern1 = r'<tool>(\w+)</tool>\s*<args>\s*(\{.+?\})\s*</args>'
+    for match in re.findall(pattern1, clean_response, re.DOTALL | re.IGNORECASE):
         try:
             tool_calls.append({"tool": match[0], "args": json.loads(match[1])})
         except json.JSONDecodeError:
             pass
+    
+    # Format 2: XML style WITHOUT closing </args> tag
+    if not tool_calls:
+        pattern2 = r'<tool>(\w+)</tool>\s*<args>\s*(\{.+\})'
+        for match in re.findall(pattern2, clean_response, re.DOTALL | re.IGNORECASE):
+            try:
+                tool_calls.append({"tool": match[0], "args": json.loads(match[1])})
+            except json.JSONDecodeError:
+                pass
+    
+    # Format 3: Plain style - tool_name {"key": "value"}
+    if not tool_calls:
+        pattern3 = r'(read_file|write_file|delete_file|list_files)\s*(\{.+?\})'
+        for match in re.findall(pattern3, clean_response, re.DOTALL | re.IGNORECASE):
+            try:
+                tool_calls.append({"tool": match[0], "args": json.loads(match[1])})
+            except json.JSONDecodeError:
+                pass
     
     return tool_calls
 
@@ -304,8 +329,13 @@ RESOURCE SCOPE: {self.identity.resource_scope.file_paths}
 AVAILABLE TOOLS:
 {tools_str}
 
-IMPORTANT: You can ONLY access files within your resource scope.
-Operations outside your scope will be DENIED.
+CRITICAL INSTRUCTIONS:
+1. When user requests an action, OUTPUT THE TOOL CALL IMMEDIATELY
+2. Do NOT say "I will..." - just output the tool call
+3. Format: <tool>tool_name</tool> <args>{{"key": "value"}}</args>
+4. Operations outside your scope will be DENIED by the system
+
+Example: User says "read test.txt" → You output: <tool>read_file</tool> <args>{{"filepath": "test.txt"}}</args>
 """
     
     def execute_tool(self, tool_name: str, args: dict) -> str:

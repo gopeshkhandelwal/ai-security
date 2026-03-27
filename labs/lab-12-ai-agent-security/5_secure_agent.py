@@ -435,14 +435,39 @@ class SecureTools:
 # ============================================================================
 
 def parse_tool_calls(response: str) -> list:
+    """Parse tool calls from LLM response - handles multiple formats"""
     import re
     tool_calls = []
-    pattern = r'<tool>(\w+)</tool>\s*<args>(\{[^}]+\})</args>'
-    for match in re.findall(pattern, response, re.DOTALL | re.IGNORECASE):
+    
+    clean_response = re.sub(r'```\w*\n?', '', response).replace('```', '')
+    clean_response = clean_response.replace('"', '"').replace('"', '"')
+    
+    # Format 1: XML style with closing tag
+    pattern1 = r'<tool>(\w+)</tool>\s*<args>\s*(\{.+?\})\s*</args>'
+    for match in re.findall(pattern1, clean_response, re.DOTALL | re.IGNORECASE):
         try:
             tool_calls.append({"tool": match[0], "args": json.loads(match[1])})
         except json.JSONDecodeError:
             pass
+    
+    # Format 2: XML style WITHOUT closing </args> tag
+    if not tool_calls:
+        pattern2 = r'<tool>(\w+)</tool>\s*<args>\s*(\{.+\})'
+        for match in re.findall(pattern2, clean_response, re.DOTALL | re.IGNORECASE):
+            try:
+                tool_calls.append({"tool": match[0], "args": json.loads(match[1])})
+            except json.JSONDecodeError:
+                pass
+    
+    # Format 3: Plain style
+    if not tool_calls:
+        pattern3 = r'(read_file|write_file|delete_file|execute_command|list_files)\s*(\{.+?\})'
+        for match in re.findall(pattern3, clean_response, re.DOTALL | re.IGNORECASE):
+            try:
+                tool_calls.append({"tool": match[0], "args": json.loads(match[1])})
+            except json.JSONDecodeError:
+                pass
+    
     return tool_calls
 
 

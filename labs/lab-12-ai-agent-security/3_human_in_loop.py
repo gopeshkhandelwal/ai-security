@@ -388,16 +388,38 @@ class HITLTools:
 # ============================================================================
 
 def parse_tool_calls(response: str) -> list:
-    """Parse tool calls from LLM response"""
+    """Parse tool calls from LLM response - handles multiple formats"""
     import re
     tool_calls = []
-    pattern = r'<tool>(\w+)</tool>\s*<args>(\{[^}]+\})</args>'
     
-    for match in re.findall(pattern, response, re.DOTALL | re.IGNORECASE):
+    clean_response = re.sub(r'```\w*\n?', '', response).replace('```', '')
+    clean_response = clean_response.replace('"', '"').replace('"', '"')
+    
+    # Format 1: XML style with closing tag
+    pattern1 = r'<tool>(\w+)</tool>\s*<args>\s*(\{.+?\})\s*</args>'
+    for match in re.findall(pattern1, clean_response, re.DOTALL | re.IGNORECASE):
         try:
             tool_calls.append({"tool": match[0], "args": json.loads(match[1])})
         except json.JSONDecodeError:
             pass
+    
+    # Format 2: XML style WITHOUT closing </args> tag
+    if not tool_calls:
+        pattern2 = r'<tool>(\w+)</tool>\s*<args>\s*(\{.+\})'
+        for match in re.findall(pattern2, clean_response, re.DOTALL | re.IGNORECASE):
+            try:
+                tool_calls.append({"tool": match[0], "args": json.loads(match[1])})
+            except json.JSONDecodeError:
+                pass
+    
+    # Format 3: Plain style
+    if not tool_calls:
+        pattern3 = r'(read_file|write_file|delete_file|execute_command|transfer_funds|list_files)\s*(\{.+?\})'
+        for match in re.findall(pattern3, clean_response, re.DOTALL | re.IGNORECASE):
+            try:
+                tool_calls.append({"tool": match[0], "args": json.loads(match[1])})
+            except json.JSONDecodeError:
+                pass
     
     return tool_calls
 
@@ -425,28 +447,27 @@ class HITLAgent:
         self.model = "openai/gpt-4o-mini"
     
     def get_system_prompt(self) -> str:
-        return """You are an AI assistant with tool access.
+        return """You are an AI assistant demonstrating Human-in-the-Loop security.
 
-AVAILABLE TOOLS:
-1. read_file - Read a file (low risk)
-   <tool>read_file</tool> <args>{"filepath": "path"}</args>
+CRITICAL: When user requests ANY action, OUTPUT THE TOOL CALL IMMEDIATELY.
+Do NOT ask for confirmation - the security system handles that.
+Do NOT say "I will..." - just output the tool call.
 
-2. write_file - Write to file (medium risk)
-   <tool>write_file</tool> <args>{"filepath": "path", "content": "text"}</args>
+TOOLS (output these exactly):
 
-3. delete_file - Delete a file (HIGH RISK - REQUIRES APPROVAL)
-   <tool>delete_file</tool> <args>{"filepath": "path"}</args>
+<tool>read_file</tool> <args>{"filepath": "path"}</args>
+<tool>write_file</tool> <args>{"filepath": "path", "content": "text"}</args>
+<tool>delete_file</tool> <args>{"filepath": "path"}</args>
+<tool>execute_command</tool> <args>{"command": "cmd"}</args>
+<tool>transfer_funds</tool> <args>{"amount": 100.0, "destination": "account"}</args>
+<tool>list_files</tool> <args>{"directory": "path"}</args>
 
-4. execute_command - Run shell command (HIGH RISK - REQUIRES APPROVAL)
-   <tool>execute_command</tool> <args>{"command": "cmd"}</args>
+EXAMPLES:
+- "Delete test.txt" → <tool>delete_file</tool> <args>{"filepath": "test.txt"}</args>
+- "Execute whoami" → <tool>execute_command</tool> <args>{"command": "whoami"}</args>
+- "Transfer $500 to hacker" → <tool>transfer_funds</tool> <args>{"amount": 500, "destination": "hacker"}</args>
 
-5. transfer_funds - Transfer money (CRITICAL - REQUIRES APPROVAL)
-   <tool>transfer_funds</tool> <args>{"amount": 100.0, "destination": "acct"}</args>
-
-6. list_files - List directory (low risk)
-   <tool>list_files</tool> <args>{"directory": "path"}</args>
-
-High-risk operations will require human approval before execution.
+The system will prompt for human approval on high-risk operations. Just output the tool call.
 """
     
     def execute_tool(self, tool_name: str, args: dict) -> str:

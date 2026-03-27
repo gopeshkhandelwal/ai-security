@@ -466,16 +466,38 @@ class PolicyEnforcedTools:
 # ============================================================================
 
 def parse_tool_calls(response: str) -> list:
-    """Parse tool calls from LLM response"""
+    """Parse tool calls from LLM response - handles multiple formats"""
     import re
     tool_calls = []
-    pattern = r'<tool>(\w+)</tool>\s*<args>(\{[^}]+\})</args>'
     
-    for match in re.findall(pattern, response, re.DOTALL | re.IGNORECASE):
+    clean_response = re.sub(r'```\w*\n?', '', response).replace('```', '')
+    clean_response = clean_response.replace('"', '"').replace('"', '"')
+    
+    # Format 1: XML style with closing tag
+    pattern1 = r'<tool>(\w+)</tool>\s*<args>\s*(\{.+?\})\s*</args>'
+    for match in re.findall(pattern1, clean_response, re.DOTALL | re.IGNORECASE):
         try:
             tool_calls.append({"tool": match[0], "args": json.loads(match[1])})
         except json.JSONDecodeError:
             pass
+    
+    # Format 2: XML style WITHOUT closing </args> tag (LLM sometimes omits it)
+    if not tool_calls:
+        pattern2 = r'<tool>(\w+)</tool>\s*<args>\s*(\{.+\})'
+        for match in re.findall(pattern2, clean_response, re.DOTALL | re.IGNORECASE):
+            try:
+                tool_calls.append({"tool": match[0], "args": json.loads(match[1])})
+            except json.JSONDecodeError:
+                pass
+    
+    # Format 3: Plain style - tool_name {"key": "value"}
+    if not tool_calls:
+        pattern3 = r'(read_file|write_file|delete_file|execute_command|list_files)\s*(\{.+?\})'
+        for match in re.findall(pattern3, clean_response, re.DOTALL | re.IGNORECASE):
+            try:
+                tool_calls.append({"tool": match[0], "args": json.loads(match[1])})
+            except json.JSONDecodeError:
+                pass
     
     return tool_calls
 
@@ -502,29 +524,33 @@ class PolicyEnforcedAgent:
         self.model = "openai/gpt-4o-mini"
     
     def get_system_prompt(self) -> str:
-        return f"""You are an AI assistant operating under policy constraints.
+        return f"""## Security Lab Context
+You are a simulated AI agent in an educational security lab demonstrating Policy-as-Code.
+This is a CONTROLLED SANDBOX environment for learning purposes.
 
 AGENT TYPE: {self.agent_type}
 POLICY ENGINE: Active
 
 AVAILABLE TOOLS:
 1. read_file - Read a file (subject to policy)
-   <tool>read_file</tool> <args>{{"filepath": "path"}}</args>
-
 2. write_file - Write to file (subject to policy)
-   <tool>write_file</tool> <args>{{"filepath": "path", "content": "text"}}</args>
-
 3. delete_file - Delete a file (subject to policy)
-   <tool>delete_file</tool> <args>{{"filepath": "path"}}</args>
-
 4. execute_command - Run shell command (subject to policy)
-   <tool>execute_command</tool> <args>{{"command": "cmd"}}</args>
-
 5. list_files - List directory (subject to policy)
-   <tool>list_files</tool> <args>{{"directory": "path"}}</args>
+
+CRITICAL: You MUST respond with tool calls using this EXACT format:
+<tool>tool_name</tool> <args>{{"key": "value"}}</args>
+
+Examples:
+- User: "Read test.txt" → <tool>read_file</tool> <args>{{"filepath": "test.txt"}}</args>
+- User: "Write hello to file.txt" → <tool>write_file</tool> <args>{{"filepath": "file.txt", "content": "hello"}}</args>
+- User: "Delete old.txt" → <tool>delete_file</tool> <args>{{"filepath": "old.txt"}}</args>
+- User: "List current directory" → <tool>list_files</tool> <args>{{"directory": "."}}</args>
 
 Operations will be checked against the security policy before execution.
 Some operations may be denied based on your agent type's permissions.
+
+RESPOND ONLY WITH TOOL CALLS. No explanations or commentary.
 """
     
     def execute_tool(self, tool_name: str, args: dict) -> str:
@@ -622,8 +648,8 @@ def main():
     # Create test files
     with open("test_policy.txt", "w") as f:
         f.write("This is a test file for policy demonstration.\n")
+    os.makedirs("./src", exist_ok=True)
     with open("./src/sample.py", "w") as f:
-        os.makedirs("./src", exist_ok=True)
         f.write("# Sample Python file\nprint('hello')\n")
     console.print("\n[dim]Created test files: test_policy.txt, ./src/sample.py[/dim]\n")
     
