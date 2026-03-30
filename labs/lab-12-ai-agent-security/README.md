@@ -291,6 +291,211 @@ User Request → Agent Analysis → Risk Assessment
 └─────────────────────────────────────────────────────────────────┘
 ```
 
+---
+
+## 🏭 Production Architecture
+
+### Core Concepts: Static Registration vs Dynamic Sessions
+
+The production implementation separates **agent registration** (static, pre-deployment) from **runtime sessions** (dynamic, per-invocation):
+
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│  BEFORE DEPLOYMENT (Security Team)                                  │
+│  ─────────────────────────────────                                  │
+│                                                                     │
+│  AgentRegistry.register(                                            │
+│      agent_id="secure-agent-v1",                                    │
+│      allowed_tools=["read_file", "write_file"],    ← IMMUTABLE      │
+│      permissions=["file.read", "file.write"],                       │
+│      registered_by="security-team@example.com"                      │
+│  )                                                                  │
+│                                                                     │
+│  Similar to: IAM Role, Service Account, SPIFFE ID                   │
+├─────────────────────────────────────────────────────────────────────┤
+│  AT RUNTIME (User Invocation)                                       │
+│  ─────────────────────────────                                      │
+│                                                                     │
+│  session = registry.create_session(                                 │
+│      agent_id="secure-agent-v1",                                    │
+│      invoked_by="alice@example.com"     ← ATTRIBUTION               │
+│  )                                                                  │
+│                                                                     │
+│  Creates: session_id, start_time, expiry, signature                 │
+└─────────────────────────────────────────────────────────────────────┘
+```
+
+### Production Request Flow
+
+When a user submits a request, the system automatically routes to the most appropriate agent:
+
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│  USER REQUEST: "Read test_secure.txt"                               │
+└─────────────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────────────┐
+│  1. ROUTING (AgentRouter)                                           │
+│     • Classify task → required_tools = ['read_file']                │
+│     • Find capable agents (those with required tools)               │
+│     • Select agent with MINIMAL extra permissions (PoLP)            │
+│     • Result: readonly-agent-v1 (2 tools) beats secure-agent (5)    │
+└─────────────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────────────┐
+│  2. SESSION CREATION (Per-Request)                                  │
+│     • agent_id = "readonly-agent-v1" (from routing)                 │
+│     • session_id = "97ec90df" (unique per invocation)               │
+│     • invoked_by = "alice@example.com" (attribution)                │
+│     • expires_at = now + 1 hour (bounded execution)                 │
+└─────────────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────────────┐
+│  3. SECURITY LAYER EXECUTION                                        │
+│     ✓ Session validity check (is session expired?)                  │
+│     ✓ Agent active check (is agent deactivated?)                    │
+│     ✓ Tool allowlist check (is tool in allowed_tools?)              │
+│     ✓ Permission check (has required permission?)                   │
+│     ✓ Resource scope check (is path within boundaries?)             │
+│     ✓ Policy evaluation (what does policy engine say?)              │
+│     ✓ HITL approval (if high-risk action)                           │
+│     ✓ Execute action                                                │
+│     ✓ Audit logging (full attribution)                              │
+└─────────────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────────────┐
+│  4. AUDIT RECORD                                                    │
+│     {                                                               │
+│       "timestamp": "2026-03-30T10:15:30Z",                          │
+│       "session_id": "97ec90df",                                     │
+│       "agent_id": "readonly-agent-v1",                              │
+│       "invoked_by": "alice@example.com",                            │
+│       "action": "file.read",                                        │
+│       "args": {"filepath": "test_secure.txt"},                      │
+│       "policy_decision": "allow",                                   │
+│       "outcome": "success"                                          │
+│     }                                                               │
+└─────────────────────────────────────────────────────────────────────┘
+```
+
+### Automatic Agent Selection (PoLP)
+
+The AgentRouter enforces Principle of Least Privilege by selecting the agent with minimal extra permissions:
+
+| User Task | Required Tools | Capable Agents | Selected (PoLP) |
+|-----------|----------------|----------------|-----------------|
+| "Read test.txt" | `[read_file]` | readonly (2), secure (5) | **readonly-agent-v1** |
+| "List files" | `[list_files]` | readonly (2), secure (5) | **readonly-agent-v1** |
+| "Delete temp.txt" | `[delete_file]` | secure (5) | **secure-agent-v1** |
+| "Execute whoami" | `[execute_command]` | secure (5) | **secure-agent-v1** |
+| "Write and delete" | `[write, delete]` | secure (5) | **secure-agent-v1** |
+
+### Detailed Routing Decision Flow
+
+Here's exactly how the router selects an agent for "Read test_secure.txt":
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│  USER INPUT: "Read test_secure.txt"                             │
+└─────────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────────┐
+│  STEP 1: Classify Task                                          │
+│  ─────────────────────                                          │
+│  Scanning keywords in: "read test_secure.txt"                   │
+│                                                                 │
+│  ✓ Found keyword "read" → task type: read                       │
+│    Required tools: ['read_file']                                │
+└─────────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────────┐
+│  STEP 2: Find Capable Agents                                    │
+│  ───────────────────────────                                    │
+│  Looking for agents with tools: ['read_file']                   │
+│                                                                 │
+│  secure-agent-v1:                                               │
+│    allowed_tools: [read, write, delete, execute, list]          │
+│    has required tools: ✓ CAPABLE                                │
+│    extra tools count: 4 (lower = better)                        │
+│                                                                 │
+│  readonly-agent-v1:                                             │
+│    allowed_tools: [read, list]                                  │
+│    has required tools: ✓ CAPABLE                                │
+│    extra tools count: 1 (lower = better)                        │
+└─────────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────────┐
+│  STEP 3: Apply Principle of Least Privilege (PoLP)              │
+│  ──────────────────────────────────────────────────             │
+│  Sort capable agents by extra_tools_count (ascending):          │
+│                                                                 │
+│    1. readonly-agent-v1: score=1  ← SELECTED (minimal)          │
+│    2. secure-agent-v1:   score=4                                │
+└─────────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────────┐
+│  RESULT: readonly-agent-v1                                      │
+│  ─────────────────────────                                      │
+│  Both agents CAN read files, but readonly-agent has fewer       │
+│  extra permissions. This follows PoLP - always use the agent    │
+│  with minimal privileges needed for the task.                   │
+│                                                                 │
+│  Security benefit: If agent is compromised, attacker only       │
+│  gains read access, not write/delete/execute capabilities.      │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+### Key Production Components
+
+| Component | Purpose | Production Implementation |
+|-----------|---------|---------------------------|
+| `RegisteredAgent` | Static agent definition | Database, Vault, ConfigMap |
+| `AgentSession` | Runtime invocation context | In-memory + audit log |
+| `AgentRegistry` | Central agent management | PostgreSQL + Redis cache |
+| `AgentRouter` | Task-based agent selection | Rule engine + LLM classifier |
+| `SecureTools` | Security-wrapped tool execution | Middleware pattern |
+| `AuditLogger` | Immutable action trail | Append-only log / SIEM |
+
+### Production Deployment Patterns
+
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│                    PRODUCTION DEPLOYMENT                            │
+├─────────────────────────────────────────────────────────────────────┤
+│                                                                     │
+│  ┌─────────────┐    ┌─────────────┐    ┌─────────────┐             │
+│  │   Vault     │    │  PostgreSQL │    │    Redis    │             │
+│  │  (Secrets)  │    │  (Registry) │    │   (Cache)   │             │
+│  └──────┬──────┘    └──────┬──────┘    └──────┬──────┘             │
+│         │                  │                  │                     │
+│         └──────────────────┼──────────────────┘                     │
+│                            │                                        │
+│                   ┌────────┴────────┐                               │
+│                   │  AgentRegistry  │                               │
+│                   │    Service      │                               │
+│                   └────────┬────────┘                               │
+│                            │                                        │
+│         ┌──────────────────┼──────────────────┐                     │
+│         │                  │                  │                     │
+│  ┌──────┴──────┐    ┌──────┴──────┐    ┌──────┴──────┐             │
+│  │   Agent     │    │   Agent     │    │   Agent     │             │
+│  │  Instance   │    │  Instance   │    │  Instance   │             │
+│  │  (Pod 1)    │    │  (Pod 2)    │    │  (Pod 3)    │             │
+│  └─────────────┘    └─────────────┘    └─────────────┘             │
+│                                                                     │
+└─────────────────────────────────────────────────────────────────────┘
+```
+
+---
+
 ## 🛡️ Defense Mechanisms
 
 ### 1. Identity Management
